@@ -31,7 +31,7 @@
  * 
  * @var string
  **/
-$path_delimiter = (strpos(__FILE__, ':') !== false) ? ';' : ':';
+$path_delimiter = ( strpos( __FILE__, ':' ) !== false ) ? ';' : ':';
 
 /**
  *  This will add the packaged PEAR files into the include path for PHP, allowing you
@@ -40,7 +40,7 @@ $path_delimiter = (strpos(__FILE__, ':') !== false) ? ';' : ':';
  * to), swap the two elements around the $path_delimiter variable.  If you don't have
  * the PEAR packages installed, you can leave this like it is and move on.
  **/
-ini_set('include_path', ini_get('include_path') . $path_delimiter . dirname(__FILE__) . '/PEAR');
+ini_set( 'include_path', ini_get( 'include_path' ) . $path_delimiter . dirname( __FILE__ ) . '/PEAR' );
 
 /**
  * Forcing a level of logging that does NOT include E_STRICT.
@@ -50,7 +50,7 @@ ini_set('include_path', ini_get('include_path') . $path_delimiter . dirname(__FI
  * just incase phpZenfolio is used within an application that uses E_STRICT.
  * phpZenfolio.php itself is E_STRICT compliant, so it's only PEAR that's holding us back.
  **/
-error_reporting(E_ALL | E_NOTICE);
+error_reporting( E_ALL | E_NOTICE );
 
 /**
  * phpZenfolio - all of the phpZenfolio functionality is provided in this class
@@ -61,7 +61,7 @@ class phpZenfolio {
 	var $version = '0.1';
 	var $cacheType = FALSE;
 	var $cache_expire = 3600;
-	var $SessionID;
+	var $authToken;
 	var $loginType;
 	var $id;
 	
@@ -102,19 +102,19 @@ class phpZenfolio {
 	{
 		$args = phpZenfolio::processArgs(func_get_args());
         //$this->APIKey = $args['APIKey'];
-		$this->APIVer = (array_key_exists('APIVer', $args)) ? $args['APIVer'] : '1.4';
+		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.4';
 		
 		// Set the Application Name
-		$this->AppName = (array_key_exists('AppName', $args)) ?  $args['AppName'] : 'Unknown Application';
+		$this->AppName = ( array_key_exists( 'AppName', $args ) ) ?  $args['AppName'] : 'Unknown Application';
 
         // All calls to the API are done via the POST method using the PEAR::HTTP_Request package.
         require_once 'HTTP/Request.php';
 		$url = '';
-        $this->req = new HTTP_Request($url, array( 'allowRedirects' => TRUE, 'maxRedirects' => 3));
-        $this->req->setMethod(HTTP_REQUEST_METHOD_POST);
-		$this->req->addHeader('User-Agent', "{$this->AppName} using phpZenfolio/{$this->version}");
-		$this->req->addHeader('X-Zenfolio-User-Agent', "{$this->AppName} using phpZenfolio/{$this->version}");
-		$this->req->addHeader('Content-Type', 'application/json');
+        $this->req = new HTTP_Request( $url, array( 'allowRedirects' => TRUE, 'maxRedirects' => 3 ) );
+        $this->req->setMethod( HTTP_REQUEST_METHOD_POST );
+		$this->req->addHeader( 'User-Agent', "{$this->AppName} using phpZenfolio/{$this->version}" );
+		$this->req->addHeader( 'X-Zenfolio-User-Agent', "{$this->AppName} using phpZenfolio/{$this->version}" );
+		$this->req->addHeader( 'Content-Type', 'application/json' );
     }
 	
 	/**
@@ -126,10 +126,10 @@ class phpZenfolio {
 	 * @param mixed $var Any string, object or array you want to display
 	 * @static
 	 **/
-	static function debug($var)
+	static function debug( $var )
 	{
 		echo '<pre>Debug:';
-		if (is_array($var) || is_object($var)) { print_r($var); } else { echo $var; }
+		if (is_array( $var ) || is_object( $var ) ) { print_r( $var ); } else { echo $var; }
 		echo '</pre>';	
 	}
 	
@@ -210,9 +210,9 @@ class phpZenfolio {
 	 * @return string|FALSE Unparsed serialized PHP, or FALSE
 	 * @param array $request Request to the SmugMug created by one of the later functions in phpZenfolio.
 	 **/
-    private function getCached($request)
+    private function getCached( $request )
 	{
-		$request['SessionID']       = ''; // Unset SessionID
+		$request['authToken']       = ''; // Unset authToken
 		$request['oauth_nonce']     = '';     // --\
 		$request['oauth_signature'] = '';  //    |-Unset OAuth info
 		$request['oauth_timestamp'] = ''; // --/
@@ -240,9 +240,9 @@ class phpZenfolio {
 	 * @param array $request Request to the SmugMug created by one of the later functions in phpZenfolio.
 	 * @param string $response Response from a successful request() method call.
 	 **/
-    private function cache($request, $response)
+    private function cache( $request, $response )
 	{
-		$request['SessionID']       = ''; // Unset SessionID
+		$request['authToken']       = ''; // Unset authToken
 		$request['oauth_nonce']     = ''; // --\
 		$request['oauth_signature'] = ''; //    |-Unset OAuth info
 		$request['oauth_timestamp'] = ''; // --/
@@ -312,7 +312,7 @@ class phpZenfolio {
 	 * @param array $args optional Array of arguments that form the API call
 	 * @param boolean $nocache Set whether the call should be cached or not. This isn't actually used, so may be deprecated in the future.
 	 **/
-	private function request($command, $args = array(), $nocache = FALSE)
+	private function request( $command, $args = array(), $nocache = FALSE )
 	{
 		$this->req->clearPostData();
 
@@ -322,37 +322,41 @@ class phpZenfolio {
 			$proto = "http";
 		}
 
-		$this->req->setURL("$proto://www.zenfolio.com/api/{$this->APIVer}/zfapi.asmx");
+		$this->req->setURL( "$proto://www.zenfolio.com/api/{$this->APIVer}/zfapi.asmx" );
 
+		if ( ! is_null( $this->authToken) ) {
+			$this->req->addHeader( 'X-Zenfolio-Token', $this->authToken );
+		}
+		
 		// To keep things unique, we set the ID to a base32 figure of the string concat of the method and all arguments
-		$str = $command . '.' . join('.', $args);
-		$this->id = intval($str, 32);
-		$args = array('method' => $command, 'params' => $args, 'id' => $this->id);
+		$str = $command . '.' . join( '.', $args );
+		$this->id = intval( $str, 32 );
+		$args = array( 'method' => $command, 'params' => $args, 'id' => $this->id );
 
-        if (!($this->response = $this->getCached($args)) || $nocache) {
-			$this->req->setBody(json_encode($args));
+        if ( !( $this->response = $this->getCached( $args ) ) || $nocache ) {
+			$this->req->setBody( json_encode( $args ) );
             //Send Requests - HTTP::Request doesn't raise Exceptions, so we must
 			$response = $this->req->sendRequest();
-			if(!PEAR::isError($response) && ($this->req->getResponseCode() == 200)) {
+			if( !PEAR::isError( $response ) && ( $this->req->getResponseCode() == 200 ) ) {
 				$this->response = $this->req->getResponseBody();
-				$this->cache($args, $this->response);
+				$this->cache( $args, $this->response );
 			} else {
-				if ($this->req->getResponseCode() && $this->req->getResponseCode() != 200) {
+				if ( $this->req->getResponseCode() && $this->req->getResponseCode() != 200 ) {
 					$msg = 'Request failed. HTTP Reason: '.$this->req->getResponseReason();
 					$code = $this->req->getResponseCode();
 				} else {
 					$msg = 'Request failed: '.$response->getMessage();
 					$code = $response->getCode();
 				}
-				throw new Exception($msg, $code);
+				throw new Exception( $msg, $code );
 			}
 		}
-		$this->parsed_response = json_decode($this->response, true);
+		$this->parsed_response = json_decode( $this->response, true );
 
 		if ( $this->parsed_response['id'] != $this->id ) {
 			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']}";
 			$this->parsed_response = FALSE;
-			throw new Exception("Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code);
+			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
 			//$this->error_code = $this->parsed_response['code'];
@@ -444,7 +448,7 @@ class phpZenfolio {
 			$this->loginType = 'anon';
 			$this->request('smugmug.login.anonymously');
 		}
-		$this->SessionID = $this->parsed_response['Login']['Session']['id'];
+		$this->authToken = $this->parsed_response['Login']['Session']['id'];
 		return $this->parsed_response ? $this->parsed_response['Login'] : FALSE;
 	}
 
@@ -534,7 +538,7 @@ class phpZenfolio {
 		$upload_req->addHeader('Connection', 'keep-alive');
 
 		if ($this->loginType == 'authd') { 
-			$upload_req->addHeader('X-Smug-SessionID', $this->SessionID);
+			$upload_req->addHeader('X-Zenfolio-Token', $this->authToken);
 		} else {
 			$upload_req->addHeader('Authorization', 'OAuth realm="http://api.smugmug.com/",
 				oauth_consumer_key="'.$this->APIKey.'",
@@ -610,7 +614,11 @@ class phpZenfolio {
 	{
 		$args = phpZenfolio::processArgs( $arguments );
 		$this->request( $method, $args );
-		return $this->parsed_response['result'];
+		$result = $this->parsed_response['result'];
+		if ( $method == 'AuthenticatePlain' ) {
+			$this->authToken = $result;
+		}
+		return $result;
 	}
 	
 	 /**
@@ -716,12 +724,12 @@ class phpZenfolio {
 	  * @param array Arguments taken from a function by func_get_args()
 	  * @access private
 	  **/
-	 private static function processArgs($arguments)
+	 private static function processArgs( $arguments )
 	 {
 		$args = array();
-		foreach ($arguments as $arg) {
-			if (is_array($arg)) {
-				$args = array_merge($args, $arg);
+		foreach ( $arguments as $arg ) {
+			if (is_array( $arg ) ) {
+				$args = array_merge( $args, $arg );
 			} else {
 				$args[] = $arg;
 			}
