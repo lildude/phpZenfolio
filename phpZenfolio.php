@@ -352,7 +352,6 @@ class phpZenfolio {
 			}
 		}
 		$this->parsed_response = json_decode( $this->response, true );
-
 		if ( $this->parsed_response['id'] != $this->id ) {
 			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']}";
 			$this->parsed_response = FALSE;
