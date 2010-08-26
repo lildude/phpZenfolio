@@ -451,33 +451,6 @@ class phpZenfolio {
 		$this->authToken = $this->parsed_response['Login']['Session']['id'];
 		return $this->parsed_response ? $this->parsed_response['Login'] : FALSE;
 	}
-
-	/**
-	 * Catch login_* methods and direct them to the single login() method.
-	 *
-	 * This prevents these methods being passed to __call() and the resulting
-	 * cryptic and tough troubleshooting that would ensue for users who don't use
-	 * the login() method. Now they use it, even if they don't know about it.
-	 *
-	 * @access public
-	 * @uses login
-	 */
-	public function login_anonymously()
-	{
-		return $this->login();
-	}
-
-	public function login_withHash()
-	{
-		$args = phpZenfolio::processArgs(func_get_args());
-		return $this->login($args);
-	}
-
-	public function login_withPassword($args)
-	{
-		$args = phpZenfolio::processArgs(func_get_args());
-		return $this->login($args);
-	}
 	
 	/**
 	 * 	I break away from the standard API here as recommended by SmugMug at
@@ -620,102 +593,7 @@ class phpZenfolio {
 		}
 		return $result;
 	}
-	
-	 /**
-	  * Return the authorisation URL.
-	  *
-	  * @access public
-	  * @return string 
-	  * @param string $Access The required level of access. Defaults to "Public"
-	  * @param string $Permissions The required permissions.  Defaults to "Read"
-	  **/
-	 public function authorize()
-	{
-		 $args = phpZenfolio::processArgs(func_get_args());
-		 $perms = (array_key_exists('Permissions', $args)) ? $args['Permissions'] : 'Public';
-		 $access = (array_key_exists('Access', $args)) ? $args['Access'] : 'Read';
- 		 return "http://api.smugmug.com/services/oauth/authorize.mg?Access=$access&Permissions=$perms&oauth_token={$this->oauth_token}";
-	 }
-	 
-
-	 /**
-	  * Static function to encode a string according to RFC3986.
-	  *
-	  * This is a requirement of implementing OAuth
-	  *
-	  * @static
-	  * @access private
-	  * @return string
-	  * @param string $string The string requiring encoding
-	  **/
-	 private static function urlencodeRFC3986($string)
-	 {
-		return str_replace('%7E', '~', rawurlencode($string));
-	 }
-
-	 /**
-	  * Method that generates the OAuth signature
-	  *
-	  * In order for this method to correctly generate a signature, setToken()
-	  * MUST be called to set the token and token secret within the instance of
-	  * phpZenfolio.
-	  *
-	  * @return string
-	  * @access private
-	  * @param string $apicall The API method.
-	  * @param mixed $apiargs The arguments passed to the API method.
-	  **/
-	 private function generate_signature($apicall, $apiargs = NULL)
-	 {
-		$this->oauth_timestamp = time();
-		$this->oauth_nonce = md5(time() . mt_rand());
-
-		if ($apicall != 'Upload') {
-			if (substr($apicall,0,8) != 'smugmug.') {
-				$apicall = 'smugmug.' . $apicall;
-			}
-		}
-		if ($this->oauth_signature_method == 'PLAINTEXT') {
-			return phpZenfolio::urlencodeRFC3986($this->OAuthSecret).'&'.phpZenfolio::urlencodeRFC3986($this->oauth_token_secret);
-		} else {
-			$this->oauth_signature_method = 'HMAC-SHA1';
-			$encKey = phpZenfolio::urlencodeRFC3986($this->OAuthSecret) . '&' . phpZenfolio::urlencodeRFC3986($this->oauth_token_secret);
-			$endpoint = ($apicall == 'Upload') ? 'http://upload.smugmug.com/'.$apiargs['FileName'] : 'http://api.smugmug.com/services/api/php/'.$this->APIVer.'/';
-			$method = ($apicall == 'Upload') ? 'PUT' : 'POST';
-			$params = array (
-				'oauth_version'             => '1.0',
-				'oauth_nonce'               => $this->oauth_nonce,
-				'oauth_timestamp'           => $this->oauth_timestamp,
-				'oauth_consumer_key'        => $this->APIKey,
-				'oauth_signature_method'    => $this->oauth_signature_method
-				);
-			if ($apicall != 'Upload') $params = array_merge($params, array('method' => $apicall));
-			$params = (!empty($this->oauth_token)) ? array_merge($params, array('oauth_token' => $this->oauth_token)) : $params;
-			if ($apicall != 'Upload') $params = (!empty($apiargs)) ? array_merge($params, $apiargs) : $params;
-		    $keys = array_map(array('phpZenfolio', 'urlencodeRFC3986'), array_keys($params));
-		    $values = array_map(array('phpZenfolio', 'urlencodeRFC3986'), array_values($params));
-		    $params = array_combine($keys, $values);
-		    // Sort by keys (natsort)
-		    uksort($params, 'strnatcmp');
-			$pairs = array();
-			foreach ($params as $key=>$value ) {
-			  if (is_array($value)) {
-			    natsort($value);
-			    foreach ($value as $v2) {
-					$pairs[] = "$key=$v2";
-			    }
-			  } else {
-			    $pairs[] = "$key=$value";
-			  }
-			}
-
-			$string = implode('&', $pairs);
-			$base_string = $method . '&' . phpZenfolio::urlencodeRFC3986($endpoint) . '&' .  phpZenfolio::urlencodeRFC3986($string);
-			$sig = base64_encode( hash_hmac('sha1', $base_string, $encKey, true));
-			return $sig;
-		}
-	 }
-	  
+ 
 	 /**
 	  * Process arguments passed to method
 	  *
