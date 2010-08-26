@@ -359,12 +359,12 @@ class phpZenfolio {
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
-			//$this->error_code = $this->parsed_response['code'];
+			$this->error_code = $this->parsed_response['code'];
             $this->error_msg = $this->parsed_response['error']['message'];
 			$this->parsed_response = FALSE;
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		} else {
-			//$this->error_code = FALSE;
+			$this->error_code = FALSE;
             $this->error_msg = FALSE;
 		}
 
@@ -386,33 +386,7 @@ class phpZenfolio {
 		$this->proxy['port'] = $args['port'];
 		$this->req->setProxy($args['server'], $args['port']);
     }
-
-	/**
-	 * Set Token and Token Secret for use by other methods in phpZenfolio.
-	 *
-	 * Use this method to pull in the token and token secret obtained during 
-	 * the OAuth authorisation process.
-	 *
-	 * If OAuth is being used, this method MUST be called so phpZenfolio knows about
-	 * the token and token secret.
-	 *
-	 * NOTE: It's up to the application developer using phpZenfolio to store the Access
-	 * token and token secret in a location convenient for their application.
-	 * phpZenfolio can not do this as all storage and caching done by phpZenfolio is
-	 * of a temporary nature.
-	 *
-	 * @access public
-	 * @return void
-	 * @param string $id Token ID returned by auth_getAccessToken()
-	 * @param string $Secret Token secret returned by auth_getAccessToken()
-	 **/
-	public function setToken()
-	{
-		 $args = phpZenfolio::processArgs(func_get_args());
-		 $this->oauth_token = $args['id'];
-		 $this->oauth_token_secret = $args['Secret'];
-	}
-	 
+ 
 	/**
 	 * Single login function for all non-OAuth logins.
 	 * 
