@@ -335,7 +335,11 @@ class phpZenfolio {
 
         if ( !( $this->response = $this->getCached( $args ) ) || $nocache ) {
 			$this->req->setBody( json_encode( $args ) );
-            //Send Requests - HTTP::Request doesn't raise Exceptions, so we must
+			//if ( $command == 'Authenticate') {
+			//	self::debug(json_encode($args));die();
+			//}
+
+			//Send Requests - HTTP::Request doesn't raise Exceptions, so we must
 			$response = $this->req->sendRequest();
 			if( !PEAR::isError( $response ) && ( $this->req->getResponseCode() == 200 ) ) {
 				$this->response = $this->req->getResponseBody();
@@ -558,7 +562,8 @@ class phpZenfolio {
 	 **/
 	public function __call( $method, $arguments )
 	{
-		$args = phpZenfolio::processArgs( $arguments );
+		//$args = phpZenfolio::processArgs( $arguments );
+		$args = $arguments;
 		$this->request( $method, $args );
 		$result = $this->parsed_response['result'];
 		if ( $method == 'AuthenticatePlain' ) {
@@ -587,6 +592,20 @@ class phpZenfolio {
 		}
 		return $args;
 	  }
-	   
+
+	 /**
+	  * Private function that converts the JSON array we recieve in response to
+	  * GetChallenge to a string.
+	  *
+	  * The JSON data returned is actually a byte array, but as JSON has no concept
+	  * of a byte array, it's returned as a normal array.  This function converts
+	  * this normal array to a string.
+	  */
+	 public static function byteArrayDecode( $array )
+	 {
+		$bs = call_user_func_array(pack, array_merge( array( 'C*' ),(array) $array ) );
+		return base64_encode( $bs );
+		//return $bs;
+	 }
 }
 ?>
