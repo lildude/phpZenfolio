@@ -62,7 +62,6 @@ class phpZenfolio {
 	var $cacheType = FALSE;
 	var $cache_expire = 3600;
 	var $authToken;
-	var $loginType;
 	var $id;
 	
 	/**
@@ -93,10 +92,8 @@ class phpZenfolio {
      * you can over-ride this when instantiating the instance.
 	 *
 	 * @return void
-	 * @param string $APIKey SmugMug API key. You can get your own from {@link http://www.smugmug.com/hack/apikeys}
-	 * @param string $OAuthSecret SmugMug OAuth Secret. This is only needed if you wish to use OAuth for authentication. Do NOT include this parameter if you are NOT using OAuth.
-	 * @param string $AppName (Optional) Name and version information of your application in the form "AppName/version (URI)" e.g. "My Cool App/1.0 (http://my.url.com)".  This isn't obligatory, but it helps SmugMug diagnose any problems users of your application may encounter.
-	 * @param string $APIVer (Optional) API endpoint you wish to use. Defaults to 1.2.0
+	 * @param string $AppName (Optional) Name and version information of your application in the form "AppName/version (URI)" e.g. "My Cool App/1.0 (http://my.url.com)".  This isn't obligatory, but it helps Zenfolio diagnose any problems users of your application may encounter.
+	 * @param string $APIVer (Optional) API endpoint you wish to use. Defaults to 1.4
 	 **/
 	function __construct()
 	{
@@ -126,10 +123,10 @@ class phpZenfolio {
 	 * @param mixed $var Any string, object or array you want to display
 	 * @static
 	 **/
-	static function debug( $var )
+	public static function debug( $var )
 	{
 		echo '<pre>Debug:';
-		if (is_array( $var ) || is_object( $var ) ) { print_r( $var ); } else { echo $var; }
+		if ( is_array( $var ) || is_object( $var ) ) { print_r( $var ); } else { echo $var; }
 		echo '</pre>';	
 	}
 	
@@ -302,13 +299,13 @@ class phpZenfolio {
 	}
 
 	/**
-	 * 	Sends a request to SmugMug's PHP endpoint via POST. If we're calling
-	 *  one of the login.with* or auth.get* methods, we'll use the HTTPS end point to ensure
+	 * 	Sends a request to Zenfolio's API endpoint via POST. If we're calling
+	 *  one of the authenticate* methods, we'll use the HTTPS end point to ensure
 	 *  things are secure by default
 	 *
 	 * @access private
-	 * @return string Serialized PHP response from SmugMug, or an error.
-	 * @param string $command SmugMug API command to call in the request
+	 * @return string JSON response from Zenfolio, or an error.
+	 * @param string $command Zenfolio API method to call in the request
 	 * @param array $args optional Array of arguments that form the API call
 	 * @param boolean $nocache Set whether the call should be cached or not. This isn't actually used, so may be deprecated in the future.
 	 **/
@@ -324,7 +321,7 @@ class phpZenfolio {
 
 		$this->req->setURL( "$proto://www.zenfolio.com/api/{$this->APIVer}/zfapi.asmx" );
 
-		if ( ! is_null( $this->authToken) ) {
+		if ( ! is_null( $this->authToken ) ) {
 			$this->req->addHeader( 'X-Zenfolio-Token', $this->authToken );
 		}
 		
@@ -335,9 +332,6 @@ class phpZenfolio {
 
         if ( !( $this->response = $this->getCached( $args ) ) || $nocache ) {
 			$this->req->setBody( json_encode( $args ) );
-			//if ( $command == 'Authenticate') {
-			//	self::debug(json_encode($args));die();
-			//}
 
 			//Send Requests - HTTP::Request doesn't raise Exceptions, so we must
 			$response = $this->req->sendRequest();
@@ -391,42 +385,35 @@ class phpZenfolio {
     }
  
 	/**
-	 * Single login function for all non-OAuth logins.
+	 * Single login function for all login methods.
 	 * 
-	 * I've created this function to try and get things consistent across the 
-	 * entire phpZenfolio 2.x functionality.
-	 * 
-	 * This method will determine the login type from the arguments provided. If 
-	 * no arguments are provide, anonymous login will be used.
+	 * I've created this function to make it easy to login to Zenfolio using either
+	 * the plaintext authentication method, or the more secure challenge-response (default)
+	 * authentication method.
 	 *
 	 * @access public
-	 * @return array|false
-	 * @param string $EmailAddress The user's email address
-	 * @param string $Password The user's password.
-	 * @param string $UserID The user's ID obtained from a previous login using EmailAddress/Password
-	 * @param string $PasswordHash The user's password hash obtained from a previous login using EmailAddress/Password
+	 * @return string
+	 * @param string $username The Zenfolio username
+	 * @param string $password The Zenfolio username's password
+	 * @param boolean $plaintext (Optional) Set whether the login should use the plaintext (TRUE) the challenge-response authentication method (FALSE). Defaults to FALSE.
 	 * @uses request
-	 **/
-	public function login()
+	 */
+	public function login( $username, $password, $plaintext = FALSE )
 	{
-		if (func_get_args()) {
-			$args = phpZenfolio::processArgs(func_get_args());
-			if (array_key_exists('EmailAddress', $args)) {
-				// Login with password
-				$this->request('smugmug.login.withPassword', array('EmailAddress' => $args['EmailAddress'], 'Password' => $args['Password']));
-			} else if (array_key_exists('UserID', $args)) {
-				// Login with hash
-				$this->request('smugmug.login.withHash', array('UserID' => $args['UserID'], 'PasswordHash' => $args['PasswordHash']));
-			}
-			$this->loginType = 'authd';
-			
+		if ( $plaintext ) {
+			$this->authToken = $this->AuthenticatePlain( $username, $password );
 		} else {
-			// Anonymous login
-			$this->loginType = 'anon';
-			$this->request('smugmug.login.anonymously');
+			$cr = $this->GetChallenge( $username );
+			$salt = self::byteArrayDecode( $cr['PasswordSalt'] );
+			$challenge = self::byteArrayDecode( $cr['Challenge'] );
+			$password = utf8_encode( $password );
+
+			$passHash = hash( 'sha256', $salt.$password, TRUE );
+			$chalHash = hash( 'sha256', $challenge.$passHash, TRUE );
+			$proof = array_values( unpack( 'C*', $chalHash ) );
+			$this->authToken = $this->Authenticate( $cr['Challenge'] , $proof );
 		}
-		$this->authToken = $this->parsed_response['Login']['Session']['id'];
-		return $this->parsed_response ? $this->parsed_response['Login'] : FALSE;
+		return $this->authToken;
 	}
 	
 	/**
@@ -603,9 +590,7 @@ class phpZenfolio {
 	  */
 	 public static function byteArrayDecode( $array )
 	 {
-		$bs = call_user_func_array(pack, array_merge( array( 'C*' ),(array) $array ) );
-		return base64_encode( $bs );
-		//return $bs;
+		return call_user_func_array( pack, array_merge( array( 'C*' ),(array) $array ) );
 	 }
 }
 ?>
