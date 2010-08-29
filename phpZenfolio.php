@@ -569,6 +569,7 @@ class phpZenfolio {
 	  * @return array
 	  * @param array Arguments taken from a function by func_get_args()
 	  * @access private
+	  * @TODO This seems a bit redundant in Zenfolio land.  The only thing I need to document is that if passing a Zenfolio "object" as a param, it needs to be an associative array.
 	  **/
 	 private static function processArgs( $arguments )
 	 {
