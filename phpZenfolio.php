@@ -40,7 +40,8 @@ $path_delimiter = ( strpos( __FILE__, ':' ) !== false ) ? ';' : ':';
  * to), swap the two elements around the $path_delimiter variable.  If you don't have
  * the PEAR packages installed, you can leave this like it is and move on.
  **/
-ini_set( 'include_path', ini_get( 'include_path' ) . $path_delimiter . dirname( __FILE__ ) . '/PEAR' );
+//ini_set( 'include_path', ini_get( 'include_path' ) . $path_delimiter . dirname( __FILE__ ) . '/PEAR' );
+ini_set( 'include_path', dirname( __FILE__ ) . '/PEAR' . $path_delimiter . ini_get( 'include_path' ) );
 
 /**
  * Forcing a level of logging that does NOT include E_STRICT.
@@ -50,7 +51,7 @@ ini_set( 'include_path', ini_get( 'include_path' ) . $path_delimiter . dirname( 
  * just incase phpZenfolio is used within an application that uses E_STRICT.
  * phpZenfolio.php itself is E_STRICT compliant, so it's only PEAR that's holding us back.
  **/
-error_reporting( E_ALL | E_NOTICE );
+error_reporting( E_STRICT );
 
 /**
  * phpZenfolio - all of the phpZenfolio functionality is provided in this class
@@ -104,14 +105,14 @@ class phpZenfolio {
 		// Set the Application Name
 		$this->AppName = ( array_key_exists( 'AppName', $args ) ) ?  $args['AppName'] : 'Unknown Application';
 
-        // All calls to the API are done via the POST method using the PEAR::HTTP_Request package.
-        require_once 'HTTP/Request.php';
-		$url = '';
-        $this->req = new HTTP_Request( $url, array( 'allowRedirects' => TRUE, 'maxRedirects' => 3 ) );
-        $this->req->setMethod( HTTP_REQUEST_METHOD_POST );
-		$this->req->addHeader( 'User-Agent', "{$this->AppName} using phpZenfolio/{$this->version}" );
-		$this->req->addHeader( 'X-Zenfolio-User-Agent', "{$this->AppName} using phpZenfolio/{$this->version}" );
-		$this->req->addHeader( 'Content-Type', 'application/json' );
+        // All calls to the API are done via the POST method using the PEAR::HTTP_Request2 package.
+		require_once 'HTTP/Request2.php';
+		$this->req = new HTTP_Request2();
+		$this->req->setConfig( array( 'follow_redirects' => TRUE, 'max_redirects' => 3 ) );
+        $this->req->setMethod( HTTP_Request2::METHOD_POST );
+		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+									  'Content-Type' => 'application/json' ) );
     }
 	
 	/**
@@ -213,7 +214,7 @@ class phpZenfolio {
 		$request['oauth_nonce']     = '';     // --\
 		$request['oauth_signature'] = '';  //    |-Unset OAuth info
 		$request['oauth_timestamp'] = ''; // --/
-       	$reqhash = md5(serialize($request).$this->loginType);
+       	$reqhash = md5(serialize($request));
 		$expire = (strpos($request['method'], 'login.with')) ? 21600 : $this->cache_expire;
         if ($this->cacheType == 'db') {
             $result = $this->cache_db->getOne('SELECT response FROM ' . $this->cache_table . ' WHERE request = ? AND DATE_SUB(NOW(), INTERVAL ' . (int) $expire . ' SECOND) < expiration', $reqhash);
@@ -244,7 +245,7 @@ class phpZenfolio {
 		$request['oauth_signature'] = ''; //    |-Unset OAuth info
 		$request['oauth_timestamp'] = ''; // --/
 		if (! strpos($request['method'], '.auth.')) {
-			$reqhash = md5(serialize($request).$this->loginType);
+			$reqhash = md5(serialize($request));
 			if ($this->cacheType == 'db') {
 				if ($this->cache_db->getOne("SELECT COUNT(*) FROM {$this->cache_table} WHERE request = '$reqhash'")) {
 					$sql = 'UPDATE ' . $this->cache_table . ' SET response = ?, expiration = ? WHERE request = ?';
@@ -311,8 +312,6 @@ class phpZenfolio {
 	 **/
 	private function request( $command, $args = array(), $nocache = FALSE )
 	{
-		$this->req->clearPostData();
-
 		if ( $command == 'AuthenticatePlain' ) {
 			$proto = "https";
 		} else {
@@ -322,7 +321,7 @@ class phpZenfolio {
 		$this->req->setURL( "$proto://www.zenfolio.com/api/{$this->APIVer}/zfapi.asmx" );
 
 		if ( ! is_null( $this->authToken ) ) {
-			$this->req->addHeader( 'X-Zenfolio-Token', $this->authToken );
+			$this->req->setHeader( 'X-Zenfolio-Token', $this->authToken );
 		}
 		
 		// To keep things unique, we set the ID to a base32 figure of the string concat of the method and all arguments
@@ -332,21 +331,19 @@ class phpZenfolio {
 
         if ( !( $this->response = $this->getCached( $args ) ) || $nocache ) {
 			$this->req->setBody( json_encode( $args ) );
-
-			//Send Requests - HTTP::Request doesn't raise Exceptions, so we must
-			$response = $this->req->sendRequest();
-			if( !PEAR::isError( $response ) && ( $this->req->getResponseCode() == 200 ) ) {
-				$this->response = $this->req->getResponseBody();
-				$this->cache( $args, $this->response );
-			} else {
-				if ( $this->req->getResponseCode() && $this->req->getResponseCode() != 200 ) {
-					$msg = 'Request failed. HTTP Reason: '.$this->req->getResponseReason();
-					$code = $this->req->getResponseCode();
+			try {
+				$response = $this->req->send();
+				if ( 200 == $response->getStatus() ) {
+					$this->response = $response->getBody();
+					$this->cache( $args, $this->response );
 				} else {
-					$msg = 'Request failed: '.$response->getMessage();
-					$code = $response->getCode();
+					$msg = 'Request failed. HTTP Reason: '.$this->req->getReasonPhrase();
+					$code = $this->req->getStatus();
+					throw new Exception( $msg, $code );
 				}
-				throw new Exception( $msg, $code );
+			}
+			catch ( HTTP_Request2_Exception $e ) {
+				throw new Exception( $e );
 			}
 		}
 		$this->parsed_response = json_decode( $this->response, true );
