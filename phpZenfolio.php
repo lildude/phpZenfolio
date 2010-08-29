@@ -44,12 +44,8 @@ $path_delimiter = ( strpos( __FILE__, ':' ) !== false ) ? ';' : ':';
 ini_set( 'include_path', dirname( __FILE__ ) . '/PEAR' . $path_delimiter . ini_get( 'include_path' ) );
 
 /**
- * Forcing a level of logging that does NOT include E_STRICT.
- * Unfortunately PEAR and it's modules are not obliged to meet E_STRICT levels in
- * PHP 5 yet as they still need to remain backwardly compatible with PHP 4. This is 
- * likely to change when PEAR 2 is released.  Until then we force a lower log level
- * just incase phpZenfolio is used within an application that uses E_STRICT.
- * phpZenfolio.php itself is E_STRICT compliant, so it's only PEAR that's holding us back.
+ * Forcing a level of logging to the highest level. We want phpZenfolio to not
+ * report a single error or warning.
  **/
 error_reporting( E_STRICT );
 
@@ -64,6 +60,16 @@ class phpZenfolio {
 	var $cache_expire = 3600;
 	var $authToken;
 	var $id;
+
+	/**
+	 * phpZenfolio uses the HTTP::Request2 module for communication with Zenfolio.
+	 * This PEAR module supports 3 adapters: socket (default), curl and mock.
+	 * This option allows application developers to easily over-ride this and
+	 * select their own adapter.
+	 *
+	 * @var string
+	 **/
+	var $adapter = 'socket';
 	
 	/**
      * When your database cache table hits this many rows, a cleanup
@@ -113,6 +119,7 @@ class phpZenfolio {
 		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'Content-Type' => 'application/json' ) );
+		$this->req->setAdapter( $this->adapter );
     }
 	
 	/**
