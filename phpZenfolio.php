@@ -105,7 +105,6 @@ class phpZenfolio {
 	function __construct()
 	{
 		$args = phpZenfolio::processArgs(func_get_args());
-        //$this->APIKey = $args['APIKey'];
 		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.4';
 		
 		// Set the Application Name
@@ -114,7 +113,7 @@ class phpZenfolio {
         // All calls to the API are done via the POST method using the PEAR::HTTP_Request2 package.
 		require_once 'HTTP/Request2.php';
 		$this->req = new HTTP_Request2();
-		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3 ) );
+		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE ) );
         $this->req->setMethod( HTTP_Request2::METHOD_POST );
 		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
@@ -384,7 +383,12 @@ class phpZenfolio {
 		$args = phpZenfolio::processArgs(func_get_args());
 		$this->proxy['server'] = $args['server'];
 		$this->proxy['port'] = $args['port'];
-		$this->req->setProxy($args['server'], $args['port']);
+		$this->proxy['username'] = $args['username'];
+		$this->proxy['password'] = $args['password'];
+		$this->req->setConfig( array( 'proxy_host' => $args['server'],
+							          'proxy_port' => $args['port'],
+									  'proxy_user' => $args['username'],
+									  'proxy_password' => $args['password'] ) );
     }
  
 	/**
