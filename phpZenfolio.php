@@ -59,6 +59,7 @@ class phpZenfolio {
 	var $cacheType = FALSE;
 	var $cache_expire = 3600;
 	var $authToken;
+	var $keyring;
 	var $id;
 
 	/**
@@ -328,6 +329,10 @@ class phpZenfolio {
 		if ( ! is_null( $this->authToken ) ) {
 			$this->req->setHeader( 'X-Zenfolio-Token', $this->authToken );
 		}
+
+		if ( ! is_null( $this->keyring ) ) {
+			$this->req->setHeader( 'X-Zenfolio-Keyring', $this->keyring );
+		}
 		
 		// To keep things unique, we set the ID to a base32 figure of the string concat of the method and all arguments
 		$str = $command . '.' . join( '.', $args );
@@ -342,8 +347,8 @@ class phpZenfolio {
 					$this->response = $response->getBody();
 					$this->cache( $args, $this->response );
 				} else {
-					$msg = 'Request failed. HTTP Reason: '.$this->req->getReasonPhrase();
-					$code = $this->req->getStatus();
+					$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
+					$code = $response->getStatus();
 					throw new Exception( $msg, $code );
 				}
 			}
@@ -351,6 +356,7 @@ class phpZenfolio {
 				throw new Exception( $e );
 			}
 		}
+
 		$this->parsed_response = json_decode( $this->response, true );
 		if ( $this->parsed_response['id'] != $this->id ) {
 			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']}";
@@ -424,123 +430,91 @@ class phpZenfolio {
 	}
 	
 	/**
-	 * 	I break away from the standard API here as recommended by SmugMug at
-	 * {@link http://wiki.smugmug.com/display/SmugMug/smugmug.images.upload+1.2.0}.
-	 *
-	 * I've chosen to go with the HTTP PUT method as it is quicker, simpler
-	 * and more reliable than using the API or POST methods.
+	 * To make life easy for phpZenfolio users, I've created a single method that
+	 * can be used to upload files.  This uses the Simplified HTTP POST method as
+	 * detailed at {@link http://www.zenfolio.com/zf/help/api/guide/upload}
 	 * 
 	 * @access public
-	 * @return array|false
-	 * @param integer $AlbumID The AlbumID the image is to be uploaded to
-	 * @param string $File The path to the local file that is being uploaded
-	 * @param string $FileName (Optional) The filename to give the file on upload
-	 * @param mixed $arguments (Optional) Additional arguments. See SmugMug API documentation.
+	 * @return string
+	 * 
 	 * @uses request
-	 * @link http://wiki.smugmug.com/display/SmugMug/Uploading 
+	 * @link http://www.zenfolio.com/zf/help/api/guide/upload
 	 **/
-	public function images_upload()
+	public function upload()
 	{
-		$args = phpZenfolio::processArgs(func_get_args());
-		if (!array_key_exists('File', $args)) {
-			throw new Exception('No upload file specified.');
+		$args = phpZenfolio::processArgs( func_get_args() );
+		if ( !array_key_exists( 'File', $args ) ) {
+			throw new Exception( 'No upload file specified.' );
 		}
 		
 		// Set FileName, if one isn't provided in the method call
-		if (!array_key_exists('FileName', $args)) {
-			$args['FileName'] = basename($args['File']);
+		if ( !array_key_exists( 'FileName', $args ) ) {
+			$args['FileName'] = basename( $args['File'] );
 		}
 
 		// Ensure the FileName is phpZenfolio::urlencodeRFC3986 encoded - caters for stange chars and spaces
-		$args['FileName'] = phpZenfolio::urlencodeRFC3986($args['FileName']);
+		$args['FileName'] = phpZenfolio::urlencodeRFC3986( $args['FileName'] );
 
-		// OAuth Stuff
-		if ($this->OAuthSecret) {
-			$sig = $this->generate_signature('Upload', array('FileName' => $args['FileName']));
-		}
-		
-		if (is_file($args['File'])) {
-			$fp = fopen($args['File'], 'r');
-			$data = fread($fp, filesize($args['File']));
-			fclose($fp);
+		if ( is_file( $args['File'] ) ) {
+			$fileinfo = getimagesize($args['File'] );
+			$fp = fopen( $args['File'], 'rb' );
+			$data = fread( $fp, filesize( $args['File'] ) );
+			fclose( $fp );
 		} else {
-			throw new Exception("File doesn't exist: {$args['File']}");
+			throw new Exception( "File doesn't exist: {$args['File']}" );
 		}
 
-		$upload_req = new HTTP_Request();
-        $upload_req->setMethod(HTTP_REQUEST_METHOD_PUT);
-		$upload_req->setHttpVer(HTTP_REQUEST_HTTP_VER_1_1);
-		
+		$upload_req = new HTTP_Request2();
+		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE ) );
+        $upload_req->setMethod( HTTP_Request2::METHOD_POST );
+		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+									   'Content-type' => $fileinfo['mime'],
+									   'Content-Length' => filesize( $args['File'] ),
+									   'Connection' => 'keep-alive' ) );
+
+		if ( ! is_null( $this->authToken ) ) {
+			$this->req->setHeader( 'X-Zenfolio-Token', $this->authToken );
+		}
+
 		// Set the proxy if one has been set earlier
-		if (isset($this->proxy) && is_array($this->proxy)) {
-			$upload_req->setProxy($this->proxy['server'], $this->proxy['port']);
+		if ( isset( $this->proxy ) && is_array( $this->proxy ) ) {
+			$upload_req->setProxy( $this->proxy['server'], $this->proxy['port'], $this->proxy['username'], $this->proxy['password'] );
 		}
-		$upload_req->clearPostData();
 
-		$upload_req->addHeader('User-Agent', "{$this->AppName} using phpZenfolio/{$this->version}");
-		$upload_req->addHeader('Content-MD5', md5_file($args['File']));
-		$upload_req->addHeader('Connection', 'keep-alive');
+		$photoset = $this->LoadPhotoSet( $args['PhotoSet'], 'Level1', FALSE );
+		$url = $photoset['UploadUrl'] . '?filename='.$args['FileName'];
+		$upload_req->setURL( $url );
 
-		if ($this->loginType == 'authd') { 
-			$upload_req->addHeader('X-Zenfolio-Token', $this->authToken);
-		} else {
-			$upload_req->addHeader('Authorization', 'OAuth realm="http://api.smugmug.com/",
-				oauth_consumer_key="'.$this->APIKey.'",
-				oauth_token="'.$this->oauth_token.'",
-				oauth_signature_method="'.$this->oauth_signature_method.'",
-				oauth_signature="'.urlencode($sig).'",
-				oauth_timestamp="'.$this->oauth_timestamp.'",
-				oauth_version="1.0",
-				oauth_nonce="'.$this->oauth_nonce.'"');
-		}
-			
-		$upload_req->addHeader('X-Smug-Version', $this->APIVer);
-		$upload_req->addHeader('X-Smug-ResponseType', 'PHP');
-		$upload_req->addHeader('X-Smug-AlbumID', $args['AlbumID']);
-		$upload_req->addHeader('X-Smug-Filename', basename($args['FileName'])); // This is actually optional, but we may as well use what we're given
-		
-		/* Optional Headers */
-		(isset($args['ImageID'])) ? $upload_req->addHeader('X-Smug-ImageID', $args['ImageID']) : false;
-		(isset($args['Caption'])) ? $upload_req->addHeader('X-Smug-Caption', $args['Caption']) : false;
-		(isset($args['Keywords'])) ? $upload_req->addHeader('X-Smug-Keywords', $args['Keywords']) : false;
-		(isset($args['Latitude'])) ? $upload_req->addHeader('X-Smug-Latitude', $args['Latitude']) : false;
-		(isset($args['Longitude'])) ? $upload_req->addHeader('X-Smug-Longitude', $args['Longitude']) : false;
-		(isset($args['Altitude'])) ? $upload_req->addHeader('X-Smug-Altitude', $args['Altitude']) : false;
+		$upload_req->setBody( $data );
 
-		$proto = ($this->oauth_signature_method == 'PLAINTEXT') ? 'https' : 'http';
-		$upload_req->setURL($proto . '://upload.smugmug.com/'.$args['FileName']);
-
-		$upload_req->setBody($data);
-
-        //Send Requests - HTTP::Request doesn't raise Exceptions, so we must
-		$response = $upload_req->sendRequest();
-		if(!PEAR::isError($response) && ($upload_req->getResponseCode() == 200)) {
-			$this->response = $upload_req->getResponseBody();
-		} else {
-			if ($upload_req->getResponseCode() && $upload_req->getResponseCode() != 200) {
-				$msg = 'Upload failed. HTTP Reason: '.$upload_req->getResponseReason();
-				$code = $upload_req->getResponseCode();
+		try {
+			$response = $upload_req->send();
+			if ( 200 == $response->getStatus() ) {
+				$this->response = $response->getBody();
+				$this->cache( $args, $this->response );
 			} else {
-				$msg = 'Upload failed: '.$response->getMessage();
-				$code = $response->getCode();
+				$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
+				$code = $response->getStatus();
+				throw new Exception( $msg, $code );
 			}
-			throw new Exception($msg, $code);
 		}
-		
-		// For some reason the return string is formatted with \n and extra space chars.  Remove these.
-		$replace = array('\n', '\t', '  ');
-		$this->response = str_replace($replace, '', $this->response);
-		$this->parsed_response = unserialize($this->response);
-		
-		if ($this->parsed_response['stat'] == 'fail') {
+		catch ( HTTP_Request2_Exception $e ) {
+			throw new Exception( $e );
+		}
+
+		// TODO: I don't think the response is json_encoded - need to check
+		$this->parsed_response = json_decode( $this->response, true );
+		if ( ! is_null( $this->parsed_response['error'] ) ) {
 			$this->error_code = $this->parsed_response['code'];
-            $this->error_msg = $this->parsed_response['message'];
+            $this->error_msg = $this->parsed_response['error']['message'];
 			$this->parsed_response = FALSE;
-			throw new Exception("SmugMug API Error for method image_upload: {$this->error_msg}", $this->error_code);
+			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		} else {
 			$this->error_code = FALSE;
             $this->error_msg = FALSE;
 		}
+
 		return $this->parsed_response ? $this->parsed_response['Image'] : FALSE;
 	}
 	
@@ -562,6 +536,9 @@ class phpZenfolio {
 		$result = $this->parsed_response['result'];
 		if ( $method == 'AuthenticatePlain' ) {
 			$this->authToken = $result;
+		}
+		if ( $method == 'KeyringAddKeyPlain' ) {
+			$this->keyring = $result;
 		}
 		return $result;
 	}
