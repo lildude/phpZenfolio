@@ -502,7 +502,6 @@ class phpZenfolio {
 			$response = $upload_req->send();
 			if ( 200 == $response->getStatus() ) {
 				$this->response = $response->getBody();
-				$this->cache( $args, $this->response );
 			} else {
 				$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
 				$code = $response->getStatus();
@@ -513,7 +512,7 @@ class phpZenfolio {
 			throw new Exception( $e );
 		}
 
-		return json_decode($response);
+		return $this->response;
 		/*
 		// TODO: I don't think the response is json_encoded - need to check
 		$this->parsed_response = json_decode( $this->response, true );
