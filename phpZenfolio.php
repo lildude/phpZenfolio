@@ -474,7 +474,9 @@ class phpZenfolio {
 									   'Connection' => 'keep-alive' ) );
 
 		if ( ! is_null( $this->authToken ) ) {
-			$this->req->setHeader( 'X-Zenfolio-Token', $this->authToken );
+			$upload_req->setHeader( 'X-Zenfolio-Token', $this->authToken );
+		} else {
+			throw new Exception( 'No authentication token found. Please login before uploading.' );
 		}
 
 		// Set the proxy if one has been set earlier
@@ -482,10 +484,18 @@ class phpZenfolio {
 			$upload_req->setProxy( $this->proxy['server'], $this->proxy['port'], $this->proxy['username'], $this->proxy['password'] );
 		}
 
-		$photoset = $this->LoadPhotoSet( $args['PhotoSet'], 'Level1', FALSE );
-		$url = $photoset['UploadUrl'] . '?filename='.$args['FileName'];
+		if ( $args['PhotoSet'] ) {
+			$photoset = $this->LoadPhotoSet( $args['PhotoSet'], 'Level1', FALSE );
+			$UploadUrl = $photoset['UploadUrl'];
+		}
+		if ( $args['UploadUrl'] ) {
+			$UploadUrl = $args['UploadUrl'];
+		}
+		
+		$url = $UploadUrl . '?filename='.$args['FileName'].'&title=Foo';
 		$upload_req->setURL( $url );
 
+		//self::debug($upload_req); die();
 		$upload_req->setBody( $data );
 
 		try {
@@ -503,6 +513,8 @@ class phpZenfolio {
 			throw new Exception( $e );
 		}
 
+		return json_decode($response);
+		/*
 		// TODO: I don't think the response is json_encoded - need to check
 		$this->parsed_response = json_decode( $this->response, true );
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
@@ -515,7 +527,7 @@ class phpZenfolio {
             $this->error_msg = FALSE;
 		}
 
-		return $this->parsed_response ? $this->parsed_response['Image'] : FALSE;
+		return $this->parsed_response ? $this->parsed_response['Image'] : FALSE;*/
 	}
 	
 	/**
@@ -542,6 +554,19 @@ class phpZenfolio {
 		}
 		return $result;
 	}
+
+	/**
+	  * Static function to encode a string according to RFC3986.
+	  *
+	  * @static
+	  * @access private
+	  * @return string
+	  * @param string $string The string requiring encoding
+	  **/
+	 private static function urlencodeRFC3986($string)
+	 {
+		return str_replace('%7E', '~', rawurlencode($string));
+	 }
  
 	 /**
 	  * Process arguments passed to method
@@ -555,13 +580,19 @@ class phpZenfolio {
 	 private static function processArgs( $arguments )
 	 {
 		$args = array();
-		foreach ( $arguments as $arg ) {
-			if (is_array( $arg ) ) {
-				$args = array_merge( $args, $arg );
+		foreach ($arguments as $arg) {
+			if (is_array($arg)) {
+				$args = array_merge($args, $arg);
 			} else {
-				$args[] = $arg;
+				if ( strpos( $arg, '=' ) !== FALSE ) {
+					$exp = explode('=', $arg, 2);
+					$args[$exp[0]] = $exp[1];
+				} else {
+					$args[] = $arg;
+				}
 			}
 		}
+
 		return $args;
 	  }
 
