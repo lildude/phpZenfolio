@@ -220,6 +220,9 @@ class phpZenfolio {
 		$expire = ( strpos( $request['method'], 'login' ) ) ? 21600 : $this->cache_expire;
         if ( $this->cacheType == 'db' ) {
             $result = $this->cache_db->queryOne( 'SELECT response FROM ' . $this->cache_table . ' WHERE request = ? AND DATE_SUB(NOW(), INTERVAL ' . (int) $expire . ' SECOND) < expiration', $reqhash );
+			if ( PEAR::isError( $result ) ) {
+				//throw new Exception( $result );
+			}
 			if ( !empty( $result ) ) {
                 return $result;
             }
