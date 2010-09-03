@@ -154,11 +154,11 @@ class phpZenfolio {
 		$this->cacheType = $args['type'];
         
 		$this->cache_expire = (array_key_exists('cache_expire', $args)) ? $args['cache_expire'] : '3600';
-		$this->cache_table  = (array_key_exists('table', $args)) ? $args['table'] : 'smugmug_cache';
+		$this->cache_table  = (array_key_exists('table', $args)) ? $args['table'] : 'phpzenfolio_cache';
 
         if ($this->cacheType == 'db') {
-    		require_once 'DB.php';
-	        $db = DB::connect($args['dsn']);
+    		require_once 'MDB2.php';
+	        $db = MDB2::factory($args['dsn']);
 			if (PEAR::isError($db)) {
 				$this->cacheType = FALSE;
 				return "CACHING DISABLED: {$db->getMessage()} ({$db->getCode()})";
@@ -177,7 +177,7 @@ class phpZenfolio {
                     INDEX ( `request` )
                 ) TYPE = MYISAM");
 
-            if ($db->getOne("SELECT COUNT(*) FROM $this->cache_table") > $this->max_cache_rows) {
+            if ($db->queryOne("SELECT COUNT(*) FROM $this->cache_table") > $this->max_cache_rows) {
                 $db->query("DELETE FROM $this->cache_table WHERE expiration < DATE_SUB(NOW(), INTERVAL $this->cache_expire SECOND)");
                 $db->query('OPTIMIZE TABLE ' . $this->cache_table);
             }
@@ -217,20 +217,17 @@ class phpZenfolio {
     private function getCached( $request )
 	{
 		$request['authToken']       = ''; // Unset authToken
-		$request['oauth_nonce']     = '';     // --\
-		$request['oauth_signature'] = '';  //    |-Unset OAuth info
-		$request['oauth_timestamp'] = ''; // --/
-       	$reqhash = md5(serialize($request));
-		$expire = (strpos($request['method'], 'login.with')) ? 21600 : $this->cache_expire;
-        if ($this->cacheType == 'db') {
-            $result = $this->cache_db->getOne('SELECT response FROM ' . $this->cache_table . ' WHERE request = ? AND DATE_SUB(NOW(), INTERVAL ' . (int) $expire . ' SECOND) < expiration', $reqhash);
-			if (!empty($result)) {
+       	$reqhash = md5( serialize( $request ) );
+		$expire = ( strpos( $request['method'], 'login' ) ) ? 21600 : $this->cache_expire;
+        if ( $this->cacheType == 'db' ) {
+            $result = $this->cache_db->getOne( 'SELECT response FROM ' . $this->cache_table . ' WHERE request = ? AND DATE_SUB(NOW(), INTERVAL ' . (int) $expire . ' SECOND) < expiration', $reqhash );
+			if ( !empty( $result ) ) {
                 return $result;
             }
-        } elseif ($this->cacheType == 'fs') {
+        } elseif ( $this->cacheType == 'fs' ) {
             $file = $this->cache_dir . '/' . $reqhash . '.cache';
-			if (file_exists($file) && ((filemtime($file) + $expire) > time()) ) {
-					return file_get_contents($file);
+			if ( file_exists( $file ) && ( ( filemtime( $file ) + $expire ) > time() ) ) {
+					return file_get_contents( $file );
             }
         }
     	return FALSE;
@@ -247,24 +244,21 @@ class phpZenfolio {
     private function cache( $request, $response )
 	{
 		$request['authToken']       = ''; // Unset authToken
-		$request['oauth_nonce']     = ''; // --\
-		$request['oauth_signature'] = ''; //    |-Unset OAuth info
-		$request['oauth_timestamp'] = ''; // --/
-		if (! strpos($request['method'], '.auth.')) {
-			$reqhash = md5(serialize($request));
-			if ($this->cacheType == 'db') {
-				if ($this->cache_db->getOne("SELECT COUNT(*) FROM {$this->cache_table} WHERE request = '$reqhash'")) {
+		if ( ! strpos( $request['method'], 'Authenticate' ) ) {
+			$reqhash = md5( serialize( $request ) );
+			if ( $this->cacheType == 'db' ) {
+				if ($this->cache_db->getOne( "SELECT COUNT(*) FROM {$this->cache_table} WHERE request = '$reqhash'" ) ) {
 					$sql = 'UPDATE ' . $this->cache_table . ' SET response = ?, expiration = ? WHERE request = ?';
-					$this->cache_db->query($sql, array($response, strftime('%Y-%m-%d %H:%M:%S'), $reqhash));
+					$this->cache_db->exec( $sql, array( $response, strftime( '%Y-%m-%d %H:%M:%S' ), $reqhash ) );
 				} else {
 					$sql = "INSERT INTO " . $this->cache_table . " (request, response, expiration) VALUES ('$reqhash', '" . strtr($response, "'", "\'") . "', '" . strftime("%Y-%m-%d %H:%M:%S") . "')";
-					$this->cache_db->query($sql);
+					$this->cache_db->exec( $sql );
 				}
-			} elseif ($this->cacheType == 'fs') {
+			} elseif ( $this->cacheType == 'fs' ) {
 				$file = $this->cache_dir . '/' . $reqhash . '.cache';
-				$fstream = fopen($file, 'w');
-				$result = fwrite($fstream,$response);
-				fclose($fstream);
+				$fstream = fopen( $file, 'w' );
+				$result = fwrite( $fstream,$response );
+				fclose( $fstream );
 				return $result;
 			}
 		}
@@ -284,22 +278,22 @@ class phpZenfolio {
 	 **/
     public function clearCache( $delete = FALSE )
 	{
-   		if ($this->cacheType == 'db') {
-			if ($delete) {
-				$result = $this->cache_db->query('DROP TABLE ' . $this->cache_table);
+   		if ( $this->cacheType == 'db' ) {
+			if ( $delete ) {
+				$result = $this->cache_db->exec( 'DROP TABLE ' . $this->cache_table );
 			} else {
-				$result = $this->cache_db->query('TRUNCATE ' . $this->cache_table);
+				$result = $this->cache_db->exec( 'TRUNCATE ' . $this->cache_table );
 			}
-	   	} elseif ($this->cacheType == 'fs') {
-            $dir = opendir($this->cache_dir);
-	       	if ($dir) {
-				foreach (glob($this->cache_dir."/*.cache") as $filename) {
-					$result = unlink($filename);
+	   	} elseif ( $this->cacheType == 'fs' ) {
+            $dir = opendir( $this->cache_dir );
+	       	if ( $dir ) {
+				foreach ( glob( $this->cache_dir."/*.cache" ) as $filename ) {
+					$result = unlink( $filename );
 				}
 	       	}
-			closedir($dir);
-			if ($delete) {
-				$result = rmdir($this->cache_dir);
+			closedir( $dir );
+			if ( $delete ) {
+				$result = rmdir( $this->cache_dir );
 			}
 	   	}
 		return (bool) $result;
@@ -448,12 +442,12 @@ class phpZenfolio {
 		}
 		
 		// Set FileName, if one isn't provided in the method call
-		if ( !array_key_exists( 'FileName', $args ) ) {
-			$args['FileName'] = basename( $args['File'] );
+		if ( !array_key_exists( 'filename', $args ) ) {
+			$args['filename'] = basename( $args['File'] );
 		}
 
 		// Ensure the FileName is phpZenfolio::urlencodeRFC3986 encoded - caters for stange chars and spaces
-		$args['FileName'] = phpZenfolio::urlencodeRFC3986( $args['FileName'] );
+		$args['filename'] = phpZenfolio::urlencodeRFC3986( $args['filename'] );
 
 		if ( is_file( $args['File'] ) ) {
 			$fileinfo = getimagesize($args['File'] );
@@ -481,9 +475,13 @@ class phpZenfolio {
 
 		// Set the proxy if one has been set earlier
 		if ( isset( $this->proxy ) && is_array( $this->proxy ) ) {
-			$upload_req->setProxy( $this->proxy['server'], $this->proxy['port'], $this->proxy['username'], $this->proxy['password'] );
+			$upload_req->setConfig( array( 'proxy_host' => $this->proxy['server'],
+							          'proxy_port' => $this->proxy['port'],
+									  'proxy_user' => $this->proxy['username'],
+									  'proxy_password' => $this->proxy['password'] ) );
 		}
 
+		// Create the upload URL based on the information provides in the arguments.
 		if ( $args['PhotoSet'] ) {
 			$photoset = $this->LoadPhotoSet( $args['PhotoSet'], 'Level1', FALSE );
 			$UploadUrl = $photoset['UploadUrl'];
@@ -492,10 +490,24 @@ class phpZenfolio {
 			$UploadUrl = $args['UploadUrl'];
 		}
 		
-		$url = $UploadUrl . '?filename='.$args['FileName'].'&title=Foo';
+		$opts = array();
+		foreach( $args as $name => $value ) {
+			if ( ! in_array( $name, array( 'UploadUrl', 'PhotoSet', 'File' ) ) ) {
+				// The values passed should be urlencoded, but just in case they're not, we'll urldecode and then re-encode to be safe
+				$value = urldecode( $value );
+				$value = urlencode( $value );
+				$opts[] = "{$name}={$value}";
+			}
+		}
+
+		$url = $UploadUrl . '?'. join( '&', $opts );
+		//title = urlencoded string
+		//caption = urlencoded string
+		//keywords = csv urlencoded strings
+		//category = csv category ids
+		//modified = urlencoded RFC 2822 formatted date eg Fri,+28+Jan+2005+13%3A15%3A04+GMT,
 		$upload_req->setURL( $url );
 
-		//self::debug($upload_req); die();
 		$upload_req->setBody( $data );
 
 		try {
@@ -579,9 +591,9 @@ class phpZenfolio {
 	 private static function processArgs( $arguments )
 	 {
 		$args = array();
-		foreach ($arguments as $arg) {
-			if (is_array($arg)) {
-				$args = array_merge($args, $arg);
+		foreach ( $arguments as $arg ) {
+			if ( is_array( $arg ) ) {
+				$args = array_merge( $args, $arg );
 			} else {
 				if ( strpos( $arg, '=' ) !== FALSE ) {
 					$exp = explode('=', $arg, 2);
