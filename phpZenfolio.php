@@ -150,16 +150,16 @@ class phpZenfolio {
 	 **/
 	public function enableCache()
 	{
-		$args = phpZenfolio::processArgs(func_get_args());
+		$args = phpZenfolio::processArgs( func_get_args() );
 		$this->cacheType = $args['type'];
         
-		$this->cache_expire = (array_key_exists('cache_expire', $args)) ? $args['cache_expire'] : '3600';
-		$this->cache_table  = (array_key_exists('table', $args)) ? $args['table'] : 'phpzenfolio_cache';
+		$this->cache_expire = ( array_key_exists( 'cache_expire', $args ) ) ? $args['cache_expire'] : '3600';
+		$this->cache_table  = ( array_key_exists( 'table', $args ) ) ? $args['table'] : 'phpzenfolio_cache';
 
-        if ($this->cacheType == 'db') {
+        if ( $this->cacheType == 'db' ) {
     		require_once 'MDB2.php';
-	        $db = MDB2::factory($args['dsn']);
-			if (PEAR::isError($db)) {
+	        $db = MDB2::factory( $args['dsn'] );
+			if ( PEAR::isError( $db ) ) {
 				$this->cacheType = FALSE;
 				return "CACHING DISABLED: {$db->getMessage()} ({$db->getCode()})";
 			}
@@ -182,26 +182,26 @@ class phpZenfolio {
                 $db->query('OPTIMIZE TABLE ' . $this->cache_table);
             }
 
-        } elseif ($this->cacheType ==  'fs') {
-			if (file_exists($args['cache_dir']) && (is_dir($args['cache_dir']))) {
-				$this->cache_dir = realpath($args['cache_dir']).'/phpZenfolio/';
-				if (is_writeable(realpath($args['cache_dir']))) {
-					if (!is_dir($this->cache_dir)) {
-						mkdir($this->cache_dir, 0755);
+        } elseif ( $this->cacheType ==  'fs' ) {
+			if ( file_exists( $args['cache_dir'] ) && ( is_dir( $args['cache_dir'] ) ) ) {
+				$this->cache_dir = realpath( $args['cache_dir'] ).'/phpZenfolio/';
+				if ( is_writeable( realpath( $args['cache_dir'] ) ) ) {
+					if ( !is_dir( $this->cache_dir ) ) {
+						mkdir( $this->cache_dir, 0755 );
 					}
-					$dir = opendir($this->cache_dir);
-                	while ($file = readdir($dir)) {
-                    	if (substr($file, -2) == '.cache' && ((filemtime($this->cache_dir . '/' . $file) + $this->cache_expire) < time()) ) {
-                        	unlink($this->cache_dir . '/' . $file);
+					$dir = opendir( $this->cache_dir );
+                	while ( $file = readdir( $dir ) ) {
+                    	if ( substr( $file, -2 ) == '.cache' && ( ( filemtime( $this->cache_dir . '/' . $file ) + $this->cache_expire ) < time() ) ) {
+                        	unlink( $this->cache_dir . '/' . $file );
                     	}
                 	}
 				} else {
 					$this->cacheType = FALSE;
-					return "CACHING DISABLED: Cache Directory \"".$args['cache_dir']."\" is not writeable.";
+					return 'CACHING DISABLED: Cache Directory "'.$args['cache_dir'].'" is not writeable.';
 				}
 			} else 	{
 				$this->cacheType = FALSE;
-				return "CACHING DISABLED: Cache Directory \"".$args['cache_dir']."\" doesn't exist, is a file or is not readable.";
+				return 'CACHING DISABLED: Cache Directory "'.$args['cache_dir'].'" doesn\'t exist, is a file or is not readable.';
 			}
 		}
 		return TRUE;
@@ -211,8 +211,8 @@ class phpZenfolio {
 	 * 	Checks the database or filesystem for a cached result to the request.
 	 *
 	 * @access private
-	 * @return string|FALSE Unparsed serialized PHP, or FALSE
-	 * @param array $request Request to the SmugMug created by one of the later functions in phpZenfolio.
+	 * @return string|FALSE Unparsed serialized PHP, or FALSE if there is no cached data for this query.
+	 * @param array $request Request to the Zenfolio API created by one of the later functions in phpZenfolio.
 	 **/
     private function getCached( $request )
 	{
@@ -237,7 +237,7 @@ class phpZenfolio {
 	 * Caches the unparsed serialized PHP of a request. 
 	 *
 	 * @access private
-	 * @return null|false
+	 * @return null|TRUE
 	 * @param array $request Request to the SmugMug created by one of the later functions in phpZenfolio.
 	 * @param string $response Response from a successful request() method call.
 	 **/
@@ -262,7 +262,7 @@ class phpZenfolio {
 				return $result;
 			}
 		}
-        return FALSE;
+        return TRUE;
     }
 
 	/**
