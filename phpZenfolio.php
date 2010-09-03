@@ -44,10 +44,9 @@ $path_delimiter = ( strpos( __FILE__, ':' ) !== false ) ? ';' : ':';
 ini_set( 'include_path', dirname( __FILE__ ) . '/PEAR' . $path_delimiter . ini_get( 'include_path' ) );
 
 /**
- * Forcing a level of logging to the highest level. We want phpZenfolio to not
- * report a single error or warning.
+ * We can't have this E_STRICT as PEAR is still not PHP5 E_STRICT compliant yet.
  **/
-error_reporting( E_STRICT );
+error_reporting( E_ERROR );
 
 /**
  * phpZenfolio - all of the phpZenfolio functionality is provided in this class
@@ -158,7 +157,7 @@ class phpZenfolio {
 
         if ( $this->cacheType == 'db' ) {
     		require_once 'MDB2.php';
-	        $db = MDB2::factory( $args['dsn'] );
+	        $db = MDB2::connect( $args['dsn'] );
 			if ( PEAR::isError( $db ) ) {
 				$this->cacheType = FALSE;
 				return "CACHING DISABLED: {$db->getMessage()} ({$db->getCode()})";
@@ -220,7 +219,7 @@ class phpZenfolio {
        	$reqhash = md5( serialize( $request ) );
 		$expire = ( strpos( $request['method'], 'login' ) ) ? 21600 : $this->cache_expire;
         if ( $this->cacheType == 'db' ) {
-            $result = $this->cache_db->getOne( 'SELECT response FROM ' . $this->cache_table . ' WHERE request = ? AND DATE_SUB(NOW(), INTERVAL ' . (int) $expire . ' SECOND) < expiration', $reqhash );
+            $result = $this->cache_db->queryOne( 'SELECT response FROM ' . $this->cache_table . ' WHERE request = ? AND DATE_SUB(NOW(), INTERVAL ' . (int) $expire . ' SECOND) < expiration', $reqhash );
 			if ( !empty( $result ) ) {
                 return $result;
             }
@@ -247,7 +246,7 @@ class phpZenfolio {
 		if ( ! strpos( $request['method'], 'Authenticate' ) ) {
 			$reqhash = md5( serialize( $request ) );
 			if ( $this->cacheType == 'db' ) {
-				if ($this->cache_db->getOne( "SELECT COUNT(*) FROM {$this->cache_table} WHERE request = '$reqhash'" ) ) {
+				if ( $this->cache_db->queryOne( "SELECT COUNT(*) FROM {$this->cache_table} WHERE request = '$reqhash'" ) ) {
 					$sql = 'UPDATE ' . $this->cache_table . ' SET response = ?, expiration = ? WHERE request = ?';
 					$this->cache_db->exec( $sql, array( $response, strftime( '%Y-%m-%d %H:%M:%S' ), $reqhash ) );
 				} else {
@@ -273,7 +272,7 @@ class phpZenfolio {
 	 *
 	 * @access public
 	 * @param boolean $delete Set to TRUE to delete the cache after clearing it
-	 * @return string|TRUE
+	 * @return int|TRUE
 	 * @since 1.1.7
 	 **/
     public function clearCache( $delete = FALSE )
@@ -333,6 +332,7 @@ class phpZenfolio {
 		$this->id = intval( $str, 32 );
 		$args = array( 'method' => $command, 'params' => $args, 'id' => $this->id );
 
+		self::debug($this->getCached( $args )); die();
         if ( !( $this->response = $this->getCached( $args ) ) || $nocache ) {
 			$this->req->setBody( json_encode( $args ) );
 			try {
@@ -352,6 +352,7 @@ class phpZenfolio {
 		}
 
 		$this->parsed_response = json_decode( $this->response, true );
+		
 		if ( $this->parsed_response['id'] != $this->id ) {
 			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']}";
 			$this->parsed_response = FALSE;
