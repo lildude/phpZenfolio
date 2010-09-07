@@ -157,7 +157,8 @@ class phpZenfolio {
 
         if ( $this->cacheType == 'db' ) {
     		require_once 'MDB2.php';
-	        $db =& MDB2::connect( $args['dsn'] );
+
+			$db =& MDB2::connect( $args['dsn'] );
 			if ( PEAR::isError( $db ) ) {
 				$this->cacheType = FALSE;
 				return "CACHING DISABLED: {$db->getMessage()} {$db->getUserInfo()} ({$db->getCode()})";
@@ -177,8 +178,8 @@ class phpZenfolio {
 
             if ( $db->queryOne( "SELECT COUNT(*) FROM $this->cache_table") > $this->max_cache_rows ) {
 				$diff = time() - $this->cache_expire;
-                $r = $db->exec( "DELETE FROM {$this->cache_table} WHERE expiration < {$diff}" );
-                $r = $db->query( 'OPTIMIZE TABLE ' . $this->cache_table );
+                $db->exec( "DELETE FROM {$this->cache_table} WHERE expiration < {$diff}" );
+                $db->query( 'OPTIMIZE TABLE ' . $this->cache_table );
             }
         } elseif ( $this->cacheType ==  'fs' ) {
 			if ( file_exists( $args['cache_dir'] ) && ( is_dir( $args['cache_dir'] ) ) ) {
@@ -289,6 +290,9 @@ class phpZenfolio {
 			} else {
 				$result = $this->cache_db->exec( 'DELETE FROM ' . $this->cache_table );
 			}
+			if ( ! PEAR::isError( $result ) ) {
+				return TRUE;
+			}
 	   	} elseif ( $this->cacheType == 'fs' ) {
             $dir = opendir( $this->cache_dir );
 	       	if ( $dir ) {
@@ -300,8 +304,8 @@ class phpZenfolio {
 			if ( $delete ) {
 				$result = rmdir( $this->cache_dir );
 			}
+			return (bool) $result;
 	   	}
-		return (bool) $result;
 	}
 
 	/**
@@ -570,6 +574,53 @@ class phpZenfolio {
 			$this->keyring = $result;
 		}
 		return $result;
+	}
+
+	/**
+	 * Specific method for the CreatePhotoFromUrl method.  We need this as the API
+	 * doesn't support uploading using JSON.
+	 */
+	public function CreatePhotoFromUrl( $id, $url, $cookies = NULL )
+	{
+		$upload_req = new HTTP_Request2();
+		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE ) );
+        $upload_req->setMethod( HTTP_Request2::METHOD_GET );
+		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}" ) );
+
+		if ( ! is_null( $this->authToken ) ) {
+			$upload_req->setHeader( 'X-Zenfolio-Token', $this->authToken );
+		} else {
+			throw new Exception( 'No authentication token found. Please login before uploading.' );
+		}
+
+		// Set the proxy if one has been set earlier
+		if ( isset( $this->proxy ) && is_array( $this->proxy ) ) {
+			$upload_req->setConfig( array( 'proxy_host' => $this->proxy['server'],
+							          'proxy_port' => $this->proxy['port'],
+									  'proxy_user' => $this->proxy['username'],
+									  'proxy_password' => $this->proxy['password'] ) );
+		}
+
+		$url = "http://www.zenfolio.com/api/{$this->APIVer}/zfapi.asmx/CreatePhotoFromUrl?galleryId={$id}&url=".urlencode($url)."&cookies={$cookies}";
+
+		$upload_req->setURL( $url );
+
+		try {
+			$response = $upload_req->send();
+			if ( 200 == $response->getStatus() ) {
+				$this->response = $response->getBody();
+			} else {
+				$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
+				$code = $response->getStatus();
+				throw new Exception( $msg, $code );
+			}
+		}
+		catch ( HTTP_Request2_Exception $e ) {
+			throw new Exception( $e );
+		}
+
+		return $this->response;
 	}
 
 	/**
