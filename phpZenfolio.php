@@ -140,7 +140,7 @@ class phpZenfolio {
 	 * Function enables caching.
 	 *
 	 * @access public
-	 * @return TRUE|string Returns TRUE is caching is enabled successfully, else returns an error and disable caching.
+	 * @return TRUE|string Returns TRUE if caching is enabled successfully, else returns an error and disables caching.
 	 * @param string $type The type of cache to use. It must be either "db" (for database caching) or "fs" (for filesystem).
 	 * @param string $dsn When using type "db", this must be a PEAR::DB connection string eg. "mysql://user:password@server/database".  When using type "fs", this must be a folder that the web server has write access to. Use absolute paths for best results.  Relative paths may have unexpected behavior when you include this.  They'll usually work, you'll just want to test them.
 	 * @param string $cache_dir When using type "fs". this is the directory to use for caching. This directory must exist.
@@ -157,7 +157,7 @@ class phpZenfolio {
 
         if ( $this->cacheType == 'db' ) {
     		require_once 'MDB2.php';
-	        $db = MDB2::connect( $args['dsn'] );
+	        $db =& MDB2::connect( $args['dsn'] );
 			if ( PEAR::isError( $db ) ) {
 				$this->cacheType = FALSE;
 				return "CACHING DISABLED: {$db->getMessage()} {$db->getUserInfo()} ({$db->getCode()})";
@@ -174,10 +174,11 @@ class phpZenfolio {
 			$db->createTable( $this->cache_table, $fields, $options );
 			$db->setOption('idxname_format', '%s'); // Make sure index name doesn't have the prefix
 			$db->createIndex( $this->cache_table, 'request', array( 'fields' => array( 'request' => array() ) ) );
-			
+
             if ( $db->queryOne( "SELECT COUNT(*) FROM $this->cache_table") > $this->max_cache_rows ) {
-                $db->query( "DELETE FROM $this->cache_table WHERE expiration < ". (int) time() - $this->cache_expire );
-                $db->query( 'OPTIMIZE TABLE ' . $this->cache_table );
+				$diff = time() - $this->cache_expire;
+                $r = $db->exec( "DELETE FROM {$this->cache_table} WHERE expiration < {$diff}" );
+                $r = $db->query( 'OPTIMIZE TABLE ' . $this->cache_table );
             }
         } elseif ( $this->cacheType ==  'fs' ) {
 			if ( file_exists( $args['cache_dir'] ) && ( is_dir( $args['cache_dir'] ) ) ) {
@@ -201,7 +202,7 @@ class phpZenfolio {
 				return 'CACHING DISABLED: Cache Directory "'.$args['cache_dir'].'" doesn\'t exist, is a file or is not readable.';
 			}
 		}
-		return TRUE;
+		return (bool) TRUE;
     }
 
 	/**
@@ -286,7 +287,7 @@ class phpZenfolio {
 			if ( $delete ) {
 				$result = $this->cache_db->exec( 'DROP TABLE ' . $this->cache_table );
 			} else {
-				$result = $this->cache_db->exec( 'TRUNCATE ' . $this->cache_table );
+				$result = $this->cache_db->exec( 'DELETE FROM ' . $this->cache_table );
 			}
 	   	} elseif ( $this->cacheType == 'fs' ) {
             $dir = opendir( $this->cache_dir );
