@@ -160,27 +160,25 @@ class phpZenfolio {
 	        $db = MDB2::connect( $args['dsn'] );
 			if ( PEAR::isError( $db ) ) {
 				$this->cacheType = FALSE;
-				return "CACHING DISABLED: {$db->getMessage()} ({$db->getCode()})";
+				return "CACHING DISABLED: {$db->getMessage()} {$db->getUserInfo()} ({$db->getCode()})";
 			}
 			$this->cache_db = $db;
-            
-            /*
-             * If high performance is crucial, you can easily comment
-             * out this query once you've created your database table.
-             */
-            $db->query("
-                CREATE TABLE IF NOT EXISTS `$this->cache_table` (
-                    `request` CHAR( 35 ) NOT NULL ,
-                    `response` LONGTEXT NOT NULL ,
-                    `expiration` DATETIME NOT NULL ,
-                    INDEX ( `request` )
-                ) TYPE = MYISAM");
 
-            if ($db->queryOne("SELECT COUNT(*) FROM $this->cache_table") > $this->max_cache_rows) {
-                $db->query("DELETE FROM $this->cache_table WHERE expiration < DATE_SUB(NOW(), INTERVAL $this->cache_expire SECOND)");
-                $db->query('OPTIMIZE TABLE ' . $this->cache_table);
+			$options = array( 'comment' => 'phpZenfolio cache', 'charset' => 'utf8', 'collate' => 'utf8_unicode_ci' );
+			$fields = array(
+							'request' => array( 'type' => 'text', 'length' => '35', 'notnull' => TRUE ),
+							'response' => array( 'type' => 'clob', 'notnull' => TRUE ),
+							'expiration' => array( 'type' => 'integer', 'notnull' => TRUE )
+						   );
+			$db->loadModule('Manager');
+			$db->createTable( $this->cache_table, $fields, $options );
+			$db->setOption('idxname_format', '%s'); // Make sure index name doesn't have the prefix
+			$db->createIndex( $this->cache_table, 'request', array( 'fields' => array( 'request' => array() ) ) );
+			
+            if ( $db->queryOne( "SELECT COUNT(*) FROM $this->cache_table") > $this->max_cache_rows ) {
+                $db->query( "DELETE FROM $this->cache_table WHERE expiration < ". (int) time() - $this->cache_expire );
+                $db->query( 'OPTIMIZE TABLE ' . $this->cache_table );
             }
-
         } elseif ( $this->cacheType ==  'fs' ) {
 			if ( file_exists( $args['cache_dir'] ) && ( is_dir( $args['cache_dir'] ) ) ) {
 				$this->cache_dir = realpath( $args['cache_dir'] ).'/phpZenfolio/';
@@ -218,10 +216,12 @@ class phpZenfolio {
 		$request['authToken']       = ''; // Unset authToken
        	$reqhash = md5( serialize( $request ) );
 		$expire = ( strpos( $request['method'], 'login' ) ) ? 21600 : $this->cache_expire;
-        if ( $this->cacheType == 'db' ) {
-            $result = $this->cache_db->queryOne( 'SELECT response FROM ' . $this->cache_table . ' WHERE request = ? AND DATE_SUB(NOW(), INTERVAL ' . (int) $expire . ' SECOND) < expiration', $reqhash );
+		$diff = time() - $expire;
+
+		if ( $this->cacheType == 'db' ) {
+			$result = $this->cache_db->queryOne( 'SELECT response FROM ' . $this->cache_table . ' WHERE request = ' . $this->cache_db->quote( $reqhash ) . ' AND ' . $this->cache_db->quote( $diff ) . ' < expiration' );
 			if ( PEAR::isError( $result ) ) {
-				//throw new Exception( $result );
+				throw new Exception( $result );
 			}
 			if ( !empty( $result ) ) {
                 return $result;
@@ -250,21 +250,23 @@ class phpZenfolio {
 			$reqhash = md5( serialize( $request ) );
 			if ( $this->cacheType == 'db' ) {
 				if ( $this->cache_db->queryOne( "SELECT COUNT(*) FROM {$this->cache_table} WHERE request = '$reqhash'" ) ) {
-					$sql = 'UPDATE ' . $this->cache_table . ' SET response = ?, expiration = ? WHERE request = ?';
-					$this->cache_db->exec( $sql, array( $response, strftime( '%Y-%m-%d %H:%M:%S' ), $reqhash ) );
+					$sql = 'UPDATE ' . $this->cache_table . ' SET response = '. $this->cache_db->quote( $response ) . ', expiration = ' . $this->cache_db->quote( time() ) . ' WHERE request = ' . $this->cache_db->quote( $reqhash ) ;
+					$result = $this->cache_db->exec( $sql );
 				} else {
-					$sql = "INSERT INTO " . $this->cache_table . " (request, response, expiration) VALUES ('$reqhash', '" . strtr($response, "'", "\'") . "', '" . strftime("%Y-%m-%d %H:%M:%S") . "')";
-					$this->cache_db->exec( $sql );
+					$sql = 'INSERT INTO ' . $this->cache_table . ' (request, response, expiration) VALUES (' . $this->cache_db->quote( $reqhash ) .', ' . $this->cache_db->quote( strtr( $response, "'", "\'" ) ) . ', ' . $this->cache_db->quote( time() ) . ')';
+					$result = $this->cache_db->exec( $sql );
+				}
+				if ( PEAR::isError( $result ) ) {
+					throw new Exception( $result );
 				}
 			} elseif ( $this->cacheType == 'fs' ) {
 				$file = $this->cache_dir . '/' . $reqhash . '.cache';
 				$fstream = fopen( $file, 'w' );
 				$result = fwrite( $fstream,$response );
 				fclose( $fstream );
-				return $result;
 			}
 		}
-        return TRUE;
+        return $result;
     }
 
 	/**
@@ -335,8 +337,7 @@ class phpZenfolio {
 		$this->id = intval( $str, 32 );
 		$args = array( 'method' => $command, 'params' => $args, 'id' => $this->id );
 
-		self::debug($this->getCached( $args )); die();
-        if ( !( $this->response = $this->getCached( $args ) ) || $nocache ) {
+		if ( !( $this->response = $this->getCached( $args ) ) || $nocache ) {
 			$this->req->setBody( json_encode( $args ) );
 			try {
 				$response = $this->req->send();
@@ -355,9 +356,9 @@ class phpZenfolio {
 		}
 
 		$this->parsed_response = json_decode( $this->response, true );
-		
+
 		if ( $this->parsed_response['id'] != $this->id ) {
-			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']}";
+			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']} )";
 			$this->parsed_response = FALSE;
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
