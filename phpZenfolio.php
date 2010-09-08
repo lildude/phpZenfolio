@@ -190,7 +190,7 @@ class phpZenfolio {
 					}
 					$dir = opendir( $this->cache_dir );
                 	while ( $file = readdir( $dir ) ) {
-                    	if ( substr( $file, -2 ) == '.cache' && ( ( filemtime( $this->cache_dir . '/' . $file ) + $this->cache_expire ) < time() ) ) {
+                    	if ( substr( $file, -6 ) == '.cache' && ( ( filemtime( $this->cache_dir . '/' . $file ) + $this->cache_expire ) < time() ) ) {
                         	unlink( $this->cache_dir . '/' . $file );
                     	}
                 	}
@@ -279,8 +279,7 @@ class phpZenfolio {
 	 *
 	 * @access public
 	 * @param boolean $delete Set to TRUE to delete the cache after clearing it
-	 * @return int|TRUE
-	 * @since 1.1.7
+	 * @return boolean
 	 **/
     public function clearCache( $delete = FALSE )
 	{
@@ -291,7 +290,7 @@ class phpZenfolio {
 				$result = $this->cache_db->exec( 'DELETE FROM ' . $this->cache_table );
 			}
 			if ( ! PEAR::isError( $result ) ) {
-				return TRUE;
+				$result = TRUE;
 			}
 	   	} elseif ( $this->cacheType == 'fs' ) {
             $dir = opendir( $this->cache_dir );
@@ -304,8 +303,8 @@ class phpZenfolio {
 			if ( $delete ) {
 				$result = rmdir( $this->cache_dir );
 			}
-			return (bool) $result;
 	   	}
+		return (bool) $result;
 	}
 
 	/**
@@ -386,7 +385,9 @@ class phpZenfolio {
 	 * @access public
 	 * @return void
 	 * @param string $server Proxy server
-	 * @param integer $port Proxy server port
+	 * @param string $port Proxy server port
+	 * @param string $username (Optional) Proxy username
+	 * @param string $password (Optional) Proxy password
 	 **/
     public function setProxy()
 	{
@@ -493,8 +494,13 @@ class phpZenfolio {
 
 		// Create the upload URL based on the information provides in the arguments.
 		if ( $args['PhotoSet'] ) {
-			$photoset = $this->LoadPhotoSet( $args['PhotoSet'], 'Level1', FALSE );
-			$UploadUrl = $photoset['UploadUrl'];
+			if ( $this->APIVer == '1.0' || $this->APIVer == '1.1' ) {
+				$photoset = $this->LoadPhotoSet( $args['PhotoSet'] );
+				$UploadUrl = 'http://up.zenfolio.com' . $photoset['UploadUrl'];
+			} else {
+				$photoset = ( $this->APIVer == '1.4' ) ? $this->LoadPhotoSet( $args['PhotoSet'], 'Level1', FALSE ) : $this->LoadPhotoSet( $args['PhotoSet'] );
+				$UploadUrl = $photoset['UploadUrl'];
+			}
 		}
 		if ( $args['UploadUrl'] ) {
 			$UploadUrl = $args['UploadUrl'];
@@ -563,7 +569,6 @@ class phpZenfolio {
 	 **/
 	public function __call( $method, $arguments )
 	{
-		//$args = phpZenfolio::processArgs( $arguments );
 		$args = $arguments;
 		$this->request( $method, $args );
 		$result = $this->parsed_response['result'];
@@ -576,54 +581,7 @@ class phpZenfolio {
 		return $result;
 	}
 
-	/**
-	 * Specific method for the CreatePhotoFromUrl method.  We need this as the API
-	 * doesn't support uploading using JSON.
-	 */
-	public function CreatePhotoFromUrl( $id, $url, $cookies = NULL )
-	{
-		$upload_req = new HTTP_Request2();
-		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE ) );
-        $upload_req->setMethod( HTTP_Request2::METHOD_GET );
-		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
-									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}" ) );
-
-		if ( ! is_null( $this->authToken ) ) {
-			$upload_req->setHeader( 'X-Zenfolio-Token', $this->authToken );
-		} else {
-			throw new Exception( 'No authentication token found. Please login before uploading.' );
-		}
-
-		// Set the proxy if one has been set earlier
-		if ( isset( $this->proxy ) && is_array( $this->proxy ) ) {
-			$upload_req->setConfig( array( 'proxy_host' => $this->proxy['server'],
-							          'proxy_port' => $this->proxy['port'],
-									  'proxy_user' => $this->proxy['username'],
-									  'proxy_password' => $this->proxy['password'] ) );
-		}
-
-		$url = "http://www.zenfolio.com/api/{$this->APIVer}/zfapi.asmx/CreatePhotoFromUrl?galleryId={$id}&url=".urlencode($url)."&cookies={$cookies}";
-
-		$upload_req->setURL( $url );
-
-		try {
-			$response = $upload_req->send();
-			if ( 200 == $response->getStatus() ) {
-				$this->response = $response->getBody();
-			} else {
-				$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
-				$code = $response->getStatus();
-				throw new Exception( $msg, $code );
-			}
-		}
-		catch ( HTTP_Request2_Exception $e ) {
-			throw new Exception( $e );
-		}
-
-		return $this->response;
-	}
-
-	/**
+	 /**
 	  * Static function to encode a string according to RFC3986.
 	  *
 	  * @static
