@@ -44,7 +44,7 @@ $path_delimiter = ( strpos( __FILE__, ':' ) !== false ) ? ';' : ':';
 ini_set( 'include_path', dirname( __FILE__ ) . '/PEAR' . $path_delimiter . ini_get( 'include_path' ) );
 
 /**
- * We can't have this E_STRICT as PEAR is still not PHP5 E_STRICT compliant yet.
+ * We can't have this E_STRICT as PEAR is still not 100% PHP5 E_STRICT compliant yet.
  **/
 error_reporting( E_ERROR );
 
@@ -91,7 +91,8 @@ class phpZenfolio {
 	 * The Application Name (AppName) is not obligatory, but it helps 
 	 * Zenfolio diagnose any problems users of your application may encounter.
 	 * If you're going to use this, please use a string and include your
-	 * version number and URL as follows.
+	 * version number and URL as follows:
+	 *
 	 * For example "My Cool App/1.0 (http://my.url.com)"
 	 *
      * 
@@ -99,17 +100,18 @@ class phpZenfolio {
      * you can over-ride this when instantiating the instance.
 	 *
 	 * @return void
-	 * @param string $AppName (Optional) Name and version information of your application in the form "AppName/version (URI)" e.g. "My Cool App/1.0 (http://my.url.com)".  This isn't obligatory, but it helps Zenfolio diagnose any problems users of your application may encounter.
+	 * @param string $AppName Name and version information of your application in the form "AppName/version (URI)" e.g. "My Cool App/1.0 (http://my.url.com)".
 	 * @param string $APIVer (Optional) API endpoint you wish to use. Defaults to 1.4
 	 **/
 	function __construct()
 	{
-		$args = phpZenfolio::processArgs(func_get_args());
+		$args = phpZenfolio::processArgs( func_get_args() );
 		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.4';
-		
 		// Set the Application Name
-		$this->AppName = ( array_key_exists( 'AppName', $args ) ) ?  $args['AppName'] : 'Unknown Application';
-
+		if ( ! $args['AppName'] ) {
+			throw new Exception( 'Application name missing.', -10001 );
+		}
+		$this->AppName = $args['AppName'];
         // All calls to the API are done via the POST method using the PEAR::HTTP_Request2 package.
 		require_once 'HTTP/Request2.php';
 		$this->req = new HTTP_Request2();
@@ -127,25 +129,35 @@ class phpZenfolio {
 	 *
 	 * @return string
 	 * @param mixed $var Any string, object or array you want to display
+	 * @param boolean $echo Print the output or not.  This is only really used for unit testing.
 	 * @static
 	 **/
-	public static function debug( $var )
+	public static function debug( $var, $echo = TRUE )
 	{
+		ob_start();
 		echo '<pre>Debug:';
 		if ( is_array( $var ) || is_object( $var ) ) { print_r( $var ); } else { echo $var; }
-		echo '</pre>';	
+		echo '</pre>';
+		if ( $echo ) { ob_end_flush(); } else { $out = ob_get_clean(); }
+		return $out;
 	}
 	
 	/**
 	 * Function enables caching.
 	 *
+	 * Params can be passed as an associative array or a set of param=value strings.
+	 *
+	 * phpZenfolio only provides copies of the MDB2_Driver_sqlite (sqlite2) and
+	 * MDB2_Driver_mysql drivers for MDB2.  If you need to use a different database
+	 * you will need to install the appropriate MDB2 driver.
+	 *
 	 * @access public
 	 * @return TRUE|string Returns TRUE if caching is enabled successfully, else returns an error and disables caching.
 	 * @param string $type The type of cache to use. It must be either "db" (for database caching) or "fs" (for filesystem).
-	 * @param string $dsn When using type "db", this must be a PEAR::DB connection string eg. "mysql://user:password@server/database".  When using type "fs", this must be a folder that the web server has write access to. Use absolute paths for best results.  Relative paths may have unexpected behavior when you include this.  They'll usually work, you'll just want to test them.
-	 * @param string $cache_dir When using type "fs". this is the directory to use for caching. This directory must exist.
+	 * @param string $dsn When using type "db", this must be a PEAR::MDB2 connection string eg. "mysql://user:password@server/database".  When using type "fs", this must be a folder that the web server has write access to. Use absolute paths for best results.  Relative paths may have unexpected behavior when you include this.  They'll usually work, you'll just want to test them.
+	 * @param string $cache_dir When using type "fs", this is the directory to use for caching. This directory must exist.
 	 * @param integer $cache_expire Cache timeout in seconds. This defaults to 3600 seconds (1 hour) if not specified.
-	 * @param string $table If using type "db", this is the database table name that will be used.  Defaults to "smugmug_cache".
+	 * @param string $table If using type "db", this is the database table name that will be used.  Defaults to "phpZenfolio_cache".
 	 **/
 	public function enableCache()
 	{
@@ -166,10 +178,9 @@ class phpZenfolio {
 			$this->cache_db = $db;
 
 			$options = array( 'comment' => 'phpZenfolio cache', 'charset' => 'utf8', 'collate' => 'utf8_unicode_ci' );
-			$fields = array(
-							'request' => array( 'type' => 'text', 'length' => '35', 'notnull' => TRUE ),
-							'response' => array( 'type' => 'clob', 'notnull' => TRUE ),
-							'expiration' => array( 'type' => 'integer', 'notnull' => TRUE )
+			$fields = array( 'request' => array( 'type' => 'text', 'length' => '35', 'notnull' => TRUE ),
+							 'response' => array( 'type' => 'clob', 'notnull' => TRUE ),
+							 'expiration' => array( 'type' => 'integer', 'notnull' => TRUE )
 						   );
 			$db->loadModule('Manager');
 			$db->createTable( $this->cache_table, $fields, $options );
@@ -272,7 +283,7 @@ class phpZenfolio {
     }
 
 	/**
-	 *  Forcefully clear the cache.
+	 * Forcefully clear the cache.
 	 *
 	 * This is useful if you've made changes to your SmugMug galleries and want
 	 * to ensure the changes are reflected by your application immediately.
@@ -313,7 +324,7 @@ class phpZenfolio {
 	 *  things are secure by default
 	 *
 	 * @access private
-	 * @return string JSON response from Zenfolio, or an error.
+	 * @return string JSON response from Zenfolio, or an Exception is thrown
 	 * @param string $command Zenfolio API method to call in the request
 	 * @param array $args optional Array of arguments that form the API call
 	 * @param boolean $nocache Set whether the call should be cached or not. This isn't actually used, so may be deprecated in the future.
@@ -367,7 +378,7 @@ class phpZenfolio {
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
-			$this->error_code = $this->parsed_response['code'];
+			$this->error_code = $this->parsed_response['code']; // TODO: PHP doesn't support string error codes so I need a string -> int table from Zenfolio so I can start setting apt codes.
             $this->error_msg = $this->parsed_response['error']['message'];
 			$this->parsed_response = FALSE;
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
@@ -380,7 +391,9 @@ class phpZenfolio {
     }
 	
 	/**
-	 * Set a proxy for all phpZenfolio calls
+	 * Set a proxy for all phpZenfolio calls.
+	 *
+	 * Params can be passed as an associative array or a set of param=value strings.
 	 *
 	 * @access public
 	 * @return void
@@ -409,22 +422,25 @@ class phpZenfolio {
 	 * the plaintext authentication method, or the more secure challenge-response (default)
 	 * authentication method.
 	 *
+	 * Params can be passed as an associative array or a set of param=value strings.
+	 *
 	 * @access public
 	 * @return string
 	 * @param string $username The Zenfolio username
 	 * @param string $password The Zenfolio username's password
-	 * @param boolean $plaintext (Optional) Set whether the login should use the plaintext (TRUE) the challenge-response authentication method (FALSE). Defaults to FALSE.
+	 * @param boolean $plaintext (Optional) Set whether the login should use the plaintext (TRUE) or the challenge-response authentication method (FALSE). Defaults to FALSE.
 	 * @uses request
 	 */
-	public function login( $username, $password, $plaintext = FALSE )
+	public function login()
 	{
-		if ( $plaintext ) {
-			$this->authToken = $this->AuthenticatePlain( $username, $password );
+		$args = phpZenfolio::processArgs( func_get_args() );
+		if ( $args['Plaintext'] ) {
+			$this->authToken = $this->AuthenticatePlain( $args['Username'], $args['Password'] );
 		} else {
-			$cr = $this->GetChallenge( $username );
+			$cr = $this->GetChallenge( $args['Username'] );
 			$salt = self::byteArrayDecode( $cr['PasswordSalt'] );
 			$challenge = self::byteArrayDecode( $cr['Challenge'] );
-			$password = utf8_encode( $password );
+			$password = utf8_encode( $args['Password'] );
 
 			$passHash = hash( 'sha256', $salt.$password, TRUE );
 			$chalHash = hash( 'sha256', $challenge.$passHash, TRUE );
@@ -438,10 +454,14 @@ class phpZenfolio {
 	 * To make life easy for phpZenfolio users, I've created a single method that
 	 * can be used to upload files.  This uses the Simplified HTTP POST method as
 	 * detailed at {@link http://www.zenfolio.com/zf/help/api/guide/upload}
-	 * 
+	 *
+	 * Params can be passed as an associative array or a set of param=value strings.
+	 *
 	 * @access public
 	 * @return string
-	 * 
+	 * @param string $PhotoSet The ID of the PhotoSet into which you wish the image to be uploaded. Use this OR $UploadUrl.
+	 * @param string $UploadUrl The UploadUrl of the PhotoSet into which you wish the image to be uploaded. Use this OR $PhotoSet
+	 * @param string $File The path to the local file that is being uploaded
 	 * @uses request
 	 * @link http://www.zenfolio.com/zf/help/api/guide/upload
 	 **/
@@ -449,7 +469,7 @@ class phpZenfolio {
 	{
 		$args = phpZenfolio::processArgs( func_get_args() );
 		if ( !array_key_exists( 'File', $args ) ) {
-			throw new Exception( 'No upload file specified.' );
+			throw new Exception( 'No upload file specified.', -10002 );
 		}
 		
 		// Set FileName, if one isn't provided in the method call
@@ -466,7 +486,7 @@ class phpZenfolio {
 			$data = fread( $fp, filesize( $args['File'] ) );
 			fclose( $fp );
 		} else {
-			throw new Exception( "File doesn't exist: {$args['File']}" );
+			throw new Exception( "File doesn't exist: {$args['File']}", -10003 );
 		}
 
 		$upload_req = new HTTP_Request2();
@@ -481,7 +501,7 @@ class phpZenfolio {
 		if ( ! is_null( $this->authToken ) ) {
 			$upload_req->setHeader( 'X-Zenfolio-Token', $this->authToken );
 		} else {
-			throw new Exception( 'No authentication token found. Please login before uploading.' );
+			throw new Exception( 'No authentication token found. Please login before uploading.', -10004 );
 		}
 
 		// Set the proxy if one has been set earlier
@@ -541,31 +561,17 @@ class phpZenfolio {
 		}
 
 		return $this->response;
-		/*
-		// TODO: I don't think the response is json_encoded - need to check
-		$this->parsed_response = json_decode( $this->response, true );
-		if ( ! is_null( $this->parsed_response['error'] ) ) {
-			$this->error_code = $this->parsed_response['code'];
-            $this->error_msg = $this->parsed_response['error']['message'];
-			$this->parsed_response = FALSE;
-			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
-		} else {
-			$this->error_code = FALSE;
-            $this->error_msg = FALSE;
-		}
-
-		return $this->parsed_response ? $this->parsed_response['Image'] : FALSE;*/
 	}
 	
 	/**
-	 * Dynamic method handler.  This function handles all SmugMug method calls
+	 * Dynamic method handler.  This function handles all Zenfolio method calls
 	 * not explicitly implemented by phpZenfolio.
 	 * 
  	 * @access public
 	 * @return array|string|TRUE
 	 * @uses request
-	 * @param string $method The SmugMug method you want to call, but with "." replaced by "_"
-	 * @param mixed $arguments The params to be passed to the relevant API method. See SmugMug API docs for more details.
+	 * @param string $method The Zenfolio method you want to call
+	 * @param mixed $arguments The params to be passed to the relevant API method. See Zenfolio API docs for more details. Order is important.
 	 **/
 	public function __call( $method, $arguments )
 	{
@@ -601,7 +607,6 @@ class phpZenfolio {
 	  * @return array
 	  * @param array Arguments taken from a function by func_get_args()
 	  * @access private
-	  * @TODO This seems a bit redundant in Zenfolio land.  The only thing I need to document is that if passing a Zenfolio "object" as a param, it needs to be an associative array.
 	  **/
 	 private static function processArgs( $arguments )
 	 {
