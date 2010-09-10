@@ -459,10 +459,11 @@ class phpZenfolio {
 	 *
 	 * @access public
 	 * @return string
-	 * @param string $PhotoSet The ID of the PhotoSet into which you wish the image to be uploaded. Use this OR $UploadUrl.
-	 * @param string $UploadUrl The UploadUrl of the PhotoSet into which you wish the image to be uploaded. Use this OR $PhotoSet
+	 * @param string $PhotoSetId The ID of the PhotoSet into which you wish the image to be uploaded. Use this OR $UploadUrl.
+	 * @param string $UploadUrl The UploadUrl of the PhotoSet into which you wish the image to be uploaded. Use this OR $PhotoSetId
 	 * @param string $File The path to the local file that is being uploaded
 	 * @uses request
+	 * @TODO Allow the passing of a stdClass object of additional options.
 	 * @link http://www.zenfolio.com/zf/help/api/guide/upload
 	 **/
 	public function upload()
@@ -513,12 +514,12 @@ class phpZenfolio {
 		}
 
 		// Create the upload URL based on the information provides in the arguments.
-		if ( $args['PhotoSet'] ) {
+		if ( $args['PhotoSetId'] ) {
 			if ( $this->APIVer == '1.0' || $this->APIVer == '1.1' ) {
-				$photoset = $this->LoadPhotoSet( $args['PhotoSet'] );
+				$photoset = $this->LoadPhotoSet( $args['PhotoSetId'] );
 				$UploadUrl = 'http://up.zenfolio.com' . $photoset['UploadUrl'];
 			} else {
-				$photoset = ( $this->APIVer == '1.4' ) ? $this->LoadPhotoSet( $args['PhotoSet'], 'Level1', FALSE ) : $this->LoadPhotoSet( $args['PhotoSet'] );
+				$photoset = ( $this->APIVer == '1.4' ) ? $this->LoadPhotoSet( $args['PhotoSetId'], 'Level1', FALSE ) : $this->LoadPhotoSet( $args['PhotoSetId'] );
 				$UploadUrl = $photoset['UploadUrl'];
 			}
 		}
@@ -528,7 +529,7 @@ class phpZenfolio {
 		
 		$opts = array();
 		foreach( $args as $name => $value ) {
-			if ( ! in_array( $name, array( 'UploadUrl', 'PhotoSet', 'File' ) ) ) {
+			if ( ! in_array( $name, array( 'UploadUrl', 'PhotoSetId', 'File' ) ) ) {
 				// The values passed should be urlencoded, but just in case they're not, we'll urldecode and then re-encode to be safe
 				$value = urldecode( $value );
 				$value = urlencode( $value );
