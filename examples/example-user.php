@@ -1,12 +1,12 @@
 <html>
 <head>
-<title>phpZenfolio Recent Galleries Example</title>
+<title>phpZenfolio User Galleries Example</title>
 </head>
 <body>
 <?php
 /* Last updated with phpZenfolio 1.0
  *
- * This example file shows you how to get a list of the most recent public
+ * This example file shows you how to get a list of the specified user's public
  * galleries created on Zenfolio.
  *
  * You'll need to replace:

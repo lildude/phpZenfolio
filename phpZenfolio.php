@@ -640,5 +640,16 @@ class phpZenfolio {
 	 {
 		return call_user_func_array( pack, array_merge( array( 'C*' ),(array) $array ) );
 	 }
+
+	 /**
+	  * Public function that returns the image url for an image. This is only for
+	  * sizes other than the original size.
+	  *
+	  * @param array $photo The Photo object of the photo you with to obtain the url for
+	  * @param int $size The Zenfolio supplied image size.  See http://www.zenfolio.com/zf/help/api/guide/download for a list of sizes.
+	  */
+	 public static function imageUrl( $photo, $size ) {
+		 return "http://{$photo['UrlHost']}/{$photo['UrlCore']}-{$size}.jpg?sn={$photo['Sequence']}&tk={$photo['UrlToken']}";
+	 }
 }
 ?>

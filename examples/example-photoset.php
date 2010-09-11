@@ -1,47 +1,43 @@
 <html>
 <head>
-<title>phpSmug Email/Password Login Example</title>
+	<title>phpZenfolio Recent Galleries Example</title>
+	<style type="text/css">
+		div { width: 600px; margin: 0 auto; text-align: center; }
+		img { border: 0;}
+	</style>
 </head>
 <body>
-
+	<div>
+		<h1>phpZenfolio Recent Galleries Example</h1>
 <?php
-/* Last updated with phpSmug 2.0
+/* Last updated with phpZenfolio 1.0
  *
- * This example file shows you how to get a list of albums from your own gallery, 
- * using your email address and password to authenticate and then display 
- * thumbnails of all the images in the first album found.
+ * This example file shows you how to get a list of the most recent public
+ * galleries created on Zenfolio.
  *
  * You'll need to replace:
- * - <API KEY> with one provided by SmugMug: http://www.smugmug.com/hack/apikeys 
- * - <APP NAME/VER (URL)> with your application name, version and URL
- * - <EMAILADDRESS> with your email address
- * - <PASSWORD> with your SmugMug password
+ * - "phpZenfolio Recent Galleries Example/0.1" with your application name, version and URL
  *
- * The <APP NAME/VER (URL)> is NOT required, but it's encouraged as it will
- * allow SmugMug diagnose any issues users may have with your application if
- * they request help on the SmugMug forums.
+ * The application name and version is required, but there is no required format.
+ * See the README.txt for a suggested format.
  *
- * You can see this example in action at http://phpsmug.com/examples/
+ * You can see this example in action at http://phpzenfolio.com/examples/
  */
-require_once("../phpSmug.php");
+require_once("../phpZenfolio.php");
 
 try {
-	$f = new phpSmug("APIKey=<API KEY>", "AppName=<APP NAME/VER (URL)>");
-	// Login With EmailAddress and Password
-	$f->login("EmailAddress=<EMAILADDRESS>", "Password=<PASSWORD>");	
-	// Get list of  albums
-	$albums = $f->albums_get();	
-	// Get list of images and other useful information
-	$images = $f->images_get("AlbumID={$albums['0']['id']}", "AlbumKey={$albums['0']['Key']}", "Heavy=1");
-	$images = ($f->APIVer == "1.2.2") ? $images['Images'] : $images;
-	// Display the thumbnails and link to the medium image for each image
-	foreach ($images as $image) {
-		echo '<a href="'.$image['MediumURL'].'"><img src="'.$image['TinyURL'].'" title="'.$image['Caption'].'" alt="'.$image['id'].'" /></a>';
+	$f = new phpZenfolio("AppName=phpZenfolio Recent Galleries Example/0.1");
+	// Get list of recent galleries
+	$galleries = $f->GetRecentSets('Gallery', 0, 100);
+	// Display the 60x60 cropped thumbnails and link to the gallery page for each.
+	foreach ($galleries as $gallery) {
+		echo '<a href="',$gallery['PageUrl'],'"><img src="',phpZenfolio::imageUrl($gallery['TitlePhoto'], 1),'" title="',$gallery['Title'],'" alt="',$gallery['Id'],'" /></a>';
 	}
 }
 catch (Exception $e) {
 	echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
 }
 ?>
+	</div>
 </body>
 </html>
