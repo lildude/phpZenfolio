@@ -469,12 +469,15 @@ class phpZenfolio {
 	public function upload()
 	{
 		$args = phpZenfolio::processArgs( func_get_args() );
-		if ( !array_key_exists( 'File', $args ) ) {
-			throw new Exception( 'No upload file specified.', -10002 );
+		if ( ! array_key_exists( 'PhotoSetId', $args ) && ! array_key_exists( 'UploadUrl', $args ) ) {
+			throw new Exception ( 'No PhotoSetId or UploadUrl specified.', -10002 );
+		}
+		if ( ! array_key_exists( 'File', $args ) ) {
+			throw new Exception( 'No upload file specified.', -10003 );
 		}
 		
 		// Set FileName, if one isn't provided in the method call
-		if ( !array_key_exists( 'filename', $args ) ) {
+		if ( ! array_key_exists( 'filename', $args ) ) {
 			$args['filename'] = basename( $args['File'] );
 		}
 
@@ -487,7 +490,7 @@ class phpZenfolio {
 			$data = fread( $fp, filesize( $args['File'] ) );
 			fclose( $fp );
 		} else {
-			throw new Exception( "File doesn't exist: {$args['File']}", -10003 );
+			throw new Exception( "File doesn't exist: {$args['File']}", -10004 );
 		}
 
 		$upload_req = new HTTP_Request2();
@@ -502,7 +505,7 @@ class phpZenfolio {
 		if ( ! is_null( $this->authToken ) ) {
 			$upload_req->setHeader( 'X-Zenfolio-Token', $this->authToken );
 		} else {
-			throw new Exception( 'No authentication token found. Please login before uploading.', -10004 );
+			throw new Exception( 'No authentication token found. Please login before uploading.', -10005 );
 		}
 
 		// Set the proxy if one has been set earlier
@@ -514,6 +517,7 @@ class phpZenfolio {
 		}
 
 		// Create the upload URL based on the information provides in the arguments.
+
 		if ( $args['PhotoSetId'] ) {
 			if ( $this->APIVer == '1.0' || $this->APIVer == '1.1' ) {
 				$photoset = $this->LoadPhotoSet( $args['PhotoSetId'] );

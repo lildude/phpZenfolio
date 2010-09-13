@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>phpZenfolio First User Gallery Example</title>
+<title>phpZenfolio First User Gallery/Collection Example</title>
 </head>
 <body>
 <?php
@@ -8,7 +8,7 @@
  *
  * This example file shows you how to get a list of the specified user's public
  * galleries and collections created on Zenfolio and display the first 100 images
- * in the first gallery or collection
+ * in the first gallery or collection in the list.
  *
  * You'll need to replace:
  * - <APP NAME/VER (URL)> with your application name, version and URL
