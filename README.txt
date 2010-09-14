@@ -168,35 +168,18 @@ across the wire.
 
 phpZenfolio allows you to use the API methods as documented, however to make
 things easy, a single `login()' method exists to allow you to authentication
-using either of these authentication methods.
+using either of these authentication methods:
 
-The `login()' method takes for 3 arguments:
+Challenge-Response (default):
 
+     $f->login("Username=<username>", "Password=<password>");
 
-   * `Username' - Required
+Plain-Text:
 
-     Your Zenfolio username.
+     $f->login("Username=<username>", "Password=<password>", "Plaintext=TRUE");
 
-   * `Password' - Required
-
-     Your Zenfolio password.
-
-   * `Plaintext' - Optional
-     Default: FALSE
-
-     This ensures Plain-Text authentication is *NOT* used by default.  If you
-     want to use Plain-Text authentication, then change this to TRUE.
-
-     Challenge-Response (default):
-
-          $f->login("Username=<username>", "Password=<password>");
-
-     Plain-Text:
-
-          $f->login("Username=<username>", "Password=<password>", "Plaintext=TRUE");
-
-     The Plain-Text method uses HTTPS/SSL for the authentication step to ensure
-     your username and password are encrypted when transmitted to Zenfolio.
+The Plain-Text method uses HTTPS/SSL for the authentication step to ensure your
+username and password are encrypted when transmitted to Zenfolio.
 
 
 
