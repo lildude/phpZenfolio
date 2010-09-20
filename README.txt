@@ -43,8 +43,7 @@ Installation
 
 Copy the files from the installation package into a folder on your server.
 They need to be readable by your web server.  You can put them into an include
-folder defined in your php.ini file, if you like, though it's not required.
-
+folder defined in your `php.ini' file, if you like, though it's not required.
 
 
 
@@ -57,10 +56,8 @@ all methods and arguments as documented in the Zenfolio API. Accordingly, when
 calling a Zenfolio method, you will need to ensure that you pass the parameters
 exactly as they are documented in the Zenfolio API documentation
 (http://http://www.zenfolio.com/zf/help/api).
-
 Remember: *ALL* function names and arguments *ARE* case sensitive and the order
 is important.
-
 To make things easy for developers, phpZenfolio also provides several of it's
 own methods.  These methods are: `login()', `enableCache', `clearCache',
 `upload()' and `setProxy'.  All phpZenfolio methods, and it's constructor, take
@@ -93,14 +90,13 @@ The constructor takes two arguments, one obligatory and one optional:
 
 As the constructor is a phpZenfolio specific method, it can be instantiated
 using one of the following methods:
-
 Arguments as strings:
 
      $f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.4");
 
 Arguments as an associative array:
 
-     $f = new phpZenfolio(array(
+     $f = new phpZenfolio( array(
      	"AppName" => "My Cool App/1.0 (http://app.com)",
      	"APIVer" => "1.4")
      	);
@@ -117,9 +113,9 @@ recent sets that are of the PhotoSetType 'Gallery':
      $f->GetRecentSets('Gallery', 0, 3);
 
 Note the method's capitalisation and the arguments, these are as they are
-documented in the
-`http://www.zenfolio.com/zf/help/api/ref/methods/getrecentsets GetRecentSets'
-method documentation.
+documented in the GetRecentSets
+(http://www.zenfolio.com/zf/help/api/ref/methods/getrecentsets) method
+documentation.
 
 Some of the Zenfolio API methods, like `CreatePhotoSet', require an object to
 be passed as one of the arguments. The object can be passed either as an
@@ -151,7 +147,6 @@ will need to catch these exceptions.
 
 
 
-
 Authentication
 ==============
 
@@ -159,12 +154,12 @@ Many of the Zenfolio API methods are open to all users, whether they have
 Zenfolio accounts or not, however anything private or related to modification
 requires authentication.
 
-The Zenfolio API provides two methods of authentication,
-`http://www.zenfolio.com/zf/help/api/guide/auth/auth-plain Plain-Text' and
-`http://www.zenfolio.com/zf/help/api/guide/auth/auth-challenge
-Challenge-Response'.  Both are equally good with the slightly more secure
-method being the Challenge-Response method as your password never travels
-across the wire.
+The Zenfolio API provides two methods of authentication, Plain-Text
+(http://www.zenfolio.com/zf/help/api/guide/auth/auth-plain) and
+Challenge-Response
+(http://www.zenfolio.com/zf/help/api/guide/auth/auth-challenge).  Both are
+equally good with the slightly more secure method being the Challenge-Response
+method as your password never travels across the wire.
 
 phpZenfolio allows you to use the API methods as documented, however to make
 things easy, a single `login()' method exists to allow you to authentication
@@ -180,7 +175,6 @@ Plain-Text:
 
 The Plain-Text method uses HTTPS/SSL for the authentication step to ensure your
 username and password are encrypted when transmitted to Zenfolio.
-
 
 
 
@@ -214,8 +208,9 @@ The `enableCache()' method takes 4 arguments:
      use database based caching.  phpZenfolio only supplies copies of the
      MDB2_Driver_mysql and MDB2_Driver_sqlite (sqlite 2) drivers.  If you need
      a different driver, you will need to download and install it yourself.
-     See `http://pear.php.net/manual/en/package.database.mdb2.intro.php MDB2
-     Manual' for details.
+     See MDB2 Manual
+     (http://pear.php.net/manual/en/package.database.mdb2.intro.php) for
+     details.
 
 
 
@@ -265,13 +260,14 @@ If you have caching enabled, and you make changes, it's a good idea to call
 
 
 
-
 Uploading
 =========
 
 Uploading is very easy.  You can either upload an image from your local system
 using the phpZenfolio supplied `upload()' method, or from a location on the web
 using the API's `CreatePhotoFromUrl()' method.
+
+
 
    * Upload Local File:
 
@@ -288,29 +284,21 @@ using the API's `CreatePhotoFromUrl()' method.
 
      Upload using the UploadUrl:
 
-          $f->upload("UploadUrl=http://up.zenfolio.com/....", "File=/path/to/image.jpg");
+          $f->upload("UploadUrl=http://up.zenfolio.com/....",
+              "File=/path/to/image.jpg");
 
-     If you want the file to have a specific filename on Zenfolio, or set a
-     title, caption, keywords, modification time or category at the same time
-     as you upload, you can pass the additional options as an associative array
-     or as a list of `param=value' strings as follows:
+     At this time, the only supported options you can pass at the time of
+     uploading are a "filename" the "modified" parameter which takes a RFC2822
+     formatted date string...
 
-     Associative array:
+          $f->upload("PhotoSetId=123456",
+              "File=/path/to/image.jpg",
+              "filename=newfilename.jpg",
+              "modified=Thu, 14 Jan 2010 13:08:07 +0200");
 
-          $opt = array(
-              "filename" => "newfilename.jpg",
-              "title" => "My Photo",
-              "caption" => "This is a photo caption.",
-              "keywords" => "keyword1 keyword2 keyword3",
-          	"category" => "2012000"
-              );
-          $f->upload("PhotoSetId=123456", "File=/path/to/image.jpg", $opts)
+     If you don't specify a filename, the original filename is used.
 
-     List of param=value strings:
 
-          $f->upload("PhotoSetId=123456", "File=/path/to/image.jpg", "filename=newfilename.jpg", "title=My Photo", "category=2012000")
-
-     TODO: Where can people find a list of options they can pass?
 
    * Upload from the web:
 
@@ -320,12 +308,11 @@ using the API's `CreatePhotoFromUrl()' method.
           $f->CreatePhotoFromUrl( 12344, "http://www.example.com/images/image.jpg", null );
 
      You can find full details on the options this method accepts in the
-     `http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl
-     CreatePhotoFromUrl' method documentation. Unfortunately, unlike the
-     `upload()' method, there is no way to pass things like the photo title etc
-     at the time of upload. You will need to set these later using the
-     `UpdatePhoto()' method.
-
+     CreatePhotoFromUrl
+     (http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl)
+     method documentation. Unfortunately, unlike the `upload()' method, there
+     is no way to pass things like the photo title etc at the time of upload.
+     You will need to set these later using the `UpdatePhoto()' method.
 
 
 
@@ -334,10 +321,8 @@ Replacing Photos
 ================
 
 In order to replace a photo, you will need to upload a new photo and then
-replace the old photo with the new using the Zenfolio
-`http://www.zenfolio.com/zf/help/api/ref/methods/replacephoto ReplacePhoto' API
-method.
-
+replace the old photo with the new using the Zenfolio ReplacePhoto
+(http://www.zenfolio.com/zf/help/api/ref/methods/replacephoto) API method.
 
 
 
@@ -369,7 +354,6 @@ Other Notes
 
      It is recommended that you configure your application to catch exceptions
      from phpZenfolio.
-
 
 
 
