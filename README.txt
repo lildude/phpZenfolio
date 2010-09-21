@@ -24,19 +24,19 @@ and PEAR.
 
 Required:
 
-PEAR HTTP::Request2
+PEAR HTTP::Request2 0.5.2 (http://pear.php.net/package/HTTP_Request2/) or later.
 
 Copies of these are included with phpZenfolio, but only really as a failback
 just in case your system doesn't have the necessary modules installed already.
 
-PHP 5 with GD
+PHP 5.1.2 or later with GD
 
 Optional:
 
 If using database for caching:
 
-MDB2 MDB2_Driver_* for the database you wish to use.  sqlite2 and MySQL are
-included.
+MDB2 2.5.0b3 (http://pear.php.net/package/MDB2) or later.  MDB2_Driver_* for
+the database you wish to use.  sqlite2  and MySQL are included.
 
 Installation
 ============
@@ -56,8 +56,10 @@ all methods and arguments as documented in the Zenfolio API. Accordingly, when
 calling a Zenfolio method, you will need to ensure that you pass the parameters
 exactly as they are documented in the Zenfolio API documentation
 (http://http://www.zenfolio.com/zf/help/api).
+
 Remember: *ALL* function names and arguments *ARE* case sensitive and the order
 is important.
+
 To make things easy for developers, phpZenfolio also provides several of it's
 own methods.  These methods are: `login()', `enableCache', `clearCache',
 `upload()' and `setProxy'.  All phpZenfolio methods, and it's constructor, take
@@ -90,6 +92,7 @@ The constructor takes two arguments, one obligatory and one optional:
 
 As the constructor is a phpZenfolio specific method, it can be instantiated
 using one of the following methods:
+
 Arguments as strings:
 
      $f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.4");
@@ -195,12 +198,13 @@ To enable caching, use the `enableCache()' function.
 The `enableCache()' method takes 4 arguments:
 
 
-   * `type' - Required This is "db" for database or "fs" for filesystem.
+   * `type' - Required
+     This is "db" for database or "fs" for filesystem.
 
 
 
-   * `dsn' - Required for type=db This a PEAR::MDB2 DSN connection string, for
-     example:
+   * `dsn' - Required for type=db
+     This a PEAR::MDB2 DSN connection string, for example:
 
           mysql://user:password@server/database
 
@@ -303,7 +307,7 @@ using the API's `CreatePhotoFromUrl()' method.
    * Upload from the web:
 
      Uploading to Zenfolio using a URL is done purely by the Zenfolio
-     `CreatePhotoFromUrl' API method:
+     `CreatePhotoFromUrl()' API method:
 
           $f->CreatePhotoFromUrl( 12344, "http://www.example.com/images/image.jpg", null );
 
@@ -321,7 +325,7 @@ Replacing Photos
 ================
 
 In order to replace a photo, you will need to upload a new photo and then
-replace the old photo with the new using the Zenfolio ReplacePhoto
+replace the old photo with the new using the Zenfolio ReplacePhoto()
 (http://www.zenfolio.com/zf/help/api/ref/methods/replacephoto) API method.
 
 

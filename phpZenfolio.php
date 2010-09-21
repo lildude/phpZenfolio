@@ -62,6 +62,29 @@ class phpZenfolio {
 	var $id;
 
 	/**
+	 * The Zenfolio API returns error codes as strings.  PHP does NOT support the
+	 * use of strings for error codes at this time (http://bugs.php.net/bug.php?id=39615)
+	 *
+	 * To get around this, I've created the following array of Zenfolio API error
+	 * strings to numbers. I've made up these numbers as Zenfolio don't have an
+	 * official list.
+	 *
+	 * The error string is prepended to the message so it can easily be identified.
+	 */
+	var $errCode = array( 'E_ACCOUNTLOCKED' => 90001,
+						  'E_CONNECTIONISNOTSECURE' => 90002,
+						  'E_DUPLICATEEMAIL' => 90003,
+						  'E_DUPLICATELOGINNAME' => 90004,
+						  'E_INVALIDCREDENTIALS' => 90005,
+						  'E_INVALIDFILEFORMAT' => 90006,
+						  'E_INVALIDPARAM' => 90007,
+						  'E_FILESIZEQUOTAEXCEEDED' => 90008,
+						  'E_NOSUCHOBJECT' => 90009,
+						  'E_NOTAUTHENTICATED' => 90010,
+						  'E_NOTAUTHORIZED' => 90011,
+						  'E_STORAGEQUOTAEXCEEDED' => 90012,
+						  'E_UNSPECIFIEDERROR' => 90013 );
+	/**
 	 * phpZenfolio uses the HTTP::Request2 module for communication with Zenfolio.
 	 * This PEAR module supports 3 adapters: socket (default), curl and mock.
 	 * This option allows application developers to easily over-ride this and
@@ -378,8 +401,8 @@ class phpZenfolio {
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
-			$this->error_code = $this->parsed_response['code']; // TODO: PHP doesn't support string error codes so I need a string -> int table from Zenfolio so I can start setting apt codes.
-            $this->error_msg = $this->parsed_response['error']['message'];
+			$this->error_code = $this->errCode[$this->parsed_response['error']['code']];
+            $this->error_msg = $this->parsed_response['error']['code'] . ' : '.$this->parsed_response['error']['message'];
 			$this->parsed_response = FALSE;
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		} else {
