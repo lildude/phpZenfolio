@@ -376,7 +376,7 @@ phpZenfolio comes with 3 examples to help get you on your way.
    * `example-user.php' illustrates how to display the first 100 photos of a
      specified user's first public gallery or collection.
 
-You can see these examples in action at `http://phpzenfolio.com/examples'.
+You can see these examples in action here (http://phpzenfolio.com/examples).
 
 
 

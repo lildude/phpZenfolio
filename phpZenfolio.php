@@ -138,7 +138,7 @@ class phpZenfolio {
         // All calls to the API are done via the POST method using the PEAR::HTTP_Request2 package.
 		require_once 'HTTP/Request2.php';
 		$this->req = new HTTP_Request2();
-		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE ) );
+		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30 ) );
         $this->req->setMethod( HTTP_Request2::METHOD_POST );
 		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
