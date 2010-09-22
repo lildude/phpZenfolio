@@ -6,12 +6,27 @@
  *			     without having to worry about the finer details of the API.
  *
  * @author Colin Seymour <lildood@gmail.com>
- * @version 1.0
+ * @version 0.1r50
  * @package phpZenfolio
- * @license GPLv3 {@link http://www.gnu.org/copyleft/gpl.html}
+ * @license GNU General Public License version 3 {@link http://www.gnu.org/licenses/gpl.html}
+ * @copyright Copyright (c) 2010 Colin Seymour
  *
- * Released under GNU General Public License version 3({@link http://www.gnu.org/copyleft/gpl.html})
+ * This file is part of phpZenfolio.
  *
+ * phpZenfolio is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * phpZenfolio is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with phpZenfolio.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * 
  * For more information about the class and upcoming tools and toys using it,
  * visit {@link http://phpzenfolio.com/}.
  *
@@ -56,7 +71,7 @@ error_reporting( E_ERROR );
  * @package phpZenfolio
  **/
 class phpZenfolio {
-	var $version = '1.0';
+	var $version = '0.1r50';
 	var $cacheType = FALSE;
 	var $cache_expire = 3600;
 	var $authToken;

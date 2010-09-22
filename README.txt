@@ -4,14 +4,31 @@ phpZenfolio 1.0 - PHP Wrapper for the Zenfolio API
 Written by Colin Seymour
 Project Homepage: http://phpzenfolio.com/
 
+phpZenfolio is a PHP wrapper class for the Zenfolio API and is based on work I
+have done in phpSmug (http://phpsmug.com).
+
 Released under GNU General Public License version 3
-(http://www.gnu.org/copyleft/gpl.html)
+(http://www.gnu.org/licenses/gpl.html)
+
+Copyright (C) 2010 Colin Seymour
+
+     This file is part of phpZenfolio.
+
+     phpZenfolio is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published by the Free
+     Software Foundation, either version 3 of the License, or (at your option)
+     any later version.
+
+     phpZenfolio is distributed in the hope that it will be useful, but WITHOUT
+     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+     more details.
+
+     You should have received a copy of the GNU General Public License along
+     with phpZenfolio.  If not, see <http://www.gnu.org/licenses/>.
 
 For more information about the class and upcoming tools and applications using
 phpZenfolio, visit `http://phpzenfolio.com/'.
-
-phpZenfolio is a PHP wrapper class for the Zenfolio API and is based on work I
-have done in phpSmug (http://phpsmug.com).
 
 Please help support the maintenance and development of phpZenfolio by making a
 donation (http://phpzenfolio.com/donate).
