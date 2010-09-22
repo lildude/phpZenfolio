@@ -1,16 +1,24 @@
 <html>
 <head>
-<title>phpZenfolio Popular Galleries Example</title>
+	<title>phpZenfolio Popular Sets Example</title>
+	<style type="text/css">
+		body { background-color: #fff; color: #444; }
+		div { width: 600px; margin: 0 auto; text-align: center; }
+		img { border: 0;}
+	</style>
 </head>
 <body>
+	<div>
+		<a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
+		<h2>phpZenfolio Popular Sets Example</h2>
 <?php
 /* Last updated with phpZenfolio 1.0
  *
- * This example file shows you how to get a list of the most popular public
+ * This example file shows you how to get a list of the 100 most popular public
  * galleries created on Zenfolio.
  *
  * You'll need to replace:
- * - <APP NAME/VER (URL)> with your application name, version and URL
+ * - $appname to your application name, version and URL
  *
  * The application name and version is required, but there is no required format.
  * See the README.txt for a suggested format.
@@ -19,8 +27,10 @@
  */
 require_once("../phpZenfolio.php");
 
+$appname = '';
+
 try {
-	$f = new phpZenfolio("AppName=<APP NAME/VER (URL)>");
+	$f = new phpZenfolio("AppName={$appname}");
 	// Get list of recent galleries
 	$galleries = $f->GetPopularSets('Gallery', 0, 100);
 	// Display the 60x60 cropped thumbnails and link to the gallery page for each.

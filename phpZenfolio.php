@@ -6,7 +6,7 @@
  *			     without having to worry about the finer details of the API.
  *
  * @author Colin Seymour <lildood@gmail.com>
- * @version 0.1
+ * @version 1.0
  * @package phpZenfolio
  * @license GPLv3 {@link http://www.gnu.org/copyleft/gpl.html}
  *
@@ -22,6 +22,9 @@
  *          {@link http://phpzenfolio.com/docs/}
  * 
  * phpZenfolio is based on the worked I have done in phpSmug ({@link http://phpsmug.com}).
+ *
+ * Please help support the maintenance and development of phpZenfolio by making
+ * a donation ({@link http://phpzenfolio.com/donate}).
  **/
 
 /** 
@@ -53,7 +56,7 @@ error_reporting( E_ERROR );
  * @package phpZenfolio
  **/
 class phpZenfolio {
-	var $version = '0.1';
+	var $version = '1.0';
 	var $cacheType = FALSE;
 	var $cache_expire = 3600;
 	var $authToken;
@@ -693,7 +696,7 @@ class phpZenfolio {
 	  *
 	  * @access public
 	  * @param array	$photo The Photo object of the photo you with to obtain
-	  *					the url for
+	  *					the url for.
 	  * @param int		$size The Zenfolio supplied image size.
 	  *					See http://www.zenfolio.com/zf/help/api/guide/download
 	  *					for a list of sizes.

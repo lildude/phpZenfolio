@@ -11,32 +11,45 @@ For more information about the class and upcoming tools and applications using
 phpZenfolio, visit `http://phpzenfolio.com/'.
 
 phpZenfolio is a PHP wrapper class for the Zenfolio API and is based on work I
-have done in phpSmug (http://phpsmug.com) .
+have done in phpSmug (http://phpsmug.com).
+
+Please help support the maintenance and development of phpZenfolio by making a
+donation (http://phpzenfolio.com/donate).
 
 
 
-
-Dependencies
+Requirements
 ============
 
-phpZenfolio is written in PHP and utilises functionality supplied with PHP 5
-and PEAR.
+phpZenfolio is written in PHP and utilises functionality supplied with PHP 5.2
+and PEAR 1.9.0.
 
-Required:
+From a PHP perspective, the only requirement is PHP 5.2 is compiled with GD
+support enabled.
 
-PEAR HTTP::Request2 0.5.2 (http://pear.php.net/package/HTTP_Request2/) or later.
+To make things easy, phpZenfolio supplies copies of the required PEAR packages
+and uses these by default. If you prefer to use the system installed PEAR and
+PEAR packages, you will need to ensure you have the following installed:
 
-Copies of these are included with phpZenfolio, but only really as a failback
-just in case your system doesn't have the necessary modules installed already.
+   * PEAR 1.9.0 (http://pear.php.net/index.php) or later
 
-PHP 5.1.2 or later with GD
+   * HTTP::Request2 0.5.2 (http://pear.php.net/package/HTTP_Request2/) or later.
 
-Optional:
+If you wish to use a database for caching, you will also need the following
+PEAR packages:
 
-If using database for caching:
+   * MDB2 2.5.0b3 (http://pear.php.net/package/MDB2) or later.
 
-MDB2 2.5.0b3 (http://pear.php.net/package/MDB2) or later.  MDB2_Driver_* for
-the database you wish to use.  sqlite2  and MySQL are included.
+   * The corresponding MDB2_Driver_*
+     (http://pear.php.net/search.php?q=MDB2_Driver&in=packages&setPerPage=20)
+     for the database you wish to use.  sqlite2  and MySQL are included with
+     phpZenfolio.
+
+If you choose to use the system supplied PEAR packages, you will need to change
+the `include_path' set on line 43 of `phpZenfolio.php' so the system installed
+files are sourced BEFORE the phpZenfolio packaged files.
+
+
 
 Installation
 ============
@@ -62,9 +75,10 @@ is important.
 
 To make things easy for developers, phpZenfolio also provides several of it's
 own methods.  These methods are: `login()', `enableCache', `clearCache',
-`upload()' and `setProxy'.  All phpZenfolio methods, and it's constructor, take
-their arguments either as an associative array or as a list of `param=value'
-srings.  These methods are documented in more detail later in this document.
+`upload()', `setProxy()' and `imageUrl()'.  All phpZenfolio methods, and its
+constructor, take their arguments either as an associative array or as a list
+of `param=value' strings.  These methods are documented in more detail later in
+this document.
 
 To use phpZenfolio, all you have to do is include the file in your PHP scripts
 and create an instance.  For example:
@@ -109,18 +123,18 @@ pass the array variable.
 
 With the instance instantiated, you can now interact with the Zenfolio API
 using Zenfolio's native methods exactly as they're documented. Arguments to all
-Zenfolio native methods must be provided in the order and as they are
-documented in the API documentation.  For example, use the following to get all
-recent sets that are of the PhotoSetType 'Gallery':
+Zenfolio native methods must be provided in the order they are documented in
+the API documentation.  For example, use the following to get all recent sets
+that are of the PhotoSetType 'Gallery':
 
      $f->GetRecentSets('Gallery', 0, 3);
 
 Note the method's capitalisation and the arguments, these are as they are
-documented in the GetRecentSets
+documented in the GetRecentSets()
 (http://www.zenfolio.com/zf/help/api/ref/methods/getrecentsets) method
 documentation.
 
-Some of the Zenfolio API methods, like `CreatePhotoSet', require an object to
+Some of the Zenfolio API methods, like `CreatePhotoSet()', require an object to
 be passed as one of the arguments. The object can be passed either as an
 associative array:
 
@@ -157,12 +171,11 @@ Many of the Zenfolio API methods are open to all users, whether they have
 Zenfolio accounts or not, however anything private or related to modification
 requires authentication.
 
-The Zenfolio API provides two methods of authentication, Plain-Text
-(http://www.zenfolio.com/zf/help/api/guide/auth/auth-plain) and
-Challenge-Response
-(http://www.zenfolio.com/zf/help/api/guide/auth/auth-challenge).  Both are
-equally good with the slightly more secure method being the Challenge-Response
-method as your password never travels across the wire.
+The Zenfolio API provides two methods of authentication
+(http://www.zenfolio.com/zf/help/api/guide/auth): Plain-Text and
+Challenge-Response.  Both are equally good with the slightly more secure method
+being the Challenge-Response method as your password never travels across the
+wire.
 
 phpZenfolio allows you to use the API methods as documented, however to make
 things easy, a single `login()' method exists to allow you to authentication
@@ -201,8 +214,6 @@ The `enableCache()' method takes 4 arguments:
    * `type' - Required
      This is "db" for database or "fs" for filesystem.
 
-
-
    * `dsn' - Required for type=db
      This a PEAR::MDB2 DSN connection string, for example:
 
@@ -215,8 +226,6 @@ The `enableCache()' method takes 4 arguments:
      See MDB2 Manual
      (http://pear.php.net/manual/en/package.database.mdb2.intro.php) for
      details.
-
-
 
    * `cache_dir' - Required for type=fs
 
@@ -241,14 +250,10 @@ The `enableCache()' method takes 4 arguments:
      Alternatively, you can specify a directory that is outside of the web
      server's document root.
 
-
-
    * `cache_expire' - Optional
      Default: 3600
 
      This is the maximum age of each cache entry in seconds.
-
-
 
    * `table' - Optional
      Default: phpzenfolio_cache
@@ -314,9 +319,11 @@ using the API's `CreatePhotoFromUrl()' method.
      You can find full details on the options this method accepts in the
      CreatePhotoFromUrl
      (http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl)
-     method documentation. Unfortunately, unlike the `upload()' method, there
-     is no way to pass things like the photo title etc at the time of upload.
-     You will need to set these later using the `UpdatePhoto()' method.
+     method documentation.
+
+     Unfortunately, there is no way to pass things like the photo title etc at
+     the time of upload. You will need to set these later using the
+     `UpdatePhoto()' method.
 
 
 
@@ -349,8 +356,25 @@ Other Notes
 
      For example:
 
-          $f = new phpZenfolio("APIKey=<value>");
-          $f->setProxy("server=<proxy_server>", "port=<value>", "user=<proxy_username>", "password=<proxy_password>");
+          $f = new phpZenfolio("AppName=<value>");
+          $f->setProxy("server=<proxy_server>",
+              "port=<value>",
+              "user=<proxy_username>",
+              "password=<proxy_password>");
+
+   * To make it easy to obtain the direct URL to an image, phpZenfolio supplies
+     a `imageURL()' method that takes the Photo object as returned by methods
+     like `LoadPhoto()' and `LoadPhotoSetPhotos()' and an integer for the
+     desired photo size where the integer is one of those documented at
+     `http://www.zenfolio.com/zf/help/api/guide/download'.
+
+     For example:
+
+          $f = new phpZenfolio("AppName=<value>");
+          $photos = $f->LoadPhotoSetPhotos(<photosetID>, <startingIndex>, <numberOfPhotos>);
+          foreach ($photos as $photo) {
+              echo '<img src="',phpZenfolio::imageUrl($photo, 1),'" />';
+          }
 
    * If phpZenfolio encounters an error, or Zenfolio returns a "failure"
      response, an exception will be thrown and your application will stop
@@ -367,18 +391,16 @@ Examples
 
 phpZenfolio comes with 3 examples to help get you on your way.
 
-   * `example-recent.php' illustrates how to obtain the 100 most recent
-     galleries and display their title image linking to each individual galler.
+   * `example-popular.php' illustrates how to obtain the 100 most popular
+     galleries and display their title image linking to each individual gallery.
 
    * `example-photoset.php' illustrates how to login and display the images in
-     your first gallery.
+     your first photoset or collection.
 
    * `example-user.php' illustrates how to display the first 100 photos of a
      specified user's first public gallery or collection.
 
-You can see these examples in action here (http://phpzenfolio.com/examples).
-
-
+You can see these examples in action at `http://phpzenfolio.com/examples'.
 
 And that's all folks.
 
@@ -394,9 +416,8 @@ If you are using phpZenfolio and wish to let the world know, drop me a line via
 the contact form at `http://phpzenfolio.com/about' and I'll add a link and
 brief description to the sidebar on `http://phpzenfolio.com/'.
 
-Oh, and by all means, please feel free to show your appreciation for
-phpZenfolio by buying me a beer or two (see the sidebar at
-`http://phpzenfolio.com/').
+If you use and find phpZenfolio useful, please help support its maintenance and
+development by making a donation (http://phpzenfolio.com/donate).
 
 This document is also available online at `http://phpzenfolio.com/docs'.
 
