@@ -6,7 +6,7 @@
  *			     without having to worry about the finer details of the API.
  *
  * @author Colin Seymour <lildood@gmail.com>
- * @version 0.1r51
+ * @version 1.0r54
  * @package phpZenfolio
  * @license GNU General Public License version 3 {@link http://www.gnu.org/licenses/gpl.html}
  * @copyright Copyright (c) 2010 Colin Seymour
@@ -71,7 +71,7 @@ error_reporting( E_ERROR );
  * @package phpZenfolio
  **/
 class phpZenfolio {
-	var $version = '0.1r51';
+	var $version = '1.0r54';
 	var $cacheType = FALSE;
 	var $cache_expire = 3600;
 	var $authToken;
