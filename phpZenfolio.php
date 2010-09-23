@@ -79,31 +79,6 @@ class phpZenfolio {
 	var $id;
 
 	/**
-	 * The Zenfolio API returns error codes as strings.  PHP does NOT support the
-	 * use of strings for error codes at this time (http://bugs.php.net/bug.php?id=39615)
-	 *
-	 * To get around this, I've created the following array of Zenfolio API error
-	 * strings to numbers. I've made up these numbers as Zenfolio don't have an
-	 * official list.
-	 *
-	 * The error string is prepended to the message so it can easily be identified.
-	 *
-	 * @access private
-	 */
-	private $errCode = array( 'E_ACCOUNTLOCKED' => 90001,
-						  'E_CONNECTIONISNOTSECURE' => 90002,
-						  'E_DUPLICATEEMAIL' => 90003,
-						  'E_DUPLICATELOGINNAME' => 90004,
-						  'E_INVALIDCREDENTIALS' => 90005,
-						  'E_INVALIDFILEFORMAT' => 90006,
-						  'E_INVALIDPARAM' => 90007,
-						  'E_FILESIZEQUOTAEXCEEDED' => 90008,
-						  'E_NOSUCHOBJECT' => 90009,
-						  'E_NOTAUTHENTICATED' => 90010,
-						  'E_NOTAUTHORIZED' => 90011,
-						  'E_STORAGEQUOTAEXCEEDED' => 90012,
-						  'E_UNSPECIFIEDERROR' => 90013 );
-	/**
 	 * phpZenfolio uses the HTTP::Request2 module for communication with Zenfolio.
 	 * This PEAR module supports 3 adapters: socket (default), curl and mock.
 	 * This option allows application developers to easily over-ride this and
@@ -159,9 +134,17 @@ class phpZenfolio {
 		$this->AppName = $args['AppName'];
         // All calls to the API are done via the POST method using the PEAR::HTTP_Request2 package.
 		require_once 'HTTP/Request2.php';
-		$this->req = new HTTP_Request2();
+		/*$this->req = new HTTP_Request2();
 		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30 ) );
         $this->req->setMethod( HTTP_Request2::METHOD_POST );
+		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+									  'Content-Type' => 'application/json' ) );
+		 */
+		require_once 'httpRequest.php';
+		$this->req = new httpRequest();
+		$this->req->setConfig( array( 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30 ) );
+		$this->req->setMethod( 'post' );
 		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'Content-Type' => 'application/json' ) );
@@ -414,7 +397,7 @@ class phpZenfolio {
 
 		if ( !( $this->response = $this->getCached( $args ) ) ) {
 			$this->req->setBody( json_encode( $args ) );
-			try {
+			/*try {
 				$response = $this->req->send();
 				if ( 200 == $response->getStatus() ) {
 					$this->response = $response->getBody();
@@ -424,6 +407,20 @@ class phpZenfolio {
 					$code = $response->getStatus();
 					throw new Exception( $msg, $code );
 				}
+			}
+			catch ( HTTP_Request2_Exception $e ) {
+				throw new Exception( $e );
+			}*/
+			try {
+				;
+				if ( $this->req->execute() === TRUE ) {
+					$this->response = $this->req->getBody();
+					$this->cache( $args, $this->response );
+				}/* else {
+					$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
+					$code = $response->getStatus();
+					throw new Exception( $msg, $code );
+				}*/
 			}
 			catch ( HTTP_Request2_Exception $e ) {
 				throw new Exception( $e );
@@ -438,7 +435,7 @@ class phpZenfolio {
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
-			$this->error_code = $this->errCode[$this->parsed_response['error']['code']];
+			$this->error_code = self::errCode( $this->parsed_response['error']['code'] );
             $this->error_msg = $this->parsed_response['error']['code'] . ' : '.$this->parsed_response['error']['message'];
 			$this->parsed_response = FALSE;
 			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
@@ -720,5 +717,37 @@ class phpZenfolio {
 	 public static function imageUrl( $photo, $size ) {
 		 return "http://{$photo['UrlHost']}/{$photo['UrlCore']}-{$size}.jpg?sn={$photo['Sequence']}&tk={$photo['UrlToken']}";
 	 }
+
+	/**
+	 * The Zenfolio API returns error codes as strings.  PHP does NOT support the
+	 * use of strings for error codes at this time (http://bugs.php.net/bug.php?id=39615)
+	 *
+	 * To get around this, I've created the following array of Zenfolio API error
+	 * strings to numbers. I've made up these numbers as Zenfolio don't have an
+	 * official list.
+	 *
+	 * The error string is prepended to the message so it can easily be identified.
+	 *
+	 * @access private
+	 * @return int
+	 */
+	private static function errCode( $string )
+	{
+		$errCodes = array( 'E_ACCOUNTLOCKED' => 90001,
+						  'E_CONNECTIONISNOTSECURE' => 90002,
+						  'E_DUPLICATEEMAIL' => 90003,
+						  'E_DUPLICATELOGINNAME' => 90004,
+						  'E_INVALIDCREDENTIALS' => 90005,
+						  'E_INVALIDFILEFORMAT' => 90006,
+						  'E_INVALIDPARAM' => 90007,
+						  'E_FILESIZEQUOTAEXCEEDED' => 90008,
+						  'E_NOSUCHOBJECT' => 90009,
+						  'E_NOTAUTHENTICATED' => 90010,
+						  'E_NOTAUTHORIZED' => 90011,
+						  'E_STORAGEQUOTAEXCEEDED' => 90012,
+						  'E_UNSPECIFIEDERROR' => 90013 );
+		return $errCodes[$string];
+
+	}
 }
 ?>
