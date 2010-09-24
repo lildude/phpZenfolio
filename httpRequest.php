@@ -43,7 +43,7 @@ class httpRequest
 		'adapter'			=> 'curl',
         'connect_timeout'   => 10,
         'timeout'           => 0,
-        'buffer_size'       => 16384,
+        'buffer_size'       => 16384,	// Only applies to PHP 5.3.3 and later.
 
         'proxy_host'        => '',
         'proxy_port'        => '',
@@ -51,14 +51,15 @@ class httpRequest
         'proxy_password'    => '',
         'proxy_auth_scheme' => 'basic',
 
+		// TODO: These don't apply to SocketRequestProcessor yet
         'ssl_verify_peer'   => FALSE,
         'ssl_verify_host'   => FALSE,
-        'ssl_cafile'        => null,
-        'ssl_capath'        => null,
-        'ssl_local_cert'    => null,
-        'ssl_passphrase'    => null,
+        'ssl_cafile'        => NULL,
+        'ssl_capath'        => NULL,
+        'ssl_local_cert'    => NULL,
+        'ssl_passphrase'    => NULL,
 
-        'follow_redirects'  => false,
+        'follow_redirects'  => FALSE,
         'max_redirects'     => 5
     );
 
@@ -81,7 +82,7 @@ class httpRequest
 			$this->processor = new CurlRequestProcessor;
 		}
 		else {
-			$this->processor = 'SOCKET';
+			$this->processor = new SocketRequestProcessor();
 		}
 	}
 
@@ -154,14 +155,14 @@ class httpRequest
 	}
 
 	/**
-	 * Set the timeout.
+	 * Set the timeout. This is independent of the connect_timeout.
 	 *
 	 * @param int $timeout Timeout in seconds
 	 * @return void
 	 */
 	public function setTimeout( $timeout )
 	{
-		$this->config['timeout'] = $this->config['connect_timeout'] = $timeout;
+		$this->config['timeout'] = $timeout;
 	}
 
 	/**
@@ -175,6 +176,7 @@ class httpRequest
 		$adapter = strtolower( $adapter );
 		if ( $adapter == 'curl' || $adapter == 'socket' ) {
 			$this->config['adapter'] = $adapter;
+			$this->processor = ( $adapter == 'curl' ) ? new CurlRequestProcessor() : new SocketRequestProcessor();
 		}
 	}
 
@@ -301,7 +303,7 @@ class httpRequest
 	}
 	
 }
-/*
+
 
 class SocketRequestProcessor implements RequestProcessor
 {
@@ -315,7 +317,7 @@ class SocketRequestProcessor implements RequestProcessor
 		$result = $this->_request( $method, $url, $headers, $body, $config );
 
 		if ( $result ) {
-			list( $response_headers, $response_body )= $result;
+			list( $response_headers, $response_body ) = $result;
 			$this->response_headers = $response_headers;
 			$this->response_body = $response_body;
 			$this->executed = TRUE;
@@ -323,23 +325,25 @@ class SocketRequestProcessor implements RequestProcessor
 			return TRUE;
 		}
 		else {
+			// TODO: Create unit test to test this
 			return $result;
 		}
 	}
 
-	private function _request( $method, $url, $headers, $body, $config )
-	{
-		$urlbits = parse_url( $url );
+	//private function _request( $method, $url, $headers, $body, $config )
+	//{
+	//	$urlbits = parse_url( $url );
 
-		return $this->_work( $method, $urlbits, $headers, $body, $config );
-	}
+	//	return $this->_work( $method, $urlbits, $headers, $body, $config );
+	//}
 
 	//@todo Does not honor timeouts on the actual request, only on the connect() call.
 
-	private function _work( $method, $urlbits, $headers, $body, $config )
+	private function _request( $method, $url, $headers, $body, $config )
 	{
 		$_errno = 0;
 		$_errstr = '';
+		$urlbits = parse_url( $url );
 
 		if ( !isset( $urlbits['port'] ) || $urlbits['port'] == 0 ) {
 			if ( $urlbits['scheme'] == 'https' ) {
@@ -352,14 +356,15 @@ class SocketRequestProcessor implements RequestProcessor
 			}
 		}
 
-		$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['timeout'] );
+		$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
 
 		if ( $fp === FALSE ) {
+			// TODO: Create unit test for this.  Once I get proxy working, this should be picked up by the current unit tests.
 			throw new HttpRequestException( sprintf( _t('%s: Error %d: %s while connecting to %s:%d'), __CLASS__, $_errno, $_errstr, $urlbits['host'], $urlbits['port'] ), $_errno );
 		}
 
-		// timeout to fsockopen() only applies for connecting
 		stream_set_timeout( $fp, $config['timeout'] );
+		//stream_set_read_buffer( $fp, $config['buffer_size'] ); // TODO: Only applies to PHP >= 5.3.3
 
 		// fix headers
 		$headers['Host'] = $urlbits['host'];
@@ -375,7 +380,7 @@ class SocketRequestProcessor implements RequestProcessor
 		$request = array();
 		$resource = $urlbits['path'];
 		if ( isset( $urlbits['query'] ) ) {
-			$resource.= '?' . $urlbits['query'];
+			$resource .= '?' . $urlbits['query'];
 		}
 
 		$request[] = "{$method} {$resource} HTTP/1.1";
@@ -392,13 +397,13 @@ class SocketRequestProcessor implements RequestProcessor
 		$out = implode( "\r\n", $request );
 
 		if ( ! fwrite( $fp, $out, strlen( $out ) ) ) {
-			return Error::raise( _t('Error writing to socket.') );
+			throw new HttpRequestException( 'Error writing to socket.' );
 		}
 
 		$in = '';
 
 		while ( ! feof( $fp ) ) {
-			$in.= fgets( $fp, 1024 );
+			$in .= fgets( $fp, 1024 );
 		}
 
 		fclose( $fp );
@@ -411,7 +416,7 @@ class SocketRequestProcessor implements RequestProcessor
 
 		preg_match( '#^HTTP/1\.[01] ([1-5][0-9][0-9]) ?(.*)#', $header, $status_matches );
 
-		if ( $status_matches[1] == '301' || $status_matches[1] == '302' ) {
+		if ( ( $status_matches[1] == '301' || $status_matches[1] == '302' ) && $config['follow_redirects'] ) {
 			if ( preg_match( '|^Location: (.+)$|mi', $header, $location_matches ) ) {
 				$redirect_url = $location_matches[1];
 
@@ -423,25 +428,25 @@ class SocketRequestProcessor implements RequestProcessor
 
 				$this->redir_count++;
 
-				if ( $this->redir_count > $this->max_redirs ) {
-					return Error::raise( _t('Maximum number of redirections exceeded.') );
+				if ( $this->redir_count > $this->config['max_redirects'] ) {
+					throw new HttpRequestException( 'Maximum number of redirections exceeded.' );
 				}
 
 				return $this->_work( $method, $redirect_urlbits, $headers, $body, $config['timeout'] );
 			}
 			else {
-				return Error::raise( _t('Redirection response without Location: header.') );
+				throw new HttpRequestException( 'Redirection response without Location: header.' );
 			}
 		}
 
-		if ( preg_match( '|^Transfer-Encoding:.*chunked.*|mi', $header ) ) {
-			$body = $this->_unchunk( $body );
-		}
+		//if ( preg_match( '|^Transfer-Encoding:.*chunked.*|mi', $header ) ) {
+		//	$body = $this->_unchunk( $body );
+		//}
 
 		return array( $header, $body );
 	}
 
-	private function _unchunk( $body )
+	/* private function _unchunk( $body )
 	{
 		// see <http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html>
 		$result = '';
@@ -461,21 +466,21 @@ class SocketRequestProcessor implements RequestProcessor
 		// this ignores trailing header fields
 
 		return $result;
-	}
+	} */
 
-	public function get_response_body()
+	public function getBody()
 	{
 		if ( ! $this->executed ) {
-			return 'Request did not yet execute.';
+			return 'Request has not executed yet.';
 		}
 
 		return $this->response_body;
 	}
 
-	public function get_response_headers()
+	public function getHeaders()
 	{
 		if ( ! $this->executed ) {
-			return 'Request did not yet execute.';
+			return 'Request has not executed yet.';
 		}
 
 		return $this->response_headers;
@@ -483,7 +488,6 @@ class SocketRequestProcessor implements RequestProcessor
 }
 
 
-*/
 
 class CurlRequestProcessor implements RequestProcessor
 {

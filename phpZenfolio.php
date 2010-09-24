@@ -84,16 +84,6 @@ class phpZenfolio {
 	protected $authToken;
 
 	/**
-	 * phpZenfolio uses the HTTP::Request2 module for communication with Zenfolio.
-	 * This PEAR module supports 3 adapters: socket (default), curl and mock.
-	 * This option allows application developers to easily over-ride this and
-	 * select their own adapter.
-	 *
-	 * @var string
-	 **/
-	var $adapter = 'curl';
-	
-	/**
      * When your database cache table hits this many rows, a cleanup
      * will occur to get rid of all of the old rows and cleanup the
      * garbage in the table.  For most personal apps, 1000 rows should
@@ -311,6 +301,7 @@ class phpZenfolio {
 					$result = $this->cache_db->exec( $sql );
 				}
 				if ( PEAR::isError( $result ) ) {
+					// TODO: Create unit test for this
 					throw new PhpZenfolioException( $result );
 				}
 			} elseif ( $this->cacheType == 'fs' ) {
@@ -403,6 +394,7 @@ class phpZenfolio {
 		$this->parsed_response = json_decode( $this->response, true );
 
 		if ( $this->parsed_response['id'] != $this->id ) {
+			// TODO: Create unit test for this - maybe create a mock object or a private function that modifies the id
 			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']} )";
 			$this->parsed_response = FALSE;
 			throw new PhpZenfolioException( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
@@ -522,7 +514,8 @@ class phpZenfolio {
 
 		// Create a new object as we still need the other request object
 		$upload_req = new httpRequest();
-		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30, 'monkey' => 5 ) );
+		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30 ) );
+		$upload_req->setMethod( 'post' );
 		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									   'Content-Type' => mime_content_type( $args['File'] ),	// mime_content_type is technically deprecated, however it's replacement, FileInfo is only supplied by default in PHP 5.3.
@@ -534,6 +527,7 @@ class phpZenfolio {
 		}
 
 		if ( ! is_null( $this->keyring ) ) {
+			// TODO: Create unit test for this
 			$upload_req->setHeader( 'X-Zenfolio-Keyring', $this->keyring );
 		}
 
@@ -622,6 +616,18 @@ class phpZenfolio {
 	public function setAuthToken( $token )
 	{
 		$this->authToken = $token;
+	}
+
+	/**
+	 * Set the adapter.  Allowed options are 'curl' or 'socket'. Default is 'curl'
+	 */
+	public function setAdapter( $adapter )
+	{
+		$adapter = strtolower( $adapter );
+		if ( $adapter == 'curl' || $adapter == 'socket' ) {
+			//$this->adapter = $adapter;
+			$this->req->setAdapter( $adapter );
+		}
 	}
 	
 	 /**
