@@ -61,10 +61,15 @@ $path_delimiter = ( strpos( __FILE__, ':' ) !== false ) ? ';' : ':';
 ini_set( 'include_path', dirname( __FILE__ ) . '/PEAR' . $path_delimiter . ini_get( 'include_path' ) );
 
 /**
- * We can't have this E_STRICT as PEAR is still not 100% PHP5 E_STRICT compliant yet.
+ * If using DB caching, lower this severity as PEAR 100% isn't E_STRICT compliant yet.
  **/
 error_reporting( E_ERROR );
 
+/**
+ * We define our own exception so application developers can differentiate these
+ * from other exceptions.
+ */
+class PhpZenfolioException extends Exception {}
 /**
  * phpZenfolio - all of the phpZenfolio functionality is provided in this class
  *
@@ -72,11 +77,11 @@ error_reporting( E_ERROR );
  **/
 class phpZenfolio {
 	var $version = '1.0';
-	var $cacheType = FALSE;
-	var $cache_expire = 3600;
-	var $authToken;
-	var $keyring;
-	var $id;
+	private $cacheType = FALSE;
+	private $cache_expire = 3600;
+	private $keyring;
+	private $id;
+	protected $authToken;
 
 	/**
 	 * phpZenfolio uses the HTTP::Request2 module for communication with Zenfolio.
@@ -86,7 +91,7 @@ class phpZenfolio {
 	 *
 	 * @var string
 	 **/
-	var $adapter = 'socket';
+	var $adapter = 'curl';
 	
 	/**
      * When your database cache table hits this many rows, a cleanup
@@ -129,22 +134,14 @@ class phpZenfolio {
 		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.4';
 		// Set the Application Name
 		if ( ! $args['AppName'] ) {
-			throw new Exception( 'Application name missing.', -10001 );
+			throw new PhpZenfolioException( 'Application name missing.', -10001 );
 		}
 		$this->AppName = $args['AppName'];
-        // All calls to the API are done via the POST method using the PEAR::HTTP_Request2 package.
-		require_once 'HTTP/Request2.php';
-		/*$this->req = new HTTP_Request2();
-		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30 ) );
-        $this->req->setMethod( HTTP_Request2::METHOD_POST );
-		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
-									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
-									  'Content-Type' => 'application/json' ) );
-		 */
+        // All calls to the API are done via POST using my own constructed httpRequest class
+		
 		require_once 'httpRequest.php';
 		$this->req = new httpRequest();
-		$this->req->setConfig( array( 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30 ) );
-		$this->req->setMethod( 'post' );
+		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 60, 'monkey' => 5 ) );
 		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'Content-Type' => 'application/json' ) );
@@ -277,7 +274,7 @@ class phpZenfolio {
 		if ( $this->cacheType == 'db' ) {
 			$result = $this->cache_db->queryOne( 'SELECT response FROM ' . $this->cache_table . ' WHERE request = ' . $this->cache_db->quote( $reqhash ) . ' AND ' . $this->cache_db->quote( $diff ) . ' < expiration' );
 			if ( PEAR::isError( $result ) ) {
-				throw new Exception( $result );
+				throw new PhpZenfolioException( $result );
 			}
 			if ( !empty( $result ) ) {
                 return $result;
@@ -314,7 +311,7 @@ class phpZenfolio {
 					$result = $this->cache_db->exec( $sql );
 				}
 				if ( PEAR::isError( $result ) ) {
-					throw new Exception( $result );
+					throw new PhpZenfolioException( $result );
 				}
 			} elseif ( $this->cacheType == 'fs' ) {
 				$file = $this->cache_dir . '/' . $reqhash . '.cache';
@@ -368,6 +365,7 @@ class phpZenfolio {
 	 *  things are secure by default
 	 *
 	 * @access private
+	 * @throws PhpZenfolioException
 	 * @param string	$command Zenfolio API method to call in the request
 	 * @param array		$args optional Array of arguments that form the API call
 	 * @return string	JSON response from Zenfolio, or an Exception is thrown
@@ -397,34 +395,9 @@ class phpZenfolio {
 
 		if ( !( $this->response = $this->getCached( $args ) ) ) {
 			$this->req->setBody( json_encode( $args ) );
-			/*try {
-				$response = $this->req->send();
-				if ( 200 == $response->getStatus() ) {
-					$this->response = $response->getBody();
-					$this->cache( $args, $this->response );
-				} else {
-					$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
-					$code = $response->getStatus();
-					throw new Exception( $msg, $code );
-				}
-			}
-			catch ( HTTP_Request2_Exception $e ) {
-				throw new Exception( $e );
-			}*/
-			try {
-				;
-				if ( $this->req->execute() === TRUE ) {
-					$this->response = $this->req->getBody();
-					$this->cache( $args, $this->response );
-				}/* else {
-					$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
-					$code = $response->getStatus();
-					throw new Exception( $msg, $code );
-				}*/
-			}
-			catch ( HTTP_Request2_Exception $e ) {
-				throw new Exception( $e );
-			}
+			$this->req->execute();
+			$this->response = $this->req->getBody();
+			$this->cache( $args, $this->response );
 		}
 
 		$this->parsed_response = json_decode( $this->response, true );
@@ -432,13 +405,13 @@ class phpZenfolio {
 		if ( $this->parsed_response['id'] != $this->id ) {
 			$this->error_msg = "Incorrect response ID. (request ID: {$this->id}, response ID: {$this->parsed_response['id']} )";
 			$this->parsed_response = FALSE;
-			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
+			throw new PhpZenfolioException( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
 			$this->error_code = self::errCode( $this->parsed_response['error']['code'] );
             $this->error_msg = $this->parsed_response['error']['code'] . ' : '.$this->parsed_response['error']['message'];
 			$this->parsed_response = FALSE;
-			throw new Exception( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
+			throw new PhpZenfolioException( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		} else {
 			$this->error_code = FALSE;
             $this->error_msg = FALSE;
@@ -504,7 +477,7 @@ class phpZenfolio {
 			$passHash = hash( 'sha256', $salt.$password, TRUE );
 			$chalHash = hash( 'sha256', $challenge.$passHash, TRUE );
 			$proof = array_values( unpack( 'C*', $chalHash ) );
-			$this->authToken = $this->Authenticate( $cr['Challenge'] , $proof );
+			$this->setAuthToken( $this->Authenticate( $cr['Challenge'] , $proof ) );
 		}
 		return $this->authToken;
 	}
@@ -526,46 +499,44 @@ class phpZenfolio {
 	public function upload()
 	{
 		$args = phpZenfolio::processArgs( func_get_args() );
-		if ( ! array_key_exists( 'PhotoSetId', $args ) && ! array_key_exists( 'UploadUrl', $args ) ) {
-			throw new Exception ( 'No PhotoSetId or UploadUrl specified.', -10002 );
+		if ( ! isset( $args['PhotoSetId'] ) && ! isset( $args['UploadUrl'] ) ) {
+			throw new PhpZenfolioException ( 'No PhotoSetId or UploadUrl specified.', -10002 );
 		}
 		if ( ! array_key_exists( 'File', $args ) ) {
-			throw new Exception( 'No upload file specified.', -10003 );
+			throw new PhpZenfolioException( 'No upload file specified.', -10003 );
 		}
-		
+
 		// Set FileName, if one isn't provided in the method call
 		if ( ! array_key_exists( 'filename', $args ) ) {
 			$args['filename'] = basename( $args['File'] );
 		}
 
-		// Ensure the FileName is phpZenfolio::urlencodeRFC3986 encoded - caters for stange chars and spaces
-		$args['filename'] = phpZenfolio::urlencodeRFC3986( $args['filename'] );
-
 		if ( is_file( $args['File'] ) ) {
-			$fileinfo = getimagesize($args['File'] );
+			//$fileinfo = getimagesize($args['File'] );
 			$fp = fopen( $args['File'], 'rb' );
 			$data = fread( $fp, filesize( $args['File'] ) );
 			fclose( $fp );
 		} else {
-			throw new Exception( "File doesn't exist: {$args['File']}", -10004 );
+			throw new PhpZenfolioException( "File doesn't exist: {$args['File']}", -10004 );
 		}
 
-		$upload_req = new HTTP_Request2();
-		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE ) );
-        $upload_req->setMethod( HTTP_Request2::METHOD_POST );
+		// Create a new object as we still need the other request object
+		$upload_req = new httpRequest();
+		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30, 'monkey' => 5 ) );
 		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
-									   'Content-type' => $fileinfo['mime'],
+									   'Content-Type' => mime_content_type( $args['File'] ),	// mime_content_type is technically deprecated, however it's replacement, FileInfo is only supplied by default in PHP 5.3.
 									   'Content-Length' => filesize( $args['File'] ),
 									   'Connection' => 'keep-alive' ) );
 
 		if ( ! is_null( $this->authToken ) ) {
 			$upload_req->setHeader( 'X-Zenfolio-Token', $this->authToken );
-		} else {
-			throw new Exception( 'No authentication token found. Please login before uploading.', -10005 );
 		}
 
-		// Set the proxy if one has been set earlier
+		if ( ! is_null( $this->keyring ) ) {
+			$upload_req->setHeader( 'X-Zenfolio-Keyring', $this->keyring );
+		}
+
 		if ( isset( $this->proxy ) && is_array( $this->proxy ) ) {
 			$upload_req->setConfig( array( 'proxy_host' => $this->proxy['server'],
 							          'proxy_port' => $this->proxy['port'],
@@ -586,35 +557,22 @@ class phpZenfolio {
 		if ( $args['UploadUrl'] ) {
 			$UploadUrl = $args['UploadUrl'];
 		}
-		
-		$opts = array();
+
+		$params = array();
 		foreach( $args as $name => $value ) {
 			if ( ! in_array( $name, array( 'UploadUrl', 'PhotoSetId', 'File' ) ) ) {
 				// The values passed should be urlencoded, but just in case they're not, we'll urldecode and then re-encode to be safe
 				$value = urldecode( $value );
 				$value = urlencode( $value );
-				$opts[] = "{$name}={$value}";
+				$params[$name] = $value;
 			}
 		}
 
-		$url = $UploadUrl . '?'. join( '&', $opts );
-		$upload_req->setURL( $url );
-
+		$upload_req->setURL( $UploadUrl );
+		$upload_req->setParams( $params );
 		$upload_req->setBody( $data );
-
-		try {
-			$response = $upload_req->send();
-			if ( 200 == $response->getStatus() ) {
-				$this->response = $response->getBody();
-			} else {
-				$msg = 'Request failed. HTTP Reason: '.$response->getReasonPhrase();
-				$code = $response->getStatus();
-				throw new Exception( $msg, $code );
-			}
-		}
-		catch ( HTTP_Request2_Exception $e ) {
-			throw new Exception( $e );
-		}
+		$upload_req->execute();
+		$this->response = $upload_req->getBody();
 
 		return $this->response;
 	}
@@ -645,19 +603,27 @@ class phpZenfolio {
 		return $result;
 	}
 
-	 /**
-	  * Static function to encode a string according to RFC3986.
-	  *
-	  * @static
-	  * @access private
-	  * @param string		$string The string requiring encoding
-	  * @return string
-	  **/
-	 private static function urlencodeRFC3986($string)
-	 {
-		return str_replace('%7E', '~', rawurlencode($string));
-	 }
- 
+	/**
+	 * Get the authToken.  This is only valid for just over 24 hours.
+	 *
+	 * @return string
+	 */
+	public function getAuthToken()
+	{
+		return $this->authToken;
+	}
+
+	/**
+	 * Set authToken.  This is useful for those who want to reuse the same authentication
+	 * token within a 24 hour period.
+	 * @param string	$token Token returned from login() method. Set to an empty string to unset.
+	 * @return void
+	 */
+	public function setAuthToken( $token )
+	{
+		$this->authToken = $token;
+	}
+	
 	 /**
 	  * Process arguments passed to method
 	  *
