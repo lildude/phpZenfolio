@@ -356,6 +356,24 @@ class SocketRequestProcessor implements RequestProcessor
 			}
 		}
 
+		/* TODO: Proxy code that needs to be implemented - copied from php.net
+		private function get_url_via_proxy()
+		{
+			$proxy_fp = fsockopen($this->get_proxy_name(), $this->get_proxy_port());
+
+			if (!$proxy_fp) {
+				return false;
+			}
+			fputs($proxy_fp, "GET " . $this->get_request_url() . " HTTP/1.0\r\nHost: " . $this->get_proxy_name() . "\r\n\r\n");
+			while (!feof($proxy_fp)) {
+				$proxy_cont .= fread($proxy_fp, 4096);
+			}
+			fclose($proxy_fp);
+			$proxy_cont = substr($proxy_cont, strpos($proxy_cont, "\r\n\r\n") + 4);
+			return $proxy_cont;
+
+		}
+		 */
 		$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
 
 		if ( $fp === FALSE ) {
