@@ -374,7 +374,12 @@ class SocketRequestProcessor implements RequestProcessor
 
 		}
 		 */
-		$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
+
+		if ( $config['proxy_host'] != '' ) {
+			$fp = @fsockopen( $config['proxy_host'], $$config['proxy_port'] );
+		} else {
+			$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
+		}
 
 		if ( $fp === FALSE ) {
 			// TODO: Create unit test for this.  Once I get proxy working, this should be picked up by the current unit tests.
@@ -414,14 +419,20 @@ class SocketRequestProcessor implements RequestProcessor
 
 		$out = implode( "\r\n", $request );
 
-		if ( ! fwrite( $fp, $out, strlen( $out ) ) ) {
-			throw new HttpRequestException( 'Error writing to socket.' );
+		if ( $config['proxy_host'] != '' ) {
+			if ( ! fputs($fp, "GET " . $url . " HTTP/1.0\r\nHost: " . $config['proxy_host'] . "\r\n\r\n") ) {
+				throw new HttpRequestException( 'Error writing to proxy.' );
+			}
+		} else {
+			if ( ! fwrite( $fp, $out, strlen( $out ) ) ) {
+				throw new HttpRequestException( 'Error writing to socket.' );
+			}
 		}
 
 		$in = '';
 
 		while ( ! feof( $fp ) ) {
-			$in .= fgets( $fp, 1024 );
+			$in .= fgets( $fp, 4096 );
 		}
 
 		fclose( $fp );
@@ -438,19 +449,13 @@ class SocketRequestProcessor implements RequestProcessor
 			if ( preg_match( '|^Location: (.+)$|mi', $header, $location_matches ) ) {
 				$redirect_url = $location_matches[1];
 
-				$redirect_urlbits = parse_url( $redirect_url );
-
-				if ( !isset( $redirect_url['host'] ) ) {
-					$redirect_urlbits['host'] = $urlbits['host'];
-				}
-
 				$this->redir_count++;
 
 				if ( $this->redir_count > $this->config['max_redirects'] ) {
 					throw new HttpRequestException( 'Maximum number of redirections exceeded.' );
 				}
 
-				return $this->_work( $method, $redirect_urlbits, $headers, $body, $config['timeout'] );
+				return $this->_request( $method, $redirect_url, $headers, $body, $config );
 			}
 			else {
 				throw new HttpRequestException( 'Redirection response without Location: header.' );
