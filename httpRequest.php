@@ -181,6 +181,16 @@ class httpRequest
 	}
 
 	/**
+	 * Get the currently selected adapter.
+	 *
+	 * This is more for unit testing purposes
+	 */
+	public function getAdapter()
+	{
+		return $this->config['adapter'];
+	}
+
+	/**
 	 * Set the destination url
 	 *
 	 * @param string $url Destination URL
@@ -376,14 +386,14 @@ class SocketRequestProcessor implements RequestProcessor
 		 */
 
 		if ( $config['proxy_host'] != '' ) {
-			$fp = @fsockopen( $config['proxy_host'], $$config['proxy_port'] );
+			$fp = @fsockopen( $transport . '://' . $config['proxy_host'], $config['proxy_port'], $_errno, $_errstr, $config['connect_timeout'] );
 		} else {
 			$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
 		}
 
 		if ( $fp === FALSE ) {
 			// TODO: Create unit test for this.  Once I get proxy working, this should be picked up by the current unit tests.
-			throw new HttpRequestException( sprintf( _t('%s: Error %d: %s while connecting to %s:%d'), __CLASS__, $_errno, $_errstr, $urlbits['host'], $urlbits['port'] ), $_errno );
+			throw new HttpRequestException( sprintf( '%s: Error %d: %s while connecting to %s:%d', __CLASS__, $_errno, $_errstr, $urlbits['host'], $urlbits['port'] ), $_errno );
 		}
 
 		stream_set_timeout( $fp, $config['timeout'] );
