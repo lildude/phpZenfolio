@@ -39,18 +39,10 @@ Requirements
 ============
 
 phpZenfolio is written in PHP and utilises functionality supplied with PHP 5.2
-and PEAR 1.9.0.
+and later and optionally PEAR.
 
-From a PHP perspective, the only requirement is PHP 5.2 is compiled with GD
-support enabled.
-
-To make things easy, phpZenfolio supplies copies of the required PEAR packages
-and uses these by default. If you prefer to use the system installed PEAR and
-PEAR packages, you will need to ensure you have the following installed:
-
-   * PEAR 1.9.0 (http://pear.php.net/index.php) or later
-
-   * HTTP::Request2 0.5.2 (http://pear.php.net/package/HTTP_Request2/) or later.
+From a PHP perspective, the only requirement is PHP 5.2 compiled with GD and
+optionally, curl support enabled.
 
 If you wish to use a database for caching, you will also need the following
 PEAR packages:
@@ -62,9 +54,7 @@ PEAR packages:
      for the database you wish to use.  sqlite2  and MySQL are included with
      phpZenfolio.
 
-If you choose to use the system supplied PEAR packages, you will need to change
-the `include_path' set on line 43 of `phpZenfolio.php' so the system installed
-files are sourced BEFORE the phpZenfolio packaged files.
+Please consult the above links for details on installing the PEAR modules.
 
 
 
@@ -91,11 +81,11 @@ Remember: *ALL* function names and arguments *ARE* case sensitive and the order
 is important.
 
 To make things easy for developers, phpZenfolio also provides several of it's
-own methods.  These methods are: `login()', `enableCache', `clearCache',
-`upload()', `setProxy()' and `imageUrl()'.  All phpZenfolio methods, and its
-constructor, take their arguments either as an associative array or as a list
-of `param=value' strings.  These methods are documented in more detail later in
-this document.
+own methods.  These methods are: `login()', `enableCache()', `clearCache()',
+`upload()', `setProxy()', `imageUrl()' and `setAdapter()'.  All phpZenfolio
+methods, and its constructor, take their arguments either as an associative
+array or as a list of `param=value' strings, unless otherwise documented.
+These methods are documented in more detail later in this document.
 
 To use phpZenfolio, all you have to do is include the file in your PHP scripts
 and create an instance.  For example:
@@ -176,8 +166,10 @@ associative array:
 
 All data returned by the method call is returned as the API documents it with
 the exception being objects are actually returned as arrays by phpZenfolio.  In
-the event of an error, phpZenfolio will throw an exception.  Your application
-will need to catch these exceptions.
+the event of an error, phpZenfolio will throw one of two exceptions:
+PhpZenfolioException in the event of a problem detected by phpZenfolio or
+HttpRequestException in the event of a problem detected by the code used to
+communicate with the API.  Your application will need to catch these exceptions.
 
 
 
@@ -237,10 +229,10 @@ The `enableCache()' method takes 4 arguments:
           mysql://user:password@server/database
 
      phpZenfolio uses the MDB2 PEAR module to interact with the database if you
-     use database based caching.  phpZenfolio only supplies copies of the
-     MDB2_Driver_mysql and MDB2_Driver_sqlite (sqlite 2) drivers.  If you need
-     a different driver, you will need to download and install it yourself.
-     See MDB2 Manual
+     use database based caching.  phpZenfolio does *NOT* supply the necessary
+     PEAR modules.  If you with to use a database for caching, you will need to
+     download and install PEAR, the MDB2 PEAR module and the corresponding
+     database driver yourself.  See MDB2 Manual
      (http://pear.php.net/manual/en/package.database.mdb2.intro.php) for
      details.
 
@@ -357,6 +349,17 @@ replace the old photo with the new using the Zenfolio ReplacePhoto()
 Other Notes
 ===========
 
+   * By default, phpZenfolio will attempt to use Curl to communicate with the
+     Zenfolio API endpoint if it's available.  If not, it'll revert to using
+     sockets based communication using `fsockopen()'.  If you wish to force the
+     use of sockets, you can do so using the phpZenfolio supplied
+     `setAdapter()' right after instantiating your instance:
+
+          $f = new phpZenfolio("AppName=<value>");
+          $f->setAdapter("socket");
+
+     Valid arguments are "curl" (default) and "socket".
+
    * Some people will need to use phpZenfolio from behind a proxy server.  You
      can use the `setProxy()' method to set the appropriate proxy settings.
 
@@ -379,6 +382,9 @@ Other Notes
               "user=<proxy_username>",
               "password=<proxy_password>");
 
+     Note: Proxy support is currently only available when using the default
+     "curl" adapter.
+
    * To make it easy to obtain the direct URL to an image, phpZenfolio supplies
      a `imageURL()' method that takes the Photo object as returned by methods
      like `LoadPhoto()' and `LoadPhotoSetPhotos()' and an integer for the
@@ -395,7 +401,9 @@ Other Notes
 
    * If phpZenfolio encounters an error, or Zenfolio returns a "failure"
      response, an exception will be thrown and your application will stop
-     executing.
+     executing. If there is a problem with communicating with the endpoint, a
+     HttpRequestException will be thrown.  If an error is detected elsewhere, a
+     PhpZenfolioException will be thrown.
 
      It is recommended that you configure your application to catch exceptions
      from phpZenfolio.
@@ -411,11 +419,11 @@ phpZenfolio comes with 3 examples to help get you on your way.
    * `example-popular.php' illustrates how to obtain the 100 most popular
      galleries and display their title image linking to each individual gallery.
 
-   * `example-photoset.php' illustrates how to login and display the images in
+   * `example-login.php' illustrates how to login and display the images in
      your first photoset or collection.
 
-   * `example-user.php' illustrates how to display the first 100 photos of a
-     specified user's first public gallery or collection.
+   * `example-search.php' illustrates how to display the first 100 photos of a
+     specified search term.
 
 You can see these examples in action at `http://phpzenfolio.com/examples'.
 
