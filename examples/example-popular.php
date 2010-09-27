@@ -37,7 +37,7 @@
  * This example file shows you how to get a list of the 100 most popular public
  * galleries created on Zenfolio.
  *
- * You'll need to replace:
+ * You'll need to set:
  * - $appname to your application name, version and URL
  *
  * The application name and version is required, but there is no required format.

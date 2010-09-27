@@ -38,7 +38,7 @@
  * galleries and collections created on Zenfolio and display the first 100 images
  * in the first gallery or collection in the list.
  *
- * You'll need to replace:
+ * You'll need to set:
  * - $appname to your application name, version and URL
  * - $username to your Zenfolio username
  *

@@ -6,6 +6,8 @@
  * This code comes from Habari and the http class I found at http://www.phpfour.com/blog/2008/01/php-http-class/
  *
  * @author Colin Seymour
+ *
+ * @package phpZenfolio
  */
 
 class HttpRequestException extends Exception {}
@@ -75,8 +77,7 @@ class httpRequest
 		$this->setTimeout( $timeout );
 		$this->setHeader( array( 'User-Agent' => $this->user_agent ) );
 
-		// can't use curl's followlocation in safe_mode with open_basedir, so
-		// fallback to socket for now
+		// can't use curl's followlocation in safe_mode with open_basedir, so fallback to socket for now
 		if ( function_exists( 'curl_init' ) && ( $this->config['adapter'] == 'curl' )
 			 && ! ( ini_get( 'safe_mode' ) && ini_get( 'open_basedir' ) ) ) {
 			$this->processor = new CurlRequestProcessor;
@@ -129,7 +130,9 @@ class httpRequest
 	/**
 	 * Set the request query parameters (i.e., the URI's query string).
 	 * Will be merged with existing query info from the URL.
+	 *
 	 * @param array $params
+	 * @return void
 	 */
 	public function setParams( $params )
 	{
@@ -141,8 +144,13 @@ class httpRequest
 
 	/**
 	 * Add a request header.
-	 * @param mixed $header		The header to add, either as an associative array 'name'=>'value' or as part of a $header $value string pair
-	 * @param mixed $value		The value for the header if passing the header as two arguments.
+	 *
+	 * @param mixed $header		The header to add, either as an associative array
+	 *							'name'=>'value' or as part of a $header $value
+	 *							string pair.
+	 * @param mixed $value		The value for the header if passing the header as
+	 *							two arguments.
+	 * @return void
 	 */
 	public function setHeader( $header, $value = NULL )
 	{
@@ -152,6 +160,19 @@ class httpRequest
 		else {
 			$this->headers[$header] = $value;
 		}
+	}
+
+	/**
+	 * Return the response headers. Raises a warning and returns if the request wasn't executed yet.
+	 *
+	 * @return mixed
+	 */
+	public function getHeaders()
+	{
+		if ( !$this->executed ) {
+			return 'Trying to fetch response headers for a pending request.';
+		}
+		return $this->response_headers;
 	}
 
 	/**
@@ -181,9 +202,9 @@ class httpRequest
 	}
 
 	/**
-	 * Get the currently selected adapter.
+	 * Get the currently selected adapter. This is more for unit testing purposes
 	 *
-	 * This is more for unit testing purposes
+	 * @return string
 	 */
 	public function getAdapter()
 	{
@@ -191,9 +212,20 @@ class httpRequest
 	}
 
 	/**
+	 * Get the params
+	 *
+	 * @return array
+	 */
+	public function getParams()
+	{
+		return $this->params;
+	}
+
+	/**
 	 * Set the destination url
 	 *
 	 * @param string $url Destination URL
+	 * @return void
 	 */
 	public function setUrl( $url )
 	{
@@ -205,7 +237,8 @@ class httpRequest
 	/**
 	 * Set request body
 	 *
-	 * @param
+	 * @param mixed
+	 * @return void
 	 */
 	public function setBody( $body )
 	{
@@ -215,18 +248,9 @@ class httpRequest
 	}
 
 	/**
-	 * Return the response headers. Raises a warning and returns '' if the request wasn't executed yet.
-	 */
-	public function getHeaders()
-	{
-		if ( !$this->executed ) {
-			return 'Trying to fetch response headers for a pending request.';
-		}
-		return $this->response_headers;
-	}
-
-	/**
-	 * Return the response body. Raises a warning and returns '' if the request wasn't executed yet.
+	 * Return the response body. Raises a warning and returns if the request wasn't executed yet.
+	 *
+	 * @return mixed
 	 */
 	public function getBody()
 	{
@@ -236,15 +260,12 @@ class httpRequest
 		return $this->response_body;
 	}
 
-	public function getParams()
-	{
-		return $this->params;
-	}
-	
 	/**
 	 * Actually execute the request.
-	 * On success, returns TRUE and populates the response_body and response_headers fields.
-	 * On failure, throws error.
+	 *
+	 * @return mixed	On success, returns TRUE and populates the response_body
+	 *					and response_headers fields.
+	 *					On failure, throws error.
 	 */
 	public function execute()
 	{
@@ -265,6 +286,8 @@ class httpRequest
 
 	/**
 	 * Tidy things up in preparation of execution.
+	 *
+	 * @return void
 	 */
 	private function prepare()
 	{
@@ -288,8 +311,10 @@ class httpRequest
 
 	/**
 	 * Merge query params from the URL with given params.
+	 *
 	 * @param string $url The URL
 	 * @param string $params An associative array of parameters.
+	 * @return string
 	 */
 	private function mergeQueryParams( $url, $params )
 	{
@@ -340,15 +365,6 @@ class SocketRequestProcessor implements RequestProcessor
 		}
 	}
 
-	//private function _request( $method, $url, $headers, $body, $config )
-	//{
-	//	$urlbits = parse_url( $url );
-
-	//	return $this->_work( $method, $urlbits, $headers, $body, $config );
-	//}
-
-	//@todo Does not honor timeouts on the actual request, only on the connect() call.
-
 	private function _request( $method, $url, $headers, $body, $config )
 	{
 		$_errno = 0;
@@ -366,38 +382,19 @@ class SocketRequestProcessor implements RequestProcessor
 			}
 		}
 
-		/* TODO: Proxy code that needs to be implemented - copied from php.net
-		private function get_url_via_proxy()
-		{
-			$proxy_fp = fsockopen($this->get_proxy_name(), $this->get_proxy_port());
-
-			if (!$proxy_fp) {
-				return false;
-			}
-			fputs($proxy_fp, "GET " . $this->get_request_url() . " HTTP/1.0\r\nHost: " . $this->get_proxy_name() . "\r\n\r\n");
-			while (!feof($proxy_fp)) {
-				$proxy_cont .= fread($proxy_fp, 4096);
-			}
-			fclose($proxy_fp);
-			$proxy_cont = substr($proxy_cont, strpos($proxy_cont, "\r\n\r\n") + 4);
-			return $proxy_cont;
-
-		}
-		 */
-
 		if ( $config['proxy_host'] != '' ) {
+			// TODO: Finish the implementation of proxy support for socket connections. Until then, only curl has proxy support.
+			throw new HttpRequestException( 'The "socket" adapter type does NOT currently support connecting via a proxy. Please use the "curl" adapter type.', -1 );
 			$fp = @fsockopen( $transport . '://' . $config['proxy_host'], $config['proxy_port'], $_errno, $_errstr, $config['connect_timeout'] );
 		} else {
 			$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
 		}
 
 		if ( $fp === FALSE ) {
-			// TODO: Create unit test for this.  Once I get proxy working, this should be picked up by the current unit tests.
 			throw new HttpRequestException( sprintf( '%s: Error %d: %s while connecting to %s:%d', __CLASS__, $_errno, $_errstr, $urlbits['host'], $urlbits['port'] ), $_errno );
 		}
 
 		stream_set_timeout( $fp, $config['timeout'] );
-		//stream_set_read_buffer( $fp, $config['buffer_size'] ); // TODO: Only applies to PHP >= 5.3.3
 
 		// fix headers
 		$headers['Host'] = $urlbits['host'];
@@ -418,7 +415,6 @@ class SocketRequestProcessor implements RequestProcessor
 
 		$request[] = "{$method} {$resource} HTTP/1.1";
 		$request = array_merge( $request, $merged_headers );
-
 		$request[] = '';
 
 		if ( $method === 'POST' ) {
@@ -429,14 +425,8 @@ class SocketRequestProcessor implements RequestProcessor
 
 		$out = implode( "\r\n", $request );
 
-		if ( $config['proxy_host'] != '' ) {
-			if ( ! fputs($fp, "GET " . $url . " HTTP/1.0\r\nHost: " . $config['proxy_host'] . "\r\n\r\n") ) {
-				throw new HttpRequestException( 'Error writing to proxy.' );
-			}
-		} else {
-			if ( ! fwrite( $fp, $out, strlen( $out ) ) ) {
-				throw new HttpRequestException( 'Error writing to socket.' );
-			}
+		if ( ! fwrite( $fp, $out, strlen( $out ) ) ) {
+			throw new HttpRequestException( 'Error writing to socket.' );
 		}
 
 		$in = '';
@@ -447,10 +437,9 @@ class SocketRequestProcessor implements RequestProcessor
 
 		fclose( $fp );
 
-		list( $header, $body )= explode( "\r\n\r\n", $in );
+		list( $header, $body ) = explode( "\r\n\r\n", $in );
 
-		// to make the following REs match $ correctly
-		// and thus not break parse_url
+		// to make the following REs match $ correctly and thus not break parse_url
 		$header = str_replace( "\r\n", "\n", $header );
 
 		preg_match( '#^HTTP/1\.[01] ([1-5][0-9][0-9]) ?(.*)#', $header, $status_matches );
@@ -458,55 +447,24 @@ class SocketRequestProcessor implements RequestProcessor
 		if ( ( $status_matches[1] == '301' || $status_matches[1] == '302' ) && $config['follow_redirects'] ) {
 			if ( preg_match( '|^Location: (.+)$|mi', $header, $location_matches ) ) {
 				$redirect_url = $location_matches[1];
-
 				$this->redir_count++;
-
 				if ( $this->redir_count > $this->config['max_redirects'] ) {
 					throw new HttpRequestException( 'Maximum number of redirections exceeded.' );
 				}
-
 				return $this->_request( $method, $redirect_url, $headers, $body, $config );
 			}
 			else {
 				throw new HttpRequestException( 'Redirection response without Location: header.' );
 			}
 		}
-
-		//if ( preg_match( '|^Transfer-Encoding:.*chunked.*|mi', $header ) ) {
-		//	$body = $this->_unchunk( $body );
-		//}
-
 		return array( $header, $body );
 	}
-
-	/* private function _unchunk( $body )
-	{
-		// see <http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html>
-		$result = '';
-		$chunk_size = 0;
-
-		do {
-			$chunk = explode( "\r\n", $body, 2 );
-			list( $chunk_size_str, )= explode( ';', $chunk[0], 2 );
-			$chunk_size = hexdec( $chunk_size_str );
-
-			if ( $chunk_size > 0 ) {
-				$result .= MultiByte::substr( $chunk[1], 0, $chunk_size );
-				$body = MultiByte::substr( $chunk[1], $chunk_size+1 );
-			}
-		}
-		while ( $chunk_size > 0 );
-		// this ignores trailing header fields
-
-		return $result;
-	} */
 
 	public function getBody()
 	{
 		if ( ! $this->executed ) {
 			return 'Request has not executed yet.';
 		}
-
 		return $this->response_body;
 	}
 
@@ -515,7 +473,6 @@ class SocketRequestProcessor implements RequestProcessor
 		if ( ! $this->executed ) {
 			return 'Request has not executed yet.';
 		}
-
 		return $this->response_headers;
 	}
 }
@@ -534,10 +491,6 @@ class CurlRequestProcessor implements RequestProcessor
 	{
 		if ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) {
 			$this->can_followlocation = FALSE;
-		}
-
-		if ( !defined( 'FILE_CACHE_LOCATION' ) ) {
-			define( 'FILE_CACHE_LOCATION', '/tmp' );
 		}
 	}
 
@@ -595,36 +548,6 @@ class CurlRequestProcessor implements RequestProcessor
         }
 		curl_setopt_array($ch, $options);
 
-
-		/**
-		 * @todo Possibly use this to write straight to cache
-		 */
-		/*
-		$tmp = tempnam( FILE_CACHE_LOCATION, 'RR' );
-		if ( ! $tmp ) {
-			trigger_error( sprintf( ' %s: CURL Error. Unable to create temporary file name.', array( __CLASS__ ) ), E_USER_WARNING );
-		}
-
-		$fh = @fopen( $tmp, 'w+b' );
-		if ( ! $fh ) {
-			trigger_error( sprintf( ' %s: CURL Error. Unable to open temporary file.', array( __CLASS__ ) ), E_USER_WARNING );
-		}
-
-		curl_setopt( $ch, CURLOPT_FILE, $fh );
-
-		$success = curl_exec( $ch );
-
-		if( $success ) {
-			rewind( $fh );
-			$body = stream_get_contents( $fh );
-		}
-		fclose( $fh );
-		unset( $fh );
-
-		if ( isset( $tmp ) && file_exists ($tmp ) ) {
-			unlink( $tmp );
-		}*/
-
 		$body = curl_exec( $ch );
 
 		if ( curl_errno( $ch ) !== 0 ) {
@@ -649,7 +572,7 @@ class CurlRequestProcessor implements RequestProcessor
 
 	public function _headerfunction( $ch, $str )
 	{
-		$this->_headers.= $str;
+		$this->_headers .= $str;
 		return strlen( $str );
 	}
 

@@ -42,34 +42,17 @@
  * a donation ({@link http://phpzenfolio.com/donate}).
  **/
 
-/** 
- * Decide which include path delimiter to use.  Windows should be using a semi-colon
- * and everything else should be using a colon.  If this isn't working on your system,
- * comment out this if statement and manually set the correct value into $path_delimiter.
- * 
- * @var string
- **/
-$path_delimiter = ( strpos( __FILE__, ':' ) !== false ) ? ';' : ':';
-
-/**
- * This will add the packaged PEAR files into the include path for PHP, allowing you
- * to use them transparently.  This will prefer the phpZenfolio suplied PEAR files.
- * If you want to prefer the system installed files, swap the two elements around
- * the $path_delimiter variable.  If you don't have, the PEAR packages installed,
- * you can leave this like it is and move on.
- **/
-ini_set( 'include_path', dirname( __FILE__ ) . '/PEAR' . $path_delimiter . ini_get( 'include_path' ) );
-
 /**
  * If using DB caching, lower this severity as PEAR 100% isn't E_STRICT compliant yet.
  **/
-error_reporting( E_ERROR );
+error_reporting( E_STRICT );
 
 /**
  * We define our own exception so application developers can differentiate these
  * from other exceptions.
  */
 class PhpZenfolioException extends Exception {}
+
 /**
  * phpZenfolio - all of the phpZenfolio functionality is provided in this class
  *
@@ -128,8 +111,6 @@ class phpZenfolio {
 		}
 		$this->AppName = $args['AppName'];
         // All calls to the API are done via POST using my own constructed httpRequest class
-		
-		require_once 'httpRequest.php';
 		$this->req = new httpRequest();
 		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 60, 'monkey' => 5 ) );
 		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
@@ -164,9 +145,9 @@ class phpZenfolio {
 	 *
 	 * Params can be passed as an associative array or a set of param=value strings.
 	 *
-	 * phpZenfolio only provides copies of the MDB2_Driver_sqlite (sqlite2) and
-	 * MDB2_Driver_mysql drivers for MDB2.  If you need to use a different database
-	 * you will need to install the appropriate MDB2 driver.
+	 * phpZenfolio uses the PEAR MDB2 module to interact with the database. You will
+	 * need to install PEAR, the MDB2 module and corresponding database driver yourself
+	 * in order to use database caching. 
 	 *
 	 * @access public
 	 * @param string		$type The type of cache to use. It must be either
@@ -422,6 +403,8 @@ class phpZenfolio {
 	 * @param string	$port Proxy server port
 	 * @param string	$username (Optional) Proxy username
 	 * @param string	$password (Optional) Proxy password
+	 * @param string	$auth_scheme (Optional) Proxy authentication scheme.
+	 *					Defaults to "basic". Other supported option is "digest".
 	 * @return void
 	 **/
     public function setProxy()
@@ -431,10 +414,12 @@ class phpZenfolio {
 		$this->proxy['port'] = $args['port'];
 		$this->proxy['username'] = $args['username'];
 		$this->proxy['password'] = $args['password'];
+		$this->proxy['auth_scheme'] = $args['auth_scheme'];
 		$this->req->setConfig( array( 'proxy_host' => $args['server'],
 							          'proxy_port' => $args['port'],
 									  'proxy_user' => $args['username'],
-									  'proxy_password' => $args['password'] ) );
+									  'proxy_password' => $args['password'],
+									  'proxy_auth_scheme' => $args['auth_scheme'] ) );
     }
  
 	/**
@@ -722,4 +707,594 @@ class phpZenfolio {
 
 	}
 }
+
+/****************** Custom HTTP Request Classes *******************************
+ *
+ * The classes below could be put into individual files, but to keep things simple
+ * I've included them in this file.
+ */
+
+class HttpRequestException extends Exception {}
+
+interface RequestProcessor
+{
+	public function execute( $method, $url, $headers, $body, $config );
+	public function getBody();
+	public function getHeaders();
+}
+
+class httpRequest
+{
+	private $method = 'POST';
+	private $url;
+	private $params = array();
+	private $headers = array();
+	private $postdata = array();
+	private $files = array();
+	private $body = '';
+	private $processor = NULL;
+	private $executed = FALSE;
+
+	private $response_body = '';
+	private $response_headers = '';
+
+	private $user_agent = "Unknown application using phpZenfolio/1.0";
+
+	/**
+    * Adapter Configuration parameters
+    * @var  array
+    * @see  setConfig()
+    */
+    protected $config = array(
+		'adapter'			=> 'curl',
+        'connect_timeout'   => 10,
+        'timeout'           => 0,
+        'buffer_size'       => 16384,	// Only applies to PHP 5.3.3 and later.
+
+        'proxy_host'        => '',
+        'proxy_port'        => '',
+        'proxy_user'        => '',
+        'proxy_password'    => '',
+        'proxy_auth_scheme' => 'basic',
+
+		// TODO: These don't apply to SocketRequestProcessor yet
+        'ssl_verify_peer'   => FALSE,
+        'ssl_verify_host'   => FALSE,
+        'ssl_cafile'        => NULL,
+        'ssl_capath'        => NULL,
+        'ssl_local_cert'    => NULL,
+        'ssl_passphrase'    => NULL,
+
+        'follow_redirects'  => FALSE,
+        'max_redirects'     => 5
+    );
+
+	/**
+	 * @param string	$url URL to request
+	 * @param string	$method Request method to use (default 'POST')
+	 * @param int		$timeout Timeout in seconds (default 30)
+	 */
+	public function __construct( $url, $method = 'POST', $timeout = 30 )
+	{
+		$this->method = strtoupper( $method );
+		$this->url = $url;
+		$this->setTimeout( $timeout );
+		$this->setHeader( array( 'User-Agent' => $this->user_agent ) );
+
+		// can't use curl's followlocation in safe_mode with open_basedir, so fallback to socket for now
+		if ( function_exists( 'curl_init' ) && ( $this->config['adapter'] == 'curl' )
+			 && ! ( ini_get( 'safe_mode' ) && ini_get( 'open_basedir' ) ) ) {
+			$this->processor = new CurlRequestProcessor;
+		}
+		else {
+			$this->processor = new SocketRequestProcessor();
+		}
+	}
+
+	/**
+	 * Set adapter configuration options
+	 *
+	 * @param mixed			$config An array of options or a string name with a
+	 *						corresponding $value
+	 * @param mixed			$value
+	 * @return httpRequest
+	 */
+	public function setConfig( $config, $value = null )
+    {
+        if ( is_array( $config ) ) {
+            foreach ( $config as $name => $value ) {
+                $this->setConfig( $name, $value );
+            }
+
+        } else {
+            if ( !array_key_exists( $config, $this->config ) ) {
+				// We only trigger an error here as using an unknow config param isn't fatal
+				trigger_error( "Unknown configuration parameter '{$config}'", E_USER_WARNING );
+            } else {
+				$this->config[$config] = $value;
+			}
+        }
+        return $this;
+    }
+
+	/**
+     * Set http method
+     *
+     * @param string HTTP method to use (GET, POST or PUT)
+     * @return void
+     */
+    public function setMethod( $method )
+	{
+		$method = strtoupper( $method );
+        if ( $method == 'GET' || $method == 'POST' || $method == 'PUT' ) {
+            $this->method = $method;
+		}
+    }
+
+	/**
+	 * Set the request query parameters (i.e., the URI's query string).
+	 * Will be merged with existing query info from the URL.
+	 *
+	 * @param array $params
+	 * @return void
+	 */
+	public function setParams( $params )
+	{
+		if ( ! is_array( $params ) ) {
+			$params = parse_str( $params );
+		}
+		$this->params = $params;
+	}
+
+	/**
+	 * Add a request header.
+	 *
+	 * @param mixed $header		The header to add, either as an associative array
+	 *							'name'=>'value' or as part of a $header $value
+	 *							string pair.
+	 * @param mixed $value		The value for the header if passing the header as
+	 *							two arguments.
+	 * @return void
+	 */
+	public function setHeader( $header, $value = NULL )
+	{
+		if ( is_array( $header ) ) {
+			$this->headers = array_merge( $this->headers, $header );
+		}
+		else {
+			$this->headers[$header] = $value;
+		}
+	}
+
+	/**
+	 * Return the response headers. Raises a warning and returns if the request wasn't executed yet.
+	 *
+	 * @return mixed
+	 */
+	public function getHeaders()
+	{
+		if ( !$this->executed ) {
+			return 'Trying to fetch response headers for a pending request.';
+		}
+		return $this->response_headers;
+	}
+
+	/**
+	 * Set the timeout. This is independent of the connect_timeout.
+	 *
+	 * @param int $timeout Timeout in seconds
+	 * @return void
+	 */
+	public function setTimeout( $timeout )
+	{
+		$this->config['timeout'] = $timeout;
+	}
+
+	/**
+	 * Set the adapter to use.  Accepted values are "curl" and "socket"
+	 *
+	 * @param string $adapter
+	 * @return void
+	 */
+	public function setAdapter( $adapter )
+	{
+		$adapter = strtolower( $adapter );
+		if ( $adapter == 'curl' || $adapter == 'socket' ) {
+			$this->config['adapter'] = $adapter;
+			$this->processor = ( $adapter == 'curl' ) ? new CurlRequestProcessor() : new SocketRequestProcessor();
+		}
+	}
+
+	/**
+	 * Get the currently selected adapter. This is more for unit testing purposes
+	 *
+	 * @return string
+	 */
+	public function getAdapter()
+	{
+		return $this->config['adapter'];
+	}
+
+	/**
+	 * Get the params
+	 *
+	 * @return array
+	 */
+	public function getParams()
+	{
+		return $this->params;
+	}
+
+	/**
+	 * Set the destination url
+	 *
+	 * @param string $url Destination URL
+	 * @return void
+	 */
+	public function setUrl( $url )
+	{
+		if ( $url ) {
+            $this->url = $url;
+		}
+	}
+
+	/**
+	 * Set request body
+	 *
+	 * @param mixed
+	 * @return void
+	 */
+	public function setBody( $body )
+	{
+		if ( $this->method === 'POST' ) {
+			$this->body = $body;
+		}
+	}
+
+	/**
+	 * Return the response body. Raises a warning and returns if the request wasn't executed yet.
+	 *
+	 * @return mixed
+	 */
+	public function getBody()
+	{
+		if ( !$this->executed ) {
+			return 'Trying to fetch response body for a pending request.';
+		}
+		return $this->response_body;
+	}
+
+	/**
+	 * Actually execute the request.
+	 *
+	 * @return mixed	On success, returns TRUE and populates the response_body
+	 *					and response_headers fields.
+	 *					On failure, throws error.
+	 */
+	public function execute()
+	{
+		$this->prepare();
+		$result = $this->processor->execute( $this->method, $this->url, $this->headers, $this->body, $this->config );
+
+		if ( $result ) {
+			$this->response_headers = $this->processor->getHeaders();
+			$this->response_body = $this->processor->getBody();
+			$this->executed = TRUE;
+			return TRUE;
+		}
+		else {
+			$this->executed = FALSE;
+			return $result;
+		}
+	}
+
+	/**
+	 * Tidy things up in preparation of execution.
+	 *
+	 * @return void
+	 */
+	private function prepare()
+	{
+		// remove anchors (#foo) from the URL
+		$this->url = preg_replace( '/(#.*?)?$/', '', $this->url );
+		// merge query params from the URL with params given
+		$this->url = $this->mergeQueryParams( $this->url, $this->params );
+
+		if ( $this->method === 'POST' ) {
+			if ( !isset( $this->headers['Content-Type'] ) || ( $this->headers['Content-Type'] == 'application/json' ) ) {
+				// Just being careful
+				$this->setHeader( array( 'Content-Type' => 'application/json' ) );
+				if( $this->body != '' && count( $this->postdata ) > 0 ) {
+					$this->body .= '&';
+				}
+				$this->body .= http_build_query( $this->postdata, '', '&' );
+			}
+			$this->setHeader( array( 'Content-Length' => strlen( $this->body ) ) );
+		}
+	}
+
+	/**
+	 * Merge query params from the URL with given params.
+	 *
+	 * @param string $url The URL
+	 * @param string $params An associative array of parameters.
+	 * @return string
+	 */
+	private function mergeQueryParams( $url, $params )
+	{
+		$urlparts = parse_url( $url );
+
+		if ( ! isset( $urlparts['query'] ) ) {
+			$urlparts['query'] = '';
+		}
+
+		if ( ! is_array( $params ) ) {
+			parse_str( $params, $params );
+		}
+
+		if ( $urlparts['query'] != '' ) {
+			$parts = array_merge( parse_str( $qparts ) , $params );
+		} else {
+			$parts = $params;
+		}
+		$urlparts['query'] = http_build_query( $parts, '', '&' );
+		return ( $urlparts['query'] != '' ) ? $url .'?'. $urlparts['query'] : $url;
+	}
+
+}
+
+
+class SocketRequestProcessor implements RequestProcessor
+{
+	private $response_body = '';
+	private $response_headers = '';
+	private $executed = FALSE;
+	private $redir_count = 0;
+
+	public function execute( $method, $url, $headers, $body, $config )
+	{
+		$result = $this->_request( $method, $url, $headers, $body, $config );
+
+		if ( $result ) {
+			list( $response_headers, $response_body ) = $result;
+			$this->response_headers = $response_headers;
+			$this->response_body = $response_body;
+			$this->executed = TRUE;
+
+			return TRUE;
+		}
+		else {
+			// TODO: Create unit test to test this
+			return $result;
+		}
+	}
+
+	private function _request( $method, $url, $headers, $body, $config )
+	{
+		$_errno = 0;
+		$_errstr = '';
+		$urlbits = parse_url( $url );
+
+		if ( !isset( $urlbits['port'] ) || $urlbits['port'] == 0 ) {
+			if ( $urlbits['scheme'] == 'https' ) {
+				$urlbits['port'] = 443;
+				$transport = 'ssl';
+			}
+			else {
+				$urlbits['port'] = 80;
+				$transport = 'tcp';
+			}
+		}
+
+		if ( $config['proxy_host'] != '' ) {
+			// TODO: Finish the implementation of proxy support for socket connections. Until then, only curl has proxy support.
+			throw new HttpRequestException( 'The "socket" adapter type does NOT currently support connecting via a proxy. Please use the "curl" adapter type.', -1 );
+			$fp = @fsockopen( $transport . '://' . $config['proxy_host'], $config['proxy_port'], $_errno, $_errstr, $config['connect_timeout'] );
+		} else {
+			$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
+		}
+
+		if ( $fp === FALSE ) {
+			throw new HttpRequestException( sprintf( '%s: Error %d: %s while connecting to %s:%d', __CLASS__, $_errno, $_errstr, $urlbits['host'], $urlbits['port'] ), $_errno );
+		}
+
+		stream_set_timeout( $fp, $config['timeout'] );
+
+		// fix headers
+		$headers['Host'] = $urlbits['host'];
+		$headers['Connection'] = 'close';
+
+		// merge headers into a list
+		$merged_headers = array();
+		foreach ( $headers as $k => $v ) {
+			$merged_headers[] = $k . ': ' . $v;
+		}
+
+		// build the request
+		$request = array();
+		$resource = $urlbits['path'];
+		if ( isset( $urlbits['query'] ) ) {
+			$resource .= '?' . $urlbits['query'];
+		}
+
+		$request[] = "{$method} {$resource} HTTP/1.1";
+		$request = array_merge( $request, $merged_headers );
+		$request[] = '';
+
+		if ( $method === 'POST' ) {
+			$request[] = $body;
+		}
+
+		$request[] = '';
+
+		$out = implode( "\r\n", $request );
+
+		if ( ! fwrite( $fp, $out, strlen( $out ) ) ) {
+			throw new HttpRequestException( 'Error writing to socket.' );
+		}
+
+		$in = '';
+
+		while ( ! feof( $fp ) ) {
+			$in .= fgets( $fp, 4096 );
+		}
+
+		fclose( $fp );
+
+		list( $header, $body ) = explode( "\r\n\r\n", $in );
+
+		// to make the following REs match $ correctly and thus not break parse_url
+		$header = str_replace( "\r\n", "\n", $header );
+
+		preg_match( '#^HTTP/1\.[01] ([1-5][0-9][0-9]) ?(.*)#', $header, $status_matches );
+
+		if ( ( $status_matches[1] == '301' || $status_matches[1] == '302' ) && $config['follow_redirects'] ) {
+			if ( preg_match( '|^Location: (.+)$|mi', $header, $location_matches ) ) {
+				$redirect_url = $location_matches[1];
+				$this->redir_count++;
+				if ( $this->redir_count > $this->config['max_redirects'] ) {
+					throw new HttpRequestException( 'Maximum number of redirections exceeded.' );
+				}
+				return $this->_request( $method, $redirect_url, $headers, $body, $config );
+			}
+			else {
+				throw new HttpRequestException( 'Redirection response without Location: header.' );
+			}
+		}
+		return array( $header, $body );
+	}
+
+	public function getBody()
+	{
+		if ( ! $this->executed ) {
+			return 'Request has not executed yet.';
+		}
+		return $this->response_body;
+	}
+
+	public function getHeaders()
+	{
+		if ( ! $this->executed ) {
+			return 'Request has not executed yet.';
+		}
+		return $this->response_headers;
+	}
+}
+
+
+
+class CurlRequestProcessor implements RequestProcessor
+{
+	private $response_body = '';
+	private $response_headers = '';
+	private $executed = FALSE;
+	private $can_followlocation = TRUE;
+	private $_headers = '';
+
+	public function __construct()
+	{
+		if ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) {
+			$this->can_followlocation = FALSE;
+		}
+	}
+
+	public function execute( $method, $url, $headers, $body, $config )
+	{
+		$merged_headers = array();
+		foreach ( $headers as $k => $v ) {
+			$merged_headers[] = $k . ': ' . $v;
+		}
+
+		$ch = curl_init();
+
+		$options = array(
+			CURLOPT_URL				=> $url,
+			CURLOPT_HEADERFUNCTION	=> array( &$this, '_headerfunction' ),
+			CURLOPT_MAXREDIRS		=> $config['max_redirects'],
+			CURLOPT_CONNECTTIMEOUT	=> $config['connect_timeout'],
+			CURLOPT_TIMEOUT			=> $config['timeout'],
+			CURLOPT_SSL_VERIFYPEER	=> $config['ssl_verify_peer'],
+			CURLOPT_SSL_VERIFYHOST	=> $config['ssl_verify_host'],
+			CURLOPT_BUFFERSIZE		=> $config['buffer_size'],
+			CURLOPT_HTTPHEADER		=> $merged_headers,
+			CURLOPT_FOLLOWLOCATION	=> TRUE,
+			CURLOPT_RETURNTRANSFER	=> TRUE,
+		);
+
+		if ( $this->can_followlocation ) {
+			$options[CURLOPT_FOLLOWLOCATION] = TRUE; // Follow 302's and the like.
+		}
+
+		if ( $method === 'POST' ) {
+			$options[CURLOPT_POST] = TRUE; // POST mode.
+			$options[CURLOPT_POSTFIELDS] = $body;
+		}
+		else {
+			$options[CURLOPT_CRLF] = TRUE; // Convert UNIX newlines to \r\n
+		}
+
+		// set proxy, if needed
+        if ( $host = $config['proxy_host'] ) {
+            if ( ! ( $port = $config['proxy_port'] ) ) {
+                throw new HttpRequestException( 'Proxy port not provided' );
+            }
+            curl_setopt( $ch, CURLOPT_PROXY, $host . ':' . $port );
+            if ( $user = $config['proxy_user'] ) {
+                curl_setopt( $ch, CURLOPT_PROXYUSERPWD, $user . ':' . $config['proxy_password'] );
+                switch ( strtolower( $config['proxy_auth_scheme'] ) ) {
+                    case 'basic':
+                        curl_setopt( $ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC );
+                        break;
+                    case 'digest':
+                        curl_setopt( $ch, CURLOPT_PROXYAUTH, CURLAUTH_DIGEST );
+                }
+            }
+        }
+		curl_setopt_array($ch, $options);
+
+		$body = curl_exec( $ch );
+
+		if ( curl_errno( $ch ) !== 0 ) {
+			throw new HttpRequestException( sprintf( '%s: CURL Error %d: %s', __CLASS__, curl_errno( $ch ), curl_error( $ch ) ), curl_errno( $ch ) );
+		}
+
+		if ( substr( curl_getinfo( $ch, CURLINFO_HTTP_CODE ), 0, 1 ) != 2 ) {
+			throw new HttpRequestException( sprintf( 'Bad return code (%1$d) for: %2$s', curl_getinfo( $ch, CURLINFO_HTTP_CODE ), $url ), curl_errno( $ch ) );
+		}
+
+		curl_close( $ch );
+
+		// this fixes an E_NOTICE in the array_pop
+		$tmp_headers = explode( "\r\n\r\n", mb_substr( $this->_headers, 0, -4 ) );
+
+		$this->response_headers = array_pop( $tmp_headers );
+		$this->response_body = $body;
+		$this->executed = true;
+
+		return true;
+	}
+
+	public function _headerfunction( $ch, $str )
+	{
+		$this->_headers .= $str;
+		return strlen( $str );
+	}
+
+	public function getBody()
+	{
+		if ( ! $this->executed ) {
+			return 'Request has not executed yet.';
+		}
+		return $this->response_body;
+	}
+
+	public function getHeaders()
+	{
+		if ( ! $this->executed ) {
+			return 'Request has not executed yet.';
+		}
+		return $this->response_headers;
+	}
+}
+
 ?>
