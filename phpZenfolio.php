@@ -45,7 +45,7 @@
 /**
  * If using DB caching, lower this severity as PEAR 100% isn't E_STRICT compliant yet.
  **/
-error_reporting( E_STRICT );
+error_reporting( E_NOTICE );
 
 /**
  * We define our own exception so application developers can differentiate these
@@ -65,6 +65,7 @@ class phpZenfolio {
 	private $keyring;
 	private $id;
 	protected $authToken;
+	private $adapter = 'curl';
 
 	/**
      * When your database cache table hits this many rows, a cleanup
@@ -106,7 +107,7 @@ class phpZenfolio {
 		$args = phpZenfolio::processArgs( func_get_args() );
 		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.4';
 		// Set the Application Name
-		if ( ! $args['AppName'] ) {
+		if ( ! isset( $args['AppName'] ) ) {
 			throw new PhpZenfolioException( 'Application name missing.', -10001 );
 		}
 		$this->AppName = $args['AppName'];
@@ -133,6 +134,7 @@ class phpZenfolio {
 	public static function debug( $var, $echo = TRUE )
 	{
 		ob_start();
+		$out = '';
 		echo '<pre>Debug:';
 		if ( is_array( $var ) || is_object( $var ) ) { print_r( $var ); } else { echo $var; }
 		echo '</pre>';
@@ -270,7 +272,7 @@ class phpZenfolio {
 	 **/
     private function cache( $request, $response )
 	{
-		$request['authToken']       = ''; // Unset authToken
+		$request['authToken'] = ''; // Unset authToken
 		if ( ! strpos( $request['method'], 'Authenticate' ) ) {
 			$reqhash = md5( serialize( $request ) );
 			if ( $this->cacheType == 'db' ) {
@@ -285,14 +287,16 @@ class phpZenfolio {
 					// TODO: Create unit test for this
 					throw new PhpZenfolioException( $result );
 				}
+				return $result;
 			} elseif ( $this->cacheType == 'fs' ) {
 				$file = $this->cache_dir . '/' . $reqhash . '.cache';
 				$fstream = fopen( $file, 'w' );
 				$result = fwrite( $fstream,$response );
 				fclose( $fstream );
+				return $result;
 			}
 		}
-        return $result;
+        return TRUE;
     }
 
 	/**
@@ -360,9 +364,8 @@ class phpZenfolio {
 			$this->req->setHeader( 'X-Zenfolio-Keyring', $this->keyring );
 		}
 		
-		// To keep things unique, we set the ID to a base32 figure of the string concat of the method and all arguments
-		$str = $command . '.' . join( '.', $args );
-		$this->id = intval( $str, 32 );
+		// To keep things unique, we set the ID to a base32 figure of the method
+		$this->id = intval( $command, 32 );
 		$args = array( 'method' => $command, 'params' => $args, 'id' => $this->id );
 
 		if ( !( $this->response = $this->getCached( $args ) ) ) {
@@ -381,8 +384,8 @@ class phpZenfolio {
 			throw new PhpZenfolioException( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		}
 		if ( ! is_null( $this->parsed_response['error'] ) ) {
-			$this->error_code = self::errCode( $this->parsed_response['error']['code'] );
-            $this->error_msg = $this->parsed_response['error']['code'] . ' : '.$this->parsed_response['error']['message'];
+			$this->error_code = ( isset( $this->parsed_response['error']['code'] ) ) ? self::errCode( $this->parsed_response['error']['code'] ) : -2;
+            $this->error_msg = ( isset( $this->parsed_response['error']['code'] ) ) ? $this->parsed_response['error']['code'] : '' . ' : '.$this->parsed_response['error']['message'];
 			$this->parsed_response = FALSE;
 			throw new PhpZenfolioException( "Zenfolio API Error for method {$command}: {$this->error_msg}", $this->error_code );
 		} else {
@@ -412,14 +415,14 @@ class phpZenfolio {
 		$args = phpZenfolio::processArgs(func_get_args());
 		$this->proxy['server'] = $args['server'];
 		$this->proxy['port'] = $args['port'];
-		$this->proxy['username'] = $args['username'];
-		$this->proxy['password'] = $args['password'];
-		$this->proxy['auth_scheme'] = $args['auth_scheme'];
-		$this->req->setConfig( array( 'proxy_host' => $args['server'],
-							          'proxy_port' => $args['port'],
-									  'proxy_user' => $args['username'],
-									  'proxy_password' => $args['password'],
-									  'proxy_auth_scheme' => $args['auth_scheme'] ) );
+		$this->proxy['username'] = ( isset( $args['username'] ) ) ? $args['username'] : '';
+		$this->proxy['password'] = ( isset( $args['password'] ) ) ? $args['password'] : '';
+		$this->proxy['auth_scheme'] = ( isset( $args['auth_scheme'] ) ) ? $args['auth_scheme'] : 'basic';
+		$this->req->setConfig( array( 'proxy_host' => $this->proxy['server'],
+							          'proxy_port' => $this->proxy['port'],
+									  'proxy_user' => $this->proxy['username'],
+									  'proxy_password' => $this->proxy['password'],
+									  'proxy_auth_scheme' => $this->proxy['auth_scheme'] ) );
     }
  
 	/**
@@ -443,7 +446,7 @@ class phpZenfolio {
 	public function login()
 	{
 		$args = phpZenfolio::processArgs( func_get_args() );
-		if ( $args['Plaintext'] ) {
+		if ( isset( $args['Plaintext'] ) ) {
 			$this->authToken = $this->AuthenticatePlain( $args['Username'], $args['Password'] );
 		} else {
 			$cr = $this->GetChallenge( $args['Username'] );
@@ -489,7 +492,7 @@ class phpZenfolio {
 		}
 
 		if ( is_file( $args['File'] ) ) {
-			//$fileinfo = getimagesize($args['File'] );
+			$fileinfo = getimagesize($args['File'] );	// We need this to get the content type. mime_content_type is deprecated and rarely included in most installations.
 			$fp = fopen( $args['File'], 'rb' );
 			$data = fread( $fp, filesize( $args['File'] ) );
 			fclose( $fp );
@@ -499,11 +502,11 @@ class phpZenfolio {
 
 		// Create a new object as we still need the other request object
 		$upload_req = new httpRequest();
-		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 30 ) );
+		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 60 ) );
 		$upload_req->setMethod( 'post' );
 		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
-									   'Content-Type' => mime_content_type( $args['File'] ),	// mime_content_type is technically deprecated, however it's replacement, FileInfo is only supplied by default in PHP 5.3.
+									   'Content-Type' => $fileinfo['mime'],
 									   'Content-Length' => filesize( $args['File'] ),
 									   'Connection' => 'keep-alive' ) );
 
@@ -524,7 +527,7 @@ class phpZenfolio {
 		}
 
 		// Create the upload URL based on the information provided in the arguments.
-		if ( $args['PhotoSetId'] ) {
+		if ( isset ( $args['PhotoSetId'] ) ) {
 			if ( $this->APIVer == '1.0' || $this->APIVer == '1.1' ) {
 				$photoset = $this->LoadPhotoSet( $args['PhotoSetId'] );
 				$UploadUrl = 'http://up.zenfolio.com' . $photoset['UploadUrl'];
@@ -533,7 +536,7 @@ class phpZenfolio {
 				$UploadUrl = $photoset['UploadUrl'];
 			}
 		}
-		if ( $args['UploadUrl'] ) {
+		if ( isset( $args['UploadUrl'] ) ) {
 			$UploadUrl = $args['UploadUrl'];
 		}
 
@@ -656,7 +659,7 @@ class phpZenfolio {
 	  */
 	 private static function byteArrayDecode( $array )
 	 {
-		return call_user_func_array( pack, array_merge( array( 'C*' ),(array) $array ) );
+		return call_user_func_array( 'pack', array_merge( array( 'C*' ),(array) $array ) );
 	 }
 
 	 /**
@@ -774,7 +777,7 @@ class httpRequest
 	 * @param string	$method Request method to use (default 'POST')
 	 * @param int		$timeout Timeout in seconds (default 30)
 	 */
-	public function __construct( $url, $method = 'POST', $timeout = 30 )
+	public function __construct( $url = NULL, $method = 'POST', $timeout = 30 )
 	{
 		$this->method = strtoupper( $method );
 		$this->url = $url;
