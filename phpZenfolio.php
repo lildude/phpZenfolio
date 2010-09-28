@@ -715,6 +715,11 @@ class phpZenfolio {
  *
  * The classes below could be put into individual files, but to keep things simple
  * I've included them in this file.
+ *
+ * The code below has been taken from the Habari project - http://habariproject.org
+ * and modified to suit the needs of phpZenfolio.
+ *
+ * The original source is distributed under the Apache License Version 2.0
  */
 
 class HttpRequestException extends Exception {}
@@ -752,7 +757,7 @@ class httpRequest
 		'adapter'			=> 'curl',
         'connect_timeout'   => 10,
         'timeout'           => 0,
-        'buffer_size'       => 16384,	// Only applies to PHP 5.3.3 and later.
+        'buffer_size'       => 16384,
 
         'proxy_host'        => '',
         'proxy_port'        => '',
