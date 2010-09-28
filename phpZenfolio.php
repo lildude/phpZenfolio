@@ -719,7 +719,7 @@ class phpZenfolio {
 
 class HttpRequestException extends Exception {}
 
-interface RequestProcessor
+interface PhpZenfoRequestProcessor
 {
 	public function execute( $method, $url, $headers, $body, $config );
 	public function getBody();
@@ -1047,7 +1047,7 @@ class httpRequest
 }
 
 
-class SocketRequestProcessor implements RequestProcessor
+class SocketRequestProcessor implements PhpZenfoRequestProcessor
 {
 	private $response_body = '';
 	private $response_headers = '';
@@ -1186,7 +1186,7 @@ class SocketRequestProcessor implements RequestProcessor
 
 
 
-class CurlRequestProcessor implements RequestProcessor
+class CurlRequestProcessor implements PhpZenfoRequestProcessor
 {
 	private $response_body = '';
 	private $response_headers = '';
