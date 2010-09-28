@@ -273,6 +273,16 @@ The `enableCache()' method takes 4 arguments:
 
      If the table does not exist, phpZenfolio will attempt to create it.
 
+Each of the caching methods can be enabled as follows:
+
+Filesystem based cache:
+
+     $f->enableCache("type=fs", "cache_dir=/tmp", "cache_expire=86400" );
+
+Database based cache:
+
+     $f->enableCache("type=db", "dsn=mysql://USERNAME:PASSWORD_database", "cache_expire=86400");
+
 If you have caching enabled, and you make changes, it's a good idea to call
 `clearCache()' to refresh the cache so your changes are reflected immediately.
 
