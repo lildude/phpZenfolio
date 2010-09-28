@@ -43,7 +43,7 @@
  **/
 
 /**
- * If using DB caching, lower this severity as PEAR 100% isn't E_STRICT compliant yet.
+ * Set the error level.  I set this low to ensure there are no errors in phpZenfolio
  **/
 error_reporting( E_NOTICE );
 
