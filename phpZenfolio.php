@@ -711,6 +711,8 @@ class phpZenfolio {
 	}
 }
 
+
+
 /****************** Custom HTTP Request Classes *******************************
  *
  * The classes below could be put into individual files, but to keep things simple
@@ -1051,6 +1053,123 @@ class httpRequest
 
 }
 
+ 
+
+class CurlRequestProcessor implements PhpZenfoRequestProcessor
+{
+	private $response_body = '';
+	private $response_headers = '';
+	private $executed = FALSE;
+	private $can_followlocation = TRUE;
+	private $_headers = '';
+
+	public function __construct()
+	{
+		if ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) {
+			$this->can_followlocation = FALSE;
+		}
+	}
+
+	public function execute( $method, $url, $headers, $body, $config )
+	{
+		$merged_headers = array();
+		foreach ( $headers as $k => $v ) {
+			$merged_headers[] = $k . ': ' . $v;
+		}
+
+		$ch = curl_init();
+
+		$options = array(
+			CURLOPT_URL				=> $url,
+			CURLOPT_HEADERFUNCTION	=> array( &$this, '_headerfunction' ),
+			CURLOPT_MAXREDIRS		=> $config['max_redirects'],
+			CURLOPT_CONNECTTIMEOUT	=> $config['connect_timeout'],
+			CURLOPT_TIMEOUT			=> $config['timeout'],
+			CURLOPT_SSL_VERIFYPEER	=> $config['ssl_verify_peer'],
+			CURLOPT_SSL_VERIFYHOST	=> $config['ssl_verify_host'],
+			CURLOPT_BUFFERSIZE		=> $config['buffer_size'],
+			CURLOPT_HTTPHEADER		=> $merged_headers,
+			CURLOPT_FOLLOWLOCATION	=> TRUE,
+			CURLOPT_RETURNTRANSFER	=> TRUE,
+		);
+
+		if ( $this->can_followlocation ) {
+			$options[CURLOPT_FOLLOWLOCATION] = TRUE; // Follow 302's and the like.
+		}
+
+		if ( $method === 'POST' ) {
+			$options[CURLOPT_POST] = TRUE; // POST mode.
+			$options[CURLOPT_POSTFIELDS] = $body;
+		}
+		else {
+			$options[CURLOPT_CRLF] = TRUE; // Convert UNIX newlines to \r\n
+		}
+
+		// set proxy, if needed
+        if ( $host = $config['proxy_host'] ) {
+            if ( ! ( $port = $config['proxy_port'] ) ) {
+                throw new HttpRequestException( 'Proxy port not provided' );
+            }
+            curl_setopt( $ch, CURLOPT_PROXY, $host . ':' . $port );
+            if ( $user = $config['proxy_user'] ) {
+                curl_setopt( $ch, CURLOPT_PROXYUSERPWD, $user . ':' . $config['proxy_password'] );
+                switch ( strtolower( $config['proxy_auth_scheme'] ) ) {
+                    case 'basic':
+                        curl_setopt( $ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC );
+                        break;
+                    case 'digest':
+                        curl_setopt( $ch, CURLOPT_PROXYAUTH, CURLAUTH_DIGEST );
+                }
+            }
+        }
+		curl_setopt_array($ch, $options);
+
+		$body = curl_exec( $ch );
+
+		if ( curl_errno( $ch ) !== 0 ) {
+			throw new HttpRequestException( sprintf( '%s: CURL Error %d: %s', __CLASS__, curl_errno( $ch ), curl_error( $ch ) ), curl_errno( $ch ) );
+		}
+
+		if ( substr( curl_getinfo( $ch, CURLINFO_HTTP_CODE ), 0, 1 ) != 2 ) {
+			throw new HttpRequestException( sprintf( 'Bad return code (%1$d) for: %2$s', curl_getinfo( $ch, CURLINFO_HTTP_CODE ), $url ), curl_errno( $ch ) );
+		}
+
+		curl_close( $ch );
+
+		// this fixes an E_NOTICE in the array_pop
+		$tmp_headers = explode( "\r\n\r\n", mb_substr( $this->_headers, 0, -4 ) );
+
+		$this->response_headers = array_pop( $tmp_headers );
+		$this->response_body = $body;
+		$this->executed = true;
+
+		return true;
+	}
+
+	public function _headerfunction( $ch, $str )
+	{
+		$this->_headers .= $str;
+		return strlen( $str );
+	}
+
+	public function getBody()
+	{
+		if ( ! $this->executed ) {
+			return 'Request has not executed yet.';
+		}
+		return $this->response_body;
+	}
+
+	public function getHeaders()
+	{
+		if ( ! $this->executed ) {
+			return 'Request has not executed yet.';
+		}
+		return $this->response_headers;
+	}
+}
+
+ 
 
 class SocketRequestProcessor implements PhpZenfoRequestProcessor
 {
@@ -1170,122 +1289,6 @@ class SocketRequestProcessor implements PhpZenfoRequestProcessor
 			}
 		}
 		return array( $header, $body );
-	}
-
-	public function getBody()
-	{
-		if ( ! $this->executed ) {
-			return 'Request has not executed yet.';
-		}
-		return $this->response_body;
-	}
-
-	public function getHeaders()
-	{
-		if ( ! $this->executed ) {
-			return 'Request has not executed yet.';
-		}
-		return $this->response_headers;
-	}
-}
-
-
-
-class CurlRequestProcessor implements PhpZenfoRequestProcessor
-{
-	private $response_body = '';
-	private $response_headers = '';
-	private $executed = FALSE;
-	private $can_followlocation = TRUE;
-	private $_headers = '';
-
-	public function __construct()
-	{
-		if ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) {
-			$this->can_followlocation = FALSE;
-		}
-	}
-
-	public function execute( $method, $url, $headers, $body, $config )
-	{
-		$merged_headers = array();
-		foreach ( $headers as $k => $v ) {
-			$merged_headers[] = $k . ': ' . $v;
-		}
-
-		$ch = curl_init();
-
-		$options = array(
-			CURLOPT_URL				=> $url,
-			CURLOPT_HEADERFUNCTION	=> array( &$this, '_headerfunction' ),
-			CURLOPT_MAXREDIRS		=> $config['max_redirects'],
-			CURLOPT_CONNECTTIMEOUT	=> $config['connect_timeout'],
-			CURLOPT_TIMEOUT			=> $config['timeout'],
-			CURLOPT_SSL_VERIFYPEER	=> $config['ssl_verify_peer'],
-			CURLOPT_SSL_VERIFYHOST	=> $config['ssl_verify_host'],
-			CURLOPT_BUFFERSIZE		=> $config['buffer_size'],
-			CURLOPT_HTTPHEADER		=> $merged_headers,
-			CURLOPT_FOLLOWLOCATION	=> TRUE,
-			CURLOPT_RETURNTRANSFER	=> TRUE,
-		);
-
-		if ( $this->can_followlocation ) {
-			$options[CURLOPT_FOLLOWLOCATION] = TRUE; // Follow 302's and the like.
-		}
-
-		if ( $method === 'POST' ) {
-			$options[CURLOPT_POST] = TRUE; // POST mode.
-			$options[CURLOPT_POSTFIELDS] = $body;
-		}
-		else {
-			$options[CURLOPT_CRLF] = TRUE; // Convert UNIX newlines to \r\n
-		}
-
-		// set proxy, if needed
-        if ( $host = $config['proxy_host'] ) {
-            if ( ! ( $port = $config['proxy_port'] ) ) {
-                throw new HttpRequestException( 'Proxy port not provided' );
-            }
-            curl_setopt( $ch, CURLOPT_PROXY, $host . ':' . $port );
-            if ( $user = $config['proxy_user'] ) {
-                curl_setopt( $ch, CURLOPT_PROXYUSERPWD, $user . ':' . $config['proxy_password'] );
-                switch ( strtolower( $config['proxy_auth_scheme'] ) ) {
-                    case 'basic':
-                        curl_setopt( $ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC );
-                        break;
-                    case 'digest':
-                        curl_setopt( $ch, CURLOPT_PROXYAUTH, CURLAUTH_DIGEST );
-                }
-            }
-        }
-		curl_setopt_array($ch, $options);
-
-		$body = curl_exec( $ch );
-
-		if ( curl_errno( $ch ) !== 0 ) {
-			throw new HttpRequestException( sprintf( '%s: CURL Error %d: %s', __CLASS__, curl_errno( $ch ), curl_error( $ch ) ), curl_errno( $ch ) );
-		}
-
-		if ( substr( curl_getinfo( $ch, CURLINFO_HTTP_CODE ), 0, 1 ) != 2 ) {
-			throw new HttpRequestException( sprintf( 'Bad return code (%1$d) for: %2$s', curl_getinfo( $ch, CURLINFO_HTTP_CODE ), $url ), curl_errno( $ch ) );
-		}
-
-		curl_close( $ch );
-
-		// this fixes an E_NOTICE in the array_pop
-		$tmp_headers = explode( "\r\n\r\n", mb_substr( $this->_headers, 0, -4 ) );
-
-		$this->response_headers = array_pop( $tmp_headers );
-		$this->response_body = $body;
-		$this->executed = true;
-
-		return true;
-	}
-
-	public function _headerfunction( $ch, $str )
-	{
-		$this->_headers .= $str;
-		return strlen( $str );
 	}
 
 	public function getBody()
