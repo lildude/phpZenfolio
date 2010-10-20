@@ -962,6 +962,24 @@ class httpRequest
 	}
 
 	/**
+	 * set postdata
+	 *
+	 * @access	public
+	 * @param	mixed	$name
+	 * @param	string	$value
+	 * @return	void
+	 */
+	public function setPostData( $name, $value = null )
+	{
+		if ( is_array( $name ) ) {
+			$this->postdata = array_merge( $this->postdata, $name );
+		}
+		else {
+			$this->postdata[$name] = $value;
+		}
+	}
+
+	/**
 	 * Return the response body. Raises a warning and returns if the request wasn't executed yet.
 	 *
 	 * @return mixed
@@ -1011,9 +1029,10 @@ class httpRequest
 		$this->url = $this->mergeQueryParams( $this->url, $this->params );
 
 		if ( $this->method === 'POST' ) {
-			if ( !isset( $this->headers['Content-Type'] ) || ( $this->headers['Content-Type'] == 'application/json' ) ) {
-				// Just being careful
-				$this->setHeader( array( 'Content-Type' => 'application/json' ) );
+			if ( !isset( $this->headers['Content-Type'] ) ) {
+				$this->setHeader( array( 'Content-Type' => 'application/x-www-form-urlencoded' ) );
+			}
+			if ( $this->headers['Content-Type'] == 'application/x-www-form-urlencoded' || $this->headers['Content-Type'] == 'application/json' ) {
 				if( $this->body != '' && count( $this->postdata ) > 0 ) {
 					$this->body .= '&';
 				}
