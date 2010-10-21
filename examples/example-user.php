@@ -73,6 +73,7 @@ function displayImgs($element, $key, $f) {
 			foreach ($pictures as $pic) {
 				echo '<a href="',$pic['PageUrl'],'"><img src="',phpZenfolio::imageUrl($pic, 1),'" title="',$pic['Title'],'" alt="',$pic['Id'],'" /></a>';
 			}
+			break;
 		} 
 	}
 }
