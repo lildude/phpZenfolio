@@ -432,8 +432,8 @@ phpZenfolio comes with 3 examples to help get you on your way.
    * `example-login.php' illustrates how to login and display the images in
      your first photoset or collection.
 
-   * `example-search.php' illustrates how to display the first 100 photos of a
-     specified search term.
+   * `example-user.php' illustrates how to display the first 100 public photos
+     of the user's the first public photoset found.
 
 You can see these examples in action at `http://phpzenfolio.com/examples'.
 
