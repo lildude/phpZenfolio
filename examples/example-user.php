@@ -56,15 +56,25 @@ try {
 	$f = new phpZenfolio("AppName={$appname}");
 	// Get list of recent galleries and collections
 	$h = $f->LoadGroupHierarchy($username);
-	// Get all the pictures in the first element
-	$pictures = $f->LoadPhotoSetPhotos($h['Elements'][0]['Id'], 0, 100 );
-	// Display the 60x60 cropped thumbnails and link to the photo page for each.
-	foreach ($pictures as $pic) {
-		echo '<a href="',$pic['PageUrl'],'"><img src="',phpZenfolio::imageUrl($pic, 1),'" title="',$pic['Title'],'" alt="',$pic['Id'],'" /></a>';
-	}
+	// Now traverse the tree and locate the first public gallery and display it's first 100 photos
+	array_walk($h['Elements'], 'displayImgs', $f);
 }
 catch (Exception $e) {
 	echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
+}
+
+function displayImgs($element, $key, $f) {
+	if ( $element['$type'] == 'Group' ) {
+		array_walk($element['Elements'], 'displayImgs', $f);
+	} else {
+		if ( $element['PhotoCount'] > 0 ) {
+			$pictures = $f->LoadPhotoSetPhotos($element['Id'], 0, 100 );
+			// Display the 60x60 cropped thumbnails and link to the photo page for each.
+			foreach ($pictures as $pic) {
+				echo '<a href="',$pic['PageUrl'],'"><img src="',phpZenfolio::imageUrl($pic, 1),'" title="',$pic['Title'],'" alt="',$pic['Id'],'" /></a>';
+			}
+		} 
+	}
 }
 ?>
 </body>
