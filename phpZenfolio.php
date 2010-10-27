@@ -613,7 +613,7 @@ class phpZenfolio {
 	{
 		$adapter = strtolower( $adapter );
 		if ( $adapter == 'curl' || $adapter == 'socket' ) {
-			//$this->adapter = $adapter;
+			$this->adapter = $adapter;
 			$this->req->setAdapter( $adapter );
 		}
 	}
