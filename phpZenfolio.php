@@ -1267,7 +1267,7 @@ class SocketRequestProcessor implements PhpZenfoRequestProcessor
 		$request = array_merge( $request, $merged_headers );
 		$request[] = '';
 
-		if ( $method === 'POST' ) {
+		if ( $method === 'POST' || $method === 'PUT' ) {
 			$request[] = $body;
 		}
 
@@ -1287,7 +1287,7 @@ class SocketRequestProcessor implements PhpZenfoRequestProcessor
 
 		fclose( $fp );
 
-		list( $header, $body ) = explode( "\r\n\r\n", $in );
+		list( $header, $body ) = explode( "\r\n\r\n", $in, 2 );
 
 		// to make the following REs match $ correctly and thus not break parse_url
 		$header = str_replace( "\r\n", "\n", $header );
