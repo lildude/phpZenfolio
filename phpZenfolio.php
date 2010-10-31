@@ -726,7 +726,7 @@ class phpZenfolio {
 
 class HttpRequestException extends Exception {}
 
-interface PhpZenfoRequestProcessor
+interface PhpRequestProcessor
 {
 	public function execute( $method, $url, $headers, $body, $config );
 	public function getBody();
@@ -956,7 +956,7 @@ class httpRequest
 	 */
 	public function setBody( $body )
 	{
-		if ( $this->method === 'POST' ) {
+		if ( $this->method === 'POST' || $this->method === 'PUT' ) {
 			$this->body = $body;
 		}
 	}
@@ -1072,9 +1072,10 @@ class httpRequest
 
 }
 
- 
+?>
+<?php 
 
-class CurlRequestProcessor implements PhpZenfoRequestProcessor
+class CurlRequestProcessor implements PhpRequestProcessor
 {
 	private $response_body = '';
 	private $response_headers = '';
@@ -1119,6 +1120,10 @@ class CurlRequestProcessor implements PhpZenfoRequestProcessor
 		if ( $method === 'POST' ) {
 			$options[CURLOPT_POST] = TRUE; // POST mode.
 			$options[CURLOPT_POSTFIELDS] = $body;
+		}
+		else if ( $method === 'PUT' ) {
+			$options[CURLOPT_CUSTOMREQUEST] = 'PUT'; // PUT mode
+			$options[CURLOPT_POSTFIELDS] = $body; // The file to put
 		}
 		else {
 			$options[CURLOPT_CRLF] = TRUE; // Convert UNIX newlines to \r\n
@@ -1190,7 +1195,7 @@ class CurlRequestProcessor implements PhpZenfoRequestProcessor
 
  
 
-class SocketRequestProcessor implements PhpZenfoRequestProcessor
+class SocketRequestProcessor implements PhpRequestProcessor
 {
 	private $response_body = '';
 	private $response_headers = '';
@@ -1279,11 +1284,7 @@ class SocketRequestProcessor implements PhpZenfoRequestProcessor
 			throw new HttpRequestException( 'Error writing to socket.' );
 		}
 
-		$in = '';
-
-		while ( ! feof( $fp ) ) {
-			$in .= fgets( $fp, 4096 );
-		}
+		$in = stream_get_contents( $fp );
 
 		fclose( $fp );
 
@@ -1307,6 +1308,11 @@ class SocketRequestProcessor implements PhpZenfoRequestProcessor
 				throw new HttpRequestException( 'Redirection response without Location: header.' );
 			}
 		}
+
+		if ( preg_match( '|^Transfer-Encoding:.*chunked.*|mi', $header ) ) {
+			$body = $this->_unchunk( $body );
+		}
+
 		return array( $header, $body );
 	}
 
@@ -1324,6 +1330,28 @@ class SocketRequestProcessor implements PhpZenfoRequestProcessor
 			return 'Request has not executed yet.';
 		}
 		return $this->response_headers;
+	}
+
+	private function _unchunk( $body )
+	{
+		/* see <http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html> */
+		$result = '';
+		$chunk_size = 0;
+
+		do {
+			$chunk = explode( "\r\n", $body, 2 );
+			list( $chunk_size_str, )= explode( ';', $chunk[0], 2 );
+			$chunk_size = hexdec( $chunk_size_str );
+
+			if ( $chunk_size > 0 ) {
+				$result .= mb_substr( $chunk[1], 0, $chunk_size );
+				$body = mb_substr( $chunk[1], $chunk_size+1 );
+			}
+		}
+		while ( $chunk_size > 0 );
+		// this ignores trailing header fields
+
+		return $result;
 	}
 }
 
