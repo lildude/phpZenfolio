@@ -43,11 +43,6 @@
  **/
 
 /**
- * Set the error level.  I set this low to ensure there are no errors in phpZenfolio
- **/
-error_reporting( E_NOTICE );
-
-/**
  * We define our own exception so application developers can differentiate these
  * from other exceptions.
  */
