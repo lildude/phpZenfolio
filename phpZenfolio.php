@@ -726,7 +726,7 @@ class phpZenfolio {
 
 class HttpRequestException extends Exception {}
 
-interface PhpRequestProcessor
+interface PhpZenfolioRequestProcessor
 {
 	public function execute( $method, $url, $headers, $body, $config );
 	public function getBody();
@@ -794,10 +794,10 @@ class httpRequest
 		// can't use curl's followlocation in safe_mode with open_basedir, so fallback to socket for now
 		if ( function_exists( 'curl_init' ) && ( $this->config['adapter'] == 'curl' )
 			 && ! ( ini_get( 'safe_mode' ) && ini_get( 'open_basedir' ) ) ) {
-			$this->processor = new CurlRequestProcessor;
+			$this->processor = new PhpZenfolioCurlRequestProcessor;
 		}
 		else {
-			$this->processor = new SocketRequestProcessor();
+			$this->processor = new PhpZenfolioSocketRequestProcessor();
 		}
 	}
 
@@ -911,7 +911,7 @@ class httpRequest
 		$adapter = strtolower( $adapter );
 		if ( $adapter == 'curl' || $adapter == 'socket' ) {
 			$this->config['adapter'] = $adapter;
-			$this->processor = ( $adapter == 'curl' ) ? new CurlRequestProcessor() : new SocketRequestProcessor();
+			$this->processor = ( $adapter == 'curl' ) ? new PhpZenfolioCurlRequestProcessor() : new PhpZenfolioSocketRequestProcessor();
 		}
 	}
 
@@ -972,7 +972,8 @@ class httpRequest
 	public function setPostData( $name, $value = null )
 	{
 		if ( is_array( $name ) ) {
-			$this->postdata = array_merge( $this->postdata, $name );
+			//$this->postdata = array_merge( $this->postdata, $name );
+			$this->postdata = $name;
 		}
 		else {
 			$this->postdata[$name] = $value;
@@ -1003,15 +1004,15 @@ class httpRequest
 	{
 		$this->prepare();
 		$result = $this->processor->execute( $this->method, $this->url, $this->headers, $this->body, $this->config );
-
+		$this->body = ''; // We need to do this as we reuse the same object for performance. Once we've executed, the body is useless anyway due to the changing params
 		if ( $result ) {
 			$this->response_headers = $this->processor->getHeaders();
 			$this->response_body = $this->processor->getBody();
-			$this->executed = TRUE;
-			return TRUE;
+			$this->executed = true;
+			return true;
 		}
 		else {
-			$this->executed = FALSE;
+			$this->executed = false;
 			return $result;
 		}
 	}
@@ -1075,7 +1076,7 @@ class httpRequest
 ?>
 <?php 
 
-class CurlRequestProcessor implements PhpRequestProcessor
+class PhpZenfolioCurlRequestProcessor implements PhpZenfolioRequestProcessor
 {
 	private $response_body = '';
 	private $response_headers = '';
@@ -1193,9 +1194,10 @@ class CurlRequestProcessor implements PhpRequestProcessor
 	}
 }
 
- 
+?>
+<?php 
 
-class SocketRequestProcessor implements PhpRequestProcessor
+class PhpZenfolioSocketRequestProcessor implements PhpZenfolioRequestProcessor
 {
 	private $response_body = '';
 	private $response_headers = '';
