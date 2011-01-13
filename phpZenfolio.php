@@ -359,8 +359,8 @@ class phpZenfolio {
 			$this->req->setHeader( 'X-Zenfolio-Keyring', $this->keyring );
 		}
 		
-		// To keep things unique, we set the ID to a base32 figure of the method
-		$this->id = intval( $command, 32 );
+		// To keep things unique, we set the ID to the md5 sum of the method
+		$this->id = md5( $command );
 		$args = array( 'method' => $command, 'params' => $args, 'id' => $this->id );
 
 		if ( !( $this->response = $this->getCached( $args ) ) ) {
