@@ -108,7 +108,7 @@ class phpZenfolio {
 		$this->AppName = $args['AppName'];
         // All calls to the API are done via POST using my own constructed httpRequest class
 		$this->req = new httpRequest();
-		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 60 ) );
+		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 5 ) );
 		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									  'Content-Type' => 'application/json' ) );
@@ -502,8 +502,7 @@ class phpZenfolio {
 		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
 									   'Content-Type' => $fileinfo['mime'],
-									   'Content-Length' => filesize( $args['File'] ),
-									   'Connection' => 'keep-alive' ) );
+									   'Content-Length' => filesize( $args['File'] ) ) );
 
 		if ( ! is_null( $this->authToken ) ) {
 			$upload_req->setHeader( 'X-Zenfolio-Token', $this->authToken );
@@ -752,7 +751,7 @@ class httpRequest
     */
     protected $config = array(
 		'adapter'			=> 'curl',
-        'connect_timeout'   => 10,
+        'connect_timeout'   => 5,
         'timeout'           => 0,
         'buffer_size'       => 16384,
 
