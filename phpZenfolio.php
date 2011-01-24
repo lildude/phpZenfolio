@@ -787,7 +787,7 @@ class httpRequest
 
 		// can't use curl's followlocation in safe_mode with open_basedir, so fallback to socket for now
 		if ( function_exists( 'curl_init' ) && ( $this->config['adapter'] == 'curl' )
-			 && ! ( ini_get( 'safe_mode' ) && ini_get( 'open_basedir' ) ) ) {
+			 && ! ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) ) {
 			$this->processor = new PhpZenfolioCurlRequestProcessor();
 		}
 		else {
