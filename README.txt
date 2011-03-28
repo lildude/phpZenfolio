@@ -1,4 +1,4 @@
-phpZenfolio 1.0 - PHP Wrapper for the Zenfolio API
+phpZenfolio 1.1 - PHP Wrapper for the Zenfolio API
 ==================================================
 
 Written by Colin Seymour
@@ -51,8 +51,7 @@ PEAR packages:
 
    * The corresponding MDB2_Driver_*
      (http://pear.php.net/search.php?q=MDB2_Driver&in=packages&setPerPage=20)
-     for the database you wish to use.  sqlite2  and MySQL are included with
-     phpZenfolio.
+     for the database you wish to use.
 
 Please consult the above links for details on installing the PEAR modules.
 
@@ -458,6 +457,22 @@ This document is also available online at `http://phpzenfolio.com/docs'.
 
 Change History
 ==============
+
+   * 1.1 - 28 Mar '11
+
+
+        * Use md5 to generate a uniq ID for each request instead of using
+          intval() to ensure correct and consistent behaviour on 32-bit and
+          64-bit platforms. (Ticket #1)
+
+        * Removed erroneous re-instantiation of processor when setting adapter.
+
+        * Corrected check for safe_dir OR open_basedir so fails over to socket
+          connection correctly (Ticket #2)
+
+        * Cache only successful requests
+
+        * Improved connection settings
 
    * 1.0 - 01 Oct '10
 
