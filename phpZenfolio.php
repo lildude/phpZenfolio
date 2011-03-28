@@ -6,7 +6,7 @@
  *			     without having to worry about the finer details of the API.
  *
  * @author Colin Seymour <lildood@gmail.com>
- * @version 1.0
+ * @version 1.1
  * @package phpZenfolio
  * @license GNU General Public License version 3 {@link http://www.gnu.org/licenses/gpl.html}
  * @copyright Copyright (c) 2010 Colin Seymour
@@ -54,7 +54,7 @@ class PhpZenfolioException extends Exception {}
  * @package phpZenfolio
  **/
 class phpZenfolio {
-	var $version = '1.0';
+	var $version = '1.1';
 	private $cacheType = FALSE;
 	private $cache_expire = 3600;
 	private $keyring;
