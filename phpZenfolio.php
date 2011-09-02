@@ -54,7 +54,7 @@ class PhpZenfolioException extends Exception {}
  * @package phpZenfolio
  **/
 class phpZenfolio {
-	var $version = '1.1';
+	static $version = '1.1';
 	private $cacheType = FALSE;
 	private $cache_expire = 3600;
 	private $keyring;
@@ -109,8 +109,8 @@ class phpZenfolio {
         // All calls to the API are done via POST using my own constructed httpRequest class
 		$this->req = new httpRequest();
 		$this->req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 5 ) );
-		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
-									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+		$this->req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/" . phpZenfolio::$version,
+									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/" . phpZenfolio::$version,
 									  'Content-Type' => 'application/json' ) );
     }
 	
@@ -499,8 +499,8 @@ class phpZenfolio {
 		$upload_req = new httpRequest();
 		$upload_req->setConfig( array( 'adapter' => $this->adapter, 'follow_redirects' => TRUE, 'max_redirects' => 3, 'ssl_verify_peer' => FALSE, 'ssl_verify_host' => FALSE, 'connect_timeout' => 60 ) );
 		$upload_req->setMethod( 'post' );
-		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
-									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/{$this->version}",
+		$upload_req->setHeader( array( 'User-Agent' => "{$this->AppName} using phpZenfolio/" . phpZenfolio::$version,
+									   'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/" . phpZenfolio::$version,
 									   'Content-Type' => $fileinfo['mime'],
 									   'Content-Length' => filesize( $args['File'] ) ) );
 
@@ -742,8 +742,6 @@ class httpRequest
 	private $response_body = '';
 	private $response_headers = '';
 
-	private $user_agent = "Unknown application using phpZenfolio/1.0";
-
 	/**
     * Adapter Configuration parameters
     * @var  array
@@ -763,7 +761,7 @@ class httpRequest
 
 		// TODO: These don't apply to SocketRequestProcessor yet
         'ssl_verify_peer'   => FALSE,
-        'ssl_verify_host'   => FALSE,
+        'ssl_verify_host'   => 2, // 1 = check CN of ssl cert, 2 = check and verify @see http://php.net/curl_setopt
         'ssl_cafile'        => NULL,
         'ssl_capath'        => NULL,
         'ssl_local_cert'    => NULL,
@@ -783,7 +781,7 @@ class httpRequest
 		$this->method = strtoupper( $method );
 		$this->url = $url;
 		$this->setTimeout( $timeout );
-		$this->setHeader( array( 'User-Agent' => $this->user_agent ) );
+		$this->setHeader( array( 'User-Agent' => "Unknown application using phpZenfolio/" . phpZenfolio::$version ) );
 
 		// can't use curl's followlocation in safe_mode with open_basedir, so fallback to socket for now
 		if ( function_exists( 'curl_init' ) && ( $this->config['adapter'] == 'curl' )
@@ -905,6 +903,14 @@ class httpRequest
 		$adapter = strtolower( $adapter );
 		if ( $adapter == 'curl' || $adapter == 'socket' ) {
 			$this->config['adapter'] = $adapter;
+			// We need to reset the processor too.  This is quite crude and messy, but we need to do it.
+			if ( function_exists( 'curl_init' ) && ( $adapter == 'curl' )
+				 && ! ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) ) {
+				$this->processor = new PhpZenfolioCurlRequestProcessor;
+			}
+			else {
+				$this->processor = new PhpZenfolioSocketRequestProcessor;
+			}
 		}
 	}
 
@@ -926,6 +932,14 @@ class httpRequest
 	public function getParams()
 	{
 		return $this->params;
+	}
+	
+	/**
+	 * Get the current configuration. This is more for unit testing purposes
+	 */
+	public function getConfig()
+	{
+		return $this->config;
 	}
 
 	/**
@@ -1027,10 +1041,19 @@ class httpRequest
 				$this->setHeader( array( 'Content-Type' => 'application/x-www-form-urlencoded' ) );
 			}
 			if ( $this->headers['Content-Type'] == 'application/x-www-form-urlencoded' || $this->headers['Content-Type'] == 'application/json' ) {
-				if( $this->body != '' && count( $this->postdata ) > 0 ) {
+				$count = count( $this->postdata );
+				if( $this->body != '' && $count > 0 ) {
 					$this->body .= '&';
 				}
-				$this->body .= http_build_query( $this->postdata, '', '&' );
+				//$this->body .= http_build_query( $this->postdata, '', '&' );
+				// We don't use http_build_query() as it converts empty array values to 0, which we don't want.
+				foreach ( $this->postdata as $key => $value ) {
+					$count--;
+					$this->body .= $key . '=' . $value;
+					if ( $count )	{
+						$this->body .= '&';
+					}
+				}
 			}
 			$this->setHeader( array( 'Content-Length' => strlen( $this->body ) ) );
 		}
@@ -1066,8 +1089,7 @@ class httpRequest
 
 }
 
-?>
-<?php 
+ 
 
 class PhpZenfolioCurlRequestProcessor implements PhpZenfolioRequestProcessor
 {
@@ -1103,11 +1125,10 @@ class PhpZenfolioCurlRequestProcessor implements PhpZenfolioRequestProcessor
 			CURLOPT_SSL_VERIFYHOST	=> $config['ssl_verify_host'],
 			CURLOPT_BUFFERSIZE		=> $config['buffer_size'],
 			CURLOPT_HTTPHEADER		=> $merged_headers,
-			CURLOPT_FOLLOWLOCATION	=> TRUE,
 			CURLOPT_RETURNTRANSFER	=> TRUE,
 		);
 
-		if ( $this->can_followlocation ) {
+		if ( $this->can_followlocation && $config['follow_redirects'] ) {
 			$options[CURLOPT_FOLLOWLOCATION] = TRUE; // Follow 302's and the like.
 		}
 
@@ -1124,13 +1145,13 @@ class PhpZenfolioCurlRequestProcessor implements PhpZenfolioRequestProcessor
 		}
 
 		// set proxy, if needed
-        if ( $host = $config['proxy_host'] ) {
-            if ( ! ( $port = $config['proxy_port'] ) ) {
+        if ( $config['proxy_host'] ) {
+            if ( ! $config['proxy_port'] ) {
                 throw new HttpRequestException( 'Proxy port not provided' );
             }
-            curl_setopt( $ch, CURLOPT_PROXY, $host . ':' . $port );
-            if ( $user = $config['proxy_user'] ) {
-                curl_setopt( $ch, CURLOPT_PROXYUSERPWD, $user . ':' . $config['proxy_password'] );
+            $options[CURLOPT_PROXY] = $config['proxy_host'] . ':' . $config['proxy_port'];
+            if ( $config['proxy_user'] ) {
+                $options[CURLOPT_PROXYUSERPWD] = $config['proxy_user'] . ':' . $config['proxy_password'];
                 switch ( strtolower( $config['proxy_auth_scheme'] ) ) {
                     case 'basic':
                         curl_setopt( $ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC );
@@ -1187,8 +1208,7 @@ class PhpZenfolioCurlRequestProcessor implements PhpZenfolioRequestProcessor
 	}
 }
 
-?>
-<?php 
+ 
 
 class PhpZenfolioSocketRequestProcessor implements PhpZenfolioRequestProcessor
 {
@@ -1196,119 +1216,102 @@ class PhpZenfolioSocketRequestProcessor implements PhpZenfolioRequestProcessor
 	private $response_headers = '';
 	private $executed = FALSE;
 	private $redir_count = 0;
-
-	public function execute( $method, $url, $headers, $body, $config )
-	{
-		$result = $this->_request( $method, $url, $headers, $body, $config );
-
-		if ( $result ) {
-			list( $response_headers, $response_body ) = $result;
-			$this->response_headers = $response_headers;
-			$this->response_body = $response_body;
-			$this->executed = TRUE;
-
-			return TRUE;
-		}
-		else {
-			// TODO: Create unit test to test this
-			return $result;
-		}
+	private $can_followlocation = true;
+	
+	public function __construct ( ) 
+	{		
+		// see if we can follow Location: headers
+		if ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) {
+			$this->can_followlocation = false;
+		}	
 	}
+		
+	public function execute ( $method, $url, $headers, $body, $config ) 
+	{	
+		$merged_headers = array();
+		foreach ( $headers as $k => $v ) {
+			$merged_headers[] = $k . ': '. $v;
+		}
 
-	private function _request( $method, $url, $headers, $body, $config )
-	{
-		$_errno = 0;
-		$_errstr = '';
+		// parse out the URL so we can refer to individual pieces
 		$urlbits = parse_url( $url );
 
-		if ( !isset( $urlbits['port'] ) || $urlbits['port'] == 0 ) {
-			if ( $urlbits['scheme'] == 'https' ) {
-				$urlbits['port'] = 443;
-				$transport = 'ssl';
-			}
-			else {
-				$urlbits['port'] = 80;
-				$transport = 'tcp';
-			}
+		// set up the options we'll use when creating the request's context
+		$options = array(
+			'http' => array(
+				'method' => $method,
+				'header' => implode( "\n", $merged_headers ),
+				'timeout' => $config['timeout'],
+				'follow_location' => $this->can_followlocation,		// 5.3.4+, should be ignored by others
+				'max_redirects' => $config['max_redirects'],
+
+				// and now for our ssl-specific portions, which will be ignored for non-HTTPS requests
+				'verify_peer' => $config['ssl_verify_peer'],
+				//'verify_host' => $config['ssl_verify_host'],	// there doesn't appear to be an equiv of this for sockets - the host is matched by default and you can't just turn that off, only substitute other hostnames
+				'cafile' => $config['ssl_cafile'],
+				'capath' => $config['ssl_capath'],
+				'local_cert' => $config['ssl_local_cert'],
+				'passphrase' => $config['ssl_passphrase'],
+			),
+		);
+
+		if ( $method == 'POST' || $method == 'PUT' ) {
+			$options['http']['content'] = $body;
 		}
 
 		if ( $config['proxy_host'] != '' ) {
-			// TODO: Finish the implementation of proxy support for socket connections. Until then, only curl has proxy support.
-			throw new HttpRequestException( 'The "socket" adapter type does NOT currently support connecting via a proxy. Please use the "curl" adapter type.', -1 );
-			$fp = @fsockopen( $transport . '://' . $config['proxy_host'], $config['proxy_port'], $_errno, $_errstr, $config['connect_timeout'] );
-		} else {
-			$fp = @fsockopen( $transport . '://' . $urlbits['host'], $urlbits['port'], $_errno, $_errstr, $config['connect_timeout'] );
+			$proxy = $config['proxy_host'] . ':' . $config['proxy_port'];
+			if ( $config['proxy_user'] != '' ) {
+				$proxy = $config['proxy_user'] . ':' . $config['proxy_password'] . '@' . $proxy;
+			}
+			$options['http']['proxy'] = 'tcp://' . $proxy;
 		}
 
-		if ( $fp === FALSE ) {
-			throw new HttpRequestException( sprintf( '%s: Error %d: %s while connecting to %s:%d', __CLASS__, $_errno, $_errstr, $urlbits['host'], $urlbits['port'] ), $_errno );
+		// create the context
+		$context = stream_context_create( $options );
+
+		// perform the actual request - we use fopen so stream_get_meta_data works
+		$fh = @fopen( $url, 'r', false, $context );
+		if ( $fh === false ) {
+			throw new Exception( 'Unable to connect to ' . $urlbits['host'] );
 		}
 
-		stream_set_timeout( $fp, $config['timeout'] );
+		// read in all the contents -- this is the same as file_get_contents, only for a specific stream handle
+		$body = stream_get_contents( $fh );
+		// get meta data
+		$meta = stream_get_meta_data( $fh );
 
-		// fix headers
-		$headers['Host'] = $urlbits['host'];
-		$headers['Connection'] = 'close';
+		// close the connection before we do anything else
+		fclose( $fh );
 
-		// merge headers into a list
-		$merged_headers = array();
-		foreach ( $headers as $k => $v ) {
-			$merged_headers[] = $k . ': ' . $v;
+		// did we timeout?
+		if ( $meta['timed_out'] == true ) {
+			throw new Exception( 'Request timed out' );
 		}
 
-		// build the request
-		$request = array();
-		$resource = $urlbits['path'];
-		if ( isset( $urlbits['query'] ) ) {
-			$resource .= '?' . $urlbits['query'];
-		}
+		// $meta['wrapper_data'] should be a list of the headers, the same as is loaded into $http_response_header
+		$headers = array();
+		foreach ( $meta['wrapper_data'] as $header ) {
 
-		$request[] = "{$method} {$resource} HTTP/1.1";
-		$request = array_merge( $request, $merged_headers );
-		$request[] = '';
+			// break the header up into field and value
+			$pieces = explode( ': ', $header, 2 );
 
-		if ( $method === 'POST' || $method === 'PUT' ) {
-			$request[] = $body;
-		}
-
-		$request[] = '';
-
-		$out = implode( "\r\n", $request );
-
-		if ( ! fwrite( $fp, $out, strlen( $out ) ) ) {
-			throw new HttpRequestException( 'Error writing to socket.' );
-		}
-
-		$in = stream_get_contents( $fp );
-
-		fclose( $fp );
-
-		list( $header, $body ) = explode( "\r\n\r\n", $in, 2 );
-
-		// to make the following REs match $ correctly and thus not break parse_url
-		$header = str_replace( "\r\n", "\n", $header );
-
-		preg_match( '#^HTTP/1\.[01] ([1-5][0-9][0-9]) ?(.*)#', $header, $status_matches );
-
-		if ( ( $status_matches[1] == '301' || $status_matches[1] == '302' ) && $config['follow_redirects'] ) {
-			if ( preg_match( '|^Location: (.+)$|mi', $header, $location_matches ) ) {
-				$redirect_url = $location_matches[1];
-				$this->redir_count++;
-				if ( $this->redir_count > $this->config['max_redirects'] ) {
-					throw new HttpRequestException( 'Maximum number of redirections exceeded.' );
-				}
-				return $this->_request( $method, $redirect_url, $headers, $body, $config );
+			if ( count( $pieces ) > 1 ) {
+				// if the header was a key: value format, store it keyed in the array
+				$headers[ $pieces[0] ] = $pieces[1];
 			}
 			else {
-				throw new HttpRequestException( 'Redirection response without Location: header.' );
+				// some headers (like the HTTP version in use) aren't keyed, so just store it keyed as itself
+				$headers[ $pieces[0] ] = $pieces[0];
 			}
+
 		}
 
-		if ( preg_match( '|^Transfer-Encoding:.*chunked.*|mi', $header ) ) {
-			$body = $this->_unchunk( $body );
-		}
+		$this->response_headers = $headers;
+		$this->response_body = $body;
+		$this->executed = true;
 
-		return array( $header, $body );
+		return true;
 	}
 
 	public function getBody()
