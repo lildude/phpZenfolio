@@ -6,7 +6,7 @@
  *			     without having to worry about the finer details of the API.
  *
  * @author Colin Seymour <lildood@gmail.com>
- * @version 1.1
+ * @version 1.2
  * @package phpZenfolio
  * @license GNU General Public License version 3 {@link http://www.gnu.org/licenses/gpl.html}
  * @copyright Copyright (c) 2010 Colin Seymour
@@ -54,27 +54,28 @@ class PhpZenfolioException extends Exception {}
  * @package phpZenfolio
  **/
 class phpZenfolio {
-	static $version = '1.1';
+	static $version = '1.2';
 	private $cacheType = FALSE;
 	private $cache_expire = 3600;
 	private $keyring;
 	private $id;
 	protected $authToken;
 	private $adapter = 'curl';
+	private $secure = FALSE;
 
 	/**
-     * When your database cache table hits this many rows, a cleanup
-     * will occur to get rid of all of the old rows and cleanup the
-     * garbage in the table.  For most personal apps, 1000 rows should
-     * be more than enough.  If your site gets hit by a lot of traffic
-     * or you have a lot of disk space to spare, bump this number up.
-     * You should try to set it high enough that the cleanup only
-     * happens every once in a while, so this will depend on the growth
-     * of your table.
-     * 
-     * @var integer
-     **/
-    var $max_cache_rows = 1000;
+	 * When your database cache table hits this many rows, a cleanup
+	 * will occur to get rid of all of the old rows and cleanup the
+	 * garbage in the table.  For most personal apps, 1000 rows should
+	 * be more than enough.  If your site gets hit by a lot of traffic
+	 * or you have a lot of disk space to spare, bump this number up.
+	 * You should try to set it high enough that the cleanup only
+	 * happens every once in a while, so this will depend on the growth
+	 * of your table.
+	 * 
+	 * @var integer
+	 **/
+	var $max_cache_rows = 1000;
 	
 	/**
 	 * Constructor to set up a phpZenfolio instance.
@@ -94,13 +95,13 @@ class phpZenfolio {
 	 *					in the form "AppName/version (URI)"
 	 *					e.g. "My Cool App/1.0 (http://my.url.com)".
 	 * @param string	$APIVer (Optional) API endpoint you wish to use.
-	 *					Defaults to 1.4
+	 *					Defaults to 1.6
 	 * @return void
 	 **/
 	public function __construct()
 	{
 		$args = phpZenfolio::processArgs( func_get_args() );
-		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.4';
+		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.6';
 		// Set the Application Name
 		if ( ! isset( $args['AppName'] ) ) {
 			throw new PhpZenfolioException( 'Application name missing.', -10001 );
@@ -306,6 +307,7 @@ class phpZenfolio {
 	 **/
     public function clearCache( $delete = FALSE )
 	{
+		$result = TRUE;
    		if ( $this->cacheType == 'db' ) {
 			if ( $delete ) {
 				$result = $this->cache_db->exec( 'DROP TABLE ' . $this->cache_table );
@@ -343,13 +345,13 @@ class phpZenfolio {
 	 **/
 	private function request( $command, $args = array() )
 	{
-		if ( $command == 'AuthenticatePlain' ) {
+		if ( $command == 'AuthenticatePlain' || $this->secure === TRUE ) {
 			$proto = "https";
 		} else {
 			$proto = "http";
 		}
 
-		$this->req->setURL( "$proto://www.zenfolio.com/api/{$this->APIVer}/zfapi.asmx" );
+		$this->req->setURL( "$proto://api.zenfolio.com/api/{$this->APIVer}/zfapi.asmx" );
 
 		if ( ! is_null( $this->authToken ) ) {
 			$this->req->setHeader( 'X-Zenfolio-Token', $this->authToken );
@@ -420,6 +422,21 @@ class phpZenfolio {
 									  'proxy_auth_scheme' => $this->proxy['auth_scheme'] ) );
     }
  
+	/**
+	 * Force phpZenfolio to use HTTPS for ALL requests, not just authentication
+	 * requests.
+	 * 
+	 * NOTE: This may have an adverse effect on performance if used for ALL requests.
+	 * Use with caution.
+	 * 
+	 * @access public
+	 * @return void
+	 **/	
+	public function setSecureOnly()
+	{
+		$this->secure = TRUE;
+	}
+	
 	/**
 	 * Single login function for all login methods.
 	 * 
@@ -526,7 +543,7 @@ class phpZenfolio {
 				$photoset = $this->LoadPhotoSet( $args['PhotoSetId'] );
 				$UploadUrl = 'http://up.zenfolio.com' . $photoset['UploadUrl'];
 			} else {
-				$photoset = ( $this->APIVer == '1.4' ) ? $this->LoadPhotoSet( $args['PhotoSetId'], 'Level1', FALSE ) : $this->LoadPhotoSet( $args['PhotoSetId'] );
+				$photoset = ( $this->APIVer == '1.4' || $this->APIVer == '1.6' ) ? $this->LoadPhotoSet( $args['PhotoSetId'], 'Level1', FALSE ) : $this->LoadPhotoSet( $args['PhotoSetId'] );
 				$UploadUrl = $photoset['UploadUrl'];
 			}
 		}

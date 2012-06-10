@@ -1,4 +1,4 @@
-phpZenfolio 1.1 - PHP Wrapper for the Zenfolio API
+phpZenfolio 1.2 - PHP Wrapper for the Zenfolio API
 ==================================================
 
 Written by Colin Seymour
@@ -105,9 +105,9 @@ The constructor takes two arguments, one obligatory and one optional:
      application in the event of a problem.
 
    * `APIVer' - Optional
-     Default: 1.4
+     Default: 1.6
 
-     Use this to set the endpoint you wish to use.  The default is 1.4 as this
+     Use this to set the endpoint you wish to use.  The default is 1.6 as this
      is the latest endpoint provided by Zenfolio.
 
 As the constructor is a phpZenfolio specific method, it can be instantiated
@@ -115,13 +115,13 @@ using one of the following methods:
 
 Arguments as strings:
 
-     $f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.4");
+     $f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.6");
 
 Arguments as an associative array:
 
      $f = new phpZenfolio( array(
      	"AppName" => "My Cool App/1.0 (http://app.com)",
-     	"APIVer" => "1.4")
+     	"APIVer" => "1.6")
      	);
 
 Naturally, you can predefine the array before instantiating the object and just
@@ -369,6 +369,10 @@ Other Notes
 
      Valid arguments are "curl" (default) and "socket".
 
+   * phpZenfolio implements Zenfolio objects
+     (http://www.zenfolio.com/zf/help/api/ref/objects) as arrays.  This makes
+     implementation and usage easier.
+
    * Some people will need to use phpZenfolio from behind a proxy server.  You
      can use the `setProxy()' method to set the appropriate proxy settings.
 
@@ -457,6 +461,15 @@ This document is also available online at `http://phpzenfolio.com/docs'.
 
 Change History
 ==============
+
+   * 1.2 - 10 June '12
+
+
+        * Changed API endpoint to use api.zenfolio.com as requested by Zenfolio
+
+        * Changed default API version to 1.6
+
+        * Added ability to perform ALL API requests over HTTPS (Ticket #4)
 
    * 1.1 - 28 Mar '11
 
