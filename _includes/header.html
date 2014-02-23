@@ -30,9 +30,11 @@
 
 				<section id="pages" class="clearfix">
 					{% for page in site.pages %}
-						{% if page.title %}
+						{% if page.title != 'phpZenfolio' %}
 					<li><a href="{{ site.baseurl }}{{ page.url | remove:'index.html' }}">{{ page.title }}</a></li>
 						{% endif %}
 					{% endfor %}
 				</section>
 				<hr>
+
+				<section id="main_content">
