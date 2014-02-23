@@ -1,58 +1,8 @@
 ---
-
+layout: default
+title: phpZenfolio
+# I like this: http://www.dittodc.com/
 ---
 
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <title>phpZenfolio by lildude</title>
-  </head>
-
-  <body>
-    <div id="container">
-      <div class="inner">
-
-        <header>
-          <a href="{{ site.baseurl }}"><h1>phpZenfolio</h1></a>
-          <h2>phpZenfolio is a PHP wrapper class for the Zenfolio API</h2>
-        </header>
-
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/lildude/phpZenfolio/archive/1.2.zip" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/lildude/phpZenfolio/archive/1.2.tar.gz" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/lildude/phpZenfolio" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <section id="pages" class="clearfix">
-          {% for page in site.pages %}
-            {% if page.title %}
-          <li><a href="{{ site.baseurl }}{{ page.url | remove:'index.html' }}">{{ page.title }}</a></li>
-            {% endif %}
-          {% endfor %}
-        </section>
-        <hr>
-
-        <section id="main_content">
           <h3><a name="welcome-to-phpzenfolio" class="anchor" href="#welcome-to-phpzenfolio"><span class="octicon octicon-link"></span></a>Welcome to phpZenfolio</h3>
-
-            <p>phpZenfolio is a PHP wrapper class for the Zenfolio API written and maintained by Colin Seymour. The intention of this class is to allow PHP application developers to quickly and easily interact with the Zenfolio API in their applications, without having to worry about the finer details of the API.</p>
-        </section>
-
-        <footer>
-          phpZenfolio is maintained by <a href="https://github.com/lildude">lildude</a><br>
-        </footer>
-
-
-      </div>
-    </div>
-  </body>
-</html>
+          <p>phpZenfolio is a PHP wrapper class for the Zenfolio API written and maintained by Colin Seymour. The intention of this class is to allow PHP application developers to quickly and easily interact with the Zenfolio API in their applications, without having to worry about the finer details of the API.</p>
