@@ -1,0 +1,50 @@
+body {
+  border-top: 5px solid #C70;
+}
+
+a {
+  color: #C70;
+}
+
+.container {
+  max-width: 978px;
+}
+
+.header {
+  height: 100px;
+  margin: 40px auto;
+}
+
+.header h1 {
+  background: transparent url('../images/phpZenfolio-logo.png') no-repeat scroll 0 -18px;
+  text-indent: -9999px;
+  height: 60px;
+  margin-top: 0;
+}
+
+.header a:hover {
+  color: #C70;
+}
+
+.main-nav {
+  margin-top: 10px;
+}
+
+.main-nav li {
+  margin-right: 10px;
+}
+
+.main-nav a {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.nav-pills>li.active>a,
+.nav-pills>li.active>a:hover,
+.nav-pills>li.active>a:focus {
+  background-color: #C70;
+}
+
+.main_content {
+  font-size: 20px;
+}

@@ -13,20 +13,19 @@
 	</head>
 
 	<body>
-		<div id="container">
-			<div class="inner">
+		<div class="container">
 
-				<header>
-					<a href="{{ site.baseurl }}"><h1>phpZenfolio</h1></a>
-					<h2>phpZenfolio is a PHP wrapper class for the Zenfolio API</h2>
-				</header>
+			<div class="header clearfix">
+				<ul class="nav nav-pills main-nav pull-right">
+					<li class="active"><a href="#">Overview</a></li>
+					<li><a href="#">Documentation</a></li>
+					<li><a href="#">Download</a></li>
+					<li><a href="#">News</a></li>
+				</ul>
+				<h1 class="text-muted">{{ site.name }}</h1>
+			</div>
 
-				<section id="downloads" class="clearfix">
-					<a href="https://github.com/lildude/phpZenfolio/archive/1.2.zip" id="download-zip" class="button"><span>Download .zip</span></a>
-					<a href="https://github.com/lildude/phpZenfolio/archive/1.2.tar.gz" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-					<a href="https://github.com/lildude/phpZenfolio" id="view-on-github" class="button"><span>View on GitHub</span></a>
-				</section>
-
+<!--
 				<section id="pages" class="clearfix">
 					{% for page in site.pages %}
 						{% if page.title != 'phpZenfolio' %}
@@ -34,6 +33,6 @@
 						{% endif %}
 					{% endfor %}
 				</section>
-				<hr>
+			-->
 
-				<section id="main_content">
+				<section class="main_content">
