@@ -1,3 +1,5 @@
+name: phpZenfolio
+description: PHP wrapper for the Zenfolio API
 timezone: Europe/London
 encoding: UTF-8
 baseurl: /phpZenfolio
