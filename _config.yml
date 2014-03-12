@@ -1,8 +1,9 @@
-name: phpZenfolio
-description: PHP wrapper for the Zenfolio API
-timezone: Europe/London
-encoding: UTF-8
-baseurl: /phpZenfolio
+name:         phpZenfolio
+description:  PHP wrapper for the Zenfolio API
+timezone:     Europe/London
+encoding:     UTF-8
+baseurl:      /phpZenfolio
+permalink:    /news/:title/
 
 # Hard code our nav here to keep things in order and precisely as we want
 navigation:
