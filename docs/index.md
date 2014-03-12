@@ -3,7 +3,7 @@ layout: docs
 title: Documentation
 ---
 
-<span id="requirements"></span>
+[](#requirements)
 Requirements
 ============
 
@@ -21,7 +21,7 @@ PEAR packages:
 
 Please consult the above links for details on installing the PEAR modules.
 
-<span id="installation"></span>
+[](#installation)
 Installation
 ============
 
@@ -30,7 +30,7 @@ They need to be readable by your web server.  You can put them into an include
 folder defined in your `php.ini` file, if you like, though it's not required.
 
 
-<span id="usage"></span>
+[](#usage)
 Usage
 =====
 
@@ -134,7 +134,7 @@ HttpRequestException in the event of a problem detected by the code used to
 communicate with the API.  Your application will need to catch these exceptions.
 
 
-<span id="authentication"></span>
+[](#authentication)
 Authentication
 ==============
 
@@ -163,7 +163,7 @@ The Plain-Text method uses HTTPS/SSL for the authentication step to ensure your
 username and password are encrypted when transmitted to Zenfolio.
 
 
-<span id="caching"></span>
+[](#caching)
 Caching
 =======
 
@@ -247,7 +247,7 @@ If you have caching enabled, and you make changes, it's a good idea to call
 `clearCache()` to refresh the cache so your changes are reflected immediately.
 
 
-<span id="uploading"></span>
+[](#uploading)
 Uploading
 =========
 
@@ -305,7 +305,7 @@ using the API's `CreatePhotoFromUrl()` method.
 
 
 
-<span id="replacing"></span>
+[](#replacing_photos)
 Replacing Photos
 ================
 
@@ -313,7 +313,7 @@ In order to replace a photo, you will need to upload a new photo and then
 replace the old photo with the new using the Zenfolio [ReplacePhoto()](http://www.zenfolio.com/zf/help/api/ref/methods/replacephoto) API method.
 
 
-<span id="other"></span>
+[](#other_notes)
 Other Notes
 ===========
 
@@ -380,7 +380,7 @@ Other Notes
 
 
 
-<span id="examples"></span>
+[](#examples)
 Examples
 ========
 
