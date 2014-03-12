@@ -12,7 +12,7 @@ a {
 
 .header {
   height: 100px;
-  margin: 40px auto;
+  margin-top: 40px;
 }
 
 .header h1 {
@@ -47,4 +47,41 @@ a {
 
 .main_content {
   font-size: 20px;
+}
+
+.intro {
+  font-size: 3.2em;
+  text-align: center;
+  padding-bottom: 40px;
+}
+
+.docs-nav {
+  font-size: 15px;
+}
+.docs-nav > li > a {
+  padding: 0px;
+}
+.docs-nav > li >a:hover,
+.docs-nav > li >a:focus {
+  background-color: #fff;
+}
+
+.docs-nav > li > a.to-top {
+  padding-top: 10px;
+  font-size: 13px;
+}
+
+#sidebar.affix-top {
+  position: static;
+  width: 100%;
+}
+
+#sidebar.affix {
+  position: fixed;
+  top:45px;
+  width: 100%;
+}
+
+.affix,.affix-top {
+   position:static;
 }
