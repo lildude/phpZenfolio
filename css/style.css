@@ -7,6 +7,10 @@ a {
   color: #C70;
 }
 
+h1 {
+  font-weight: bold;
+}
+
 .container {
   max-width: 978px;
 }
@@ -59,6 +63,11 @@ a {
 .docs-nav {
   font-size: 15px;
 }
+
+.docs-nav li {
+  padding-left: 5px;
+  border-left: 2px solid #fff;
+}
 .docs-nav > li > a {
   padding: 0px;
 }
@@ -74,6 +83,10 @@ a {
 
 .docs-nav > li.active {
   border-left: 2px solid #ccc;
+}
+
+.docs-nav > li.active a {
+  color: #2a6496;
 }
 
 #sidebar.affix-top {
@@ -93,4 +106,11 @@ a {
 
 .docs h1 {
   padding-top: 20px;
+}
+
+.post-date {
+  color: #ccc;
+  font-size: 14px;
+  margin-top: -10px;
+  margin-bottom: 20px;
 }
