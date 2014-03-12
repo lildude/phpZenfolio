@@ -151,13 +151,13 @@ phpZenfolio allows you to use the API methods as documented, however to make
 things easy, a single `login()` method exists to allow you to authentication
 using either of these authentication methods:
 
-Challenge-Response (default):
+* Challenge-Response (default):
 
-	$f->login("Username=<username>", "Password=<password>");
+	    $f->login("Username=<username>", "Password=<password>");
 
-Plain-Text:
+* Plain-Text:
 
-	$f->login("Username=<username>", "Password=<password>", "Plaintext=TRUE");
+	    $f->login("Username=<username>", "Password=<password>", "Plaintext=TRUE");
 
 The Plain-Text method uses HTTPS/SSL for the authentication step to ensure your
 username and password are encrypted when transmitted to Zenfolio.
@@ -187,7 +187,7 @@ The `enableCache()` method takes 4 arguments:
    * `dsn` - Required for type=db
      This a PEAR::MDB2 DSN connection string, for example:
 
-				mysql://user:password@server/database
+			mysql://user:password@server/database
 
      phpZenfolio uses the MDB2 PEAR module to interact with the database if you
      use database based caching.  phpZenfolio does *NOT* supply the necessary
@@ -212,9 +212,9 @@ The `enableCache()` method takes 4 arguments:
      In Apache, you can specify this in the configuration files or in a
      .htaccess file with the following directives:
 
-				<FilesMatch "\.cache$">
-				   Deny from all
-				</FilesMatch>
+			<FilesMatch "\.cache$">
+			   Deny from all
+			</FilesMatch>
 
      Alternatively, you can specify a directory that is outside of the web
      server's document root.
@@ -266,13 +266,13 @@ using the API's `CreatePhotoFromUrl()` method.
      Then it's just a matter of calling the method with the various optional
      parameters.
 
-     Upload using the PhotoSetId:
+     - Upload using the PhotoSetId:
 
-			$f->upload("PhotoSetId=123456", "File=/path/to/image.jpg");
+			    $f->upload("PhotoSetId=123456", "File=/path/to/image.jpg");
 
-     Upload using the UploadUrl:
+     - Upload using the UploadUrl:
 
-			$f->upload("UploadUrl=http://up.zenfolio.com/....",
+			    $f->upload("UploadUrl=http://up.zenfolio.com/....",
 							  "File=/path/to/image.jpg");
 
      At this time, the only supported options you can pass at the time of
@@ -323,8 +323,8 @@ Other Notes
      use of sockets, you can do so using the phpZenfolio supplied
      `setAdapter()` right after instantiating your instance:
 
-				$f = new phpZenfolio("AppName=<value>");
-				$f->setAdapter("socket");
+			$f = new phpZenfolio("AppName=<value>");
+			$f->setAdapter("socket");
 
      Valid arguments are "curl" (default) and "socket".
 
@@ -336,8 +336,8 @@ Other Notes
 
      For example:
 
-				$f = new phpZenfolio("AppName=<value>");
-				$f->setProxy("server=<proxy_server>", "port=<value>");
+			$f = new phpZenfolio("AppName=<value>");
+			$f->setProxy("server=<proxy_server>", "port=<value>");
 
      All your calls will then pass through the specified proxy on the specified
      port.
@@ -347,11 +347,11 @@ Other Notes
 
      For example:
 
-				$f = new phpZenfolio("AppName=<value>");
-				$f->setProxy("server=<proxy_server>",
-				    "port=<value>",
-				    "user=<proxy_username>",
-				    "password=<proxy_password>");
+			$f = new phpZenfolio("AppName=<value>");
+			$f->setProxy("server=<proxy_server>",
+			    "port=<value>",
+			    "user=<proxy_username>",
+			    "password=<proxy_password>");
 
      Note: Proxy support is currently only available when using the default
      "curl" adapter.
@@ -366,7 +366,7 @@ Other Notes
 			$f = new phpZenfolio("AppName=<value>");
 			$photos = $f->LoadPhotoSetPhotos(<photosetID>, <startingIndex>, <numberOfPhotos>);
 			foreach ($photos as $photo) {
-			    echo '<img src="',phpZenfolio::imageUrl($photo, 1),'" />';
+			  echo '<img src="',phpZenfolio::imageUrl($photo, 1),'" />';
 			}
 
    * If phpZenfolio encounters an error, or Zenfolio returns a "failure"
@@ -398,4 +398,4 @@ phpZenfolio comes with 3 examples to help get you on your way.
 And that's all folks.
 
 Keep up to date on developments and enhancements to phpZenfolio at
-http://phpzenfolio.com/.
+[phpzenfolio.com](http://phpzenfolio.com/).
