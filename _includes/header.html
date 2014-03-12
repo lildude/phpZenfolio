@@ -9,15 +9,15 @@
 		<!--[if lt IE 9]>
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
-		<title>{{ site.name }} &middot; {{ page.title }}</title>
+		<title>{{ site.name }} &middot; {% if page.url == '/index.html' %}{{ site.description }}{% else %}{{ page.title }}{% endif %}</title>
 	</head>
 
-	<body data-spy="scroll" data-target=".navbar-docs">
+<body class="top" data-spy="scroll" data-target=".docs-nav">
 		<div class="container">
 			<div class="header clearfix">
 				<ul class="nav nav-pills main-nav pull-right">
 					{% for tab in site.navigation %}
-					{% assign url = page.url | remove:'index.html' %}
+						{% assign url = page.url | remove:'index.html' %}
 						{% if url == tab.url %}
 					<li class="active"><a href="{{ site.baseurl }}{{ tab.url }}">{{ tab.title }}</a></li>
 						{% else %}
