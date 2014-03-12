@@ -9,21 +9,25 @@
 		<!--[if lt IE 9]>
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
-		<title>{{ page.title }}</title>
+		<title>{{ site.name }} &middot; {{ page.title }}</title>
 	</head>
 
 	<body>
 		<div class="container">
-
 			<div class="header clearfix">
 				<ul class="nav nav-pills main-nav pull-right">
-					<li class="active"><a href="#">Overview</a></li>
-					<li><a href="#">Documentation</a></li>
-					<li><a href="#">Download</a></li>
-					<li><a href="#">News</a></li>
+					{% for tab in site.navigation %}
+					{% assign url = page.url | remove:'index.html' %}
+						{% if url == tab.url %}
+					<li class="active"><a href="{{ site.baseurl }}{{ tab.url }}">{{ tab.title }}</a></li>
+						{% else %}
+					<li><a href="{{ site.baseurl }}{{ tab.url }}">{{ tab.title }}</a></li>
+						{% endif %}
+					{% endfor %}
 				</ul>
-				<h1 class="text-muted">{{ site.name }}</h1>
+				<a href="{{ site.baseurl }}"><h1 class="text-muted">{{ site.name }}</h1></a>
 			</div>
+
 
 <!--
 				<section id="pages" class="clearfix">
