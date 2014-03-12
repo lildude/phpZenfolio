@@ -12,7 +12,7 @@
 		<title>{{ site.name }} &middot; {{ page.title }}</title>
 	</head>
 
-	<body>
+	<body data-spy="scroll" data-target=".navbar-docs">
 		<div class="container">
 			<div class="header clearfix">
 				<ul class="nav nav-pills main-nav pull-right">
@@ -28,15 +28,4 @@
 				<a href="{{ site.baseurl }}"><h1 class="text-muted">{{ site.name }}</h1></a>
 			</div>
 
-
-<!--
-				<section id="pages" class="clearfix">
-					{% for page in site.pages %}
-						{% if page.title != 'phpZenfolio' %}
-					<li><a href="{{ site.baseurl }}{{ page.url | remove:'index.html' }}">{{ page.title }}</a></li>
-						{% endif %}
-					{% endfor %}
-				</section>
-			-->
-
-				<section class="main_content">
+			<section class="main_content">
