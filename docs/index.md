@@ -398,11 +398,4 @@ phpZenfolio comes with 3 examples to help get you on your way.
 And that's all folks.
 
 Keep up to date on developments and enhancements to phpZenfolio at
-http://phpzenfolio.com/ .
-
-If you are using phpZenfolio and wish to let the world know, drop me a line via
-the contact form at `http://phpzenfolio.com/about' and I'll add a link and
-brief description to the sidebar on `http://phpzenfolio.com/'.
-
-If you use and find phpZenfolio useful, please help support its maintenance and
-development by [making a donation](http://phpzenfolio.com/donate).
+http://phpzenfolio.com/.
