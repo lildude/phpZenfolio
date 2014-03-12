@@ -1,5 +1,6 @@
 body {
   border-top: 5px solid #C70;
+  overflow: scroll;
 }
 
 a {
@@ -71,6 +72,10 @@ a {
   font-size: 13px;
 }
 
+.docs-nav > li.active {
+  border-left: 2px solid #ccc;
+}
+
 #sidebar.affix-top {
   position: static;
   width: 100%;
@@ -84,4 +89,8 @@ a {
 
 .affix,.affix-top {
    position:static;
+}
+
+.docs h1 {
+  padding-top: 20px;
 }
