@@ -3,3 +3,14 @@ description: PHP wrapper for the Zenfolio API
 timezone: Europe/London
 encoding: UTF-8
 baseurl: /phpZenfolio
+
+# Hard code our nav here to keep things in order and precisely as we want
+navigation:
+  - title: Overview
+    url: /
+  - title: Documentation
+    url: /docs/
+  - title: Download
+    url: /download/
+  - title: News
+    url: /news/
