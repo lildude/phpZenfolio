@@ -108,9 +108,21 @@ h1 {
   padding-top: 20px;
 }
 
-.post-date {
-  color: #ccc;
-  font-size: 14px;
+.post-meta {
   margin-top: -10px;
   margin-bottom: 20px;
+}
+
+.post-meta .label {
+  color: #ccc;
+}
+
+.post-date, .post-author {
+  color: #ccc;
+  font-size: 14px;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
 }
