@@ -108,13 +108,17 @@ h1 {
   padding-top: 20px;
 }
 
+article {
+  padding-bottom: 30px;
+}
+
 .post-meta {
   margin-top: -10px;
   margin-bottom: 20px;
 }
 
-.post-meta .label {
-  color: #ccc;
+.post-date {
+  margin-right: 15px;
 }
 
 .post-date, .post-author {
@@ -125,4 +129,9 @@ h1 {
 .avatar {
   width: 24px;
   height: 24px;
+}
+
+.center {
+  text-align: center;
+  margin: 0 auto;
 }
