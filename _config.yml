@@ -6,6 +6,8 @@ baseurl:      /phpZenfolio
 permalink:    /news/:title/
 gems:
   - jemoji
+markdown: kramdown
+
 
 # Hard code our nav here to keep things in order and precisely as we want
 navigation:
