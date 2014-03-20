@@ -4,6 +4,8 @@ timezone:     Europe/London
 encoding:     UTF-8
 baseurl:      /phpZenfolio
 permalink:    /news/:title/
+gems:
+  - jemoji
 
 # Hard code our nav here to keep things in order and precisely as we want
 navigation:
