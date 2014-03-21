@@ -1,3 +1,8 @@
+html,
+body {
+  height: 100%;
+}
+
 body {
   border-top: 5px solid #C70;
   overflow: scroll;
@@ -13,6 +18,8 @@ h1 {
 
 .container {
   max-width: 978px;
+  min-height:100%;
+  position:relative;
 }
 
 .header {
@@ -52,12 +59,14 @@ h1 {
 
 .main_content {
   font-size: 20px;
+  margin-bottom: 80px;
 }
 
 .intro {
   font-size: 3.2em;
   text-align: center;
   padding-bottom: 40px;
+  margin-top: 100px;
 }
 
 .docs-nav {
@@ -134,4 +143,13 @@ article {
 .center {
   text-align: center;
   margin: 0 auto;
+}
+
+/* ---:[ Footer ]:--- */
+footer {
+  border-top: 1px solid #eee;
+  text-align: center;
+  padding: 20px;
+  margin-top: -60px;
+  height: 60px;
 }
