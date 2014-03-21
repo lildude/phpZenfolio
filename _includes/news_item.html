@@ -7,7 +7,7 @@
   <div class="post-meta">
     <span class="post-category">
       {% for category in post.categories %}
-      <span class="label">[{{ category }}]</span>
+      <span class="label label-primary">{{ category | upcase }}</span>
       {% endfor %}
     </span>
     <span class="post-date">
