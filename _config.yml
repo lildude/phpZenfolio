@@ -1,12 +1,13 @@
-name:         phpZenfolio
-description:  PHP wrapper for the Zenfolio API
-timezone:     Europe/London
-encoding:     UTF-8
-baseurl:      /phpZenfolio
-permalink:    /news/:title/
+name:          phpZenfolio
+description:   PHP wrapper for the Zenfolio API
+analytics_id:  ''
+timezone:      Europe/London
+encoding:      UTF-8
+baseurl:       /phpZenfolio
+permalink:     /news/:title/
 gems:
   - jemoji
-markdown: kramdown
+markdown:      kramdown
 kramdown:
   input: GFM
 
