@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8'>
+		<meta http-equiv="X-UA-Compatible" content="chrome=1">
+		<link rel="stylesheet" href="/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="/css/fontawesome.css">
+
+		<!--[if lt IE 9]>
+		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<title>phpZenfolio &middot; Documentation</title>
+	</head>
+
+<body class="top" data-spy="scroll" data-target="#sidebar">
+		<div class="container">
+			<div class="header clearfix">
+				<ul class="nav nav-pills main-nav pull-right">
+					
+						
+						
+					<li><a href="/">Overview</a></li>
+						
+					
+						
+						
+					<li class="active"><a href="/docs/">Documentation</a></li>
+						
+					
+						
+						
+					<li><a href="/download/">Download</a></li>
+						
+					
+						
+						
+					<li><a href="/news/">News</a></li>
+						
+					
+				</ul>
+				<a href=""><h1 class="text-muted">phpZenfolio</h1></a>
+			</div>
+
+<div class="main_content">
+  <div class="row">
+    <div class="col-md-9 docs">
+      <h1 id="requirements">Requirements</h1>
+
+<p>phpZenfolio is written in PHP and utilises functionality supplied with PHP 5.2<br />
+and later and optionally PEAR.</p>
+
+<p>From a PHP perspective, the only requirement is PHP 5.2 compiled with GD and<br />
+optionally, curl support enabled.</p>
+
+<p>If you wish to use a database for caching, you will also need the following<br />
+PEAR packages:</p>
+
+<ul>
+  <li><a href="http://pear.php.net/package/MDB2">MDB2 2.5.0b3</a> or later.</li>
+  <li>The corresponding <a href="http://pear.php.net/search.php?q=MDB2_Driver&amp;in=packages&amp;setPerPage=20">MDB2 Driver</a> for the database you wish to use.</li>
+</ul>
+
+<p>Please consult the above links for details on installing the PEAR modules.</p>
+
+<h1 id="installation">Installation</h1>
+
+<p>Copy the files from the installation package into a folder on your server.<br />
+They need to be readable by your web server.  You can put them into an include<br />
+folder defined in your <code>php.ini</code> file, if you like, though it’s not required.</p>
+
+<h1 id="usage">Usage</h1>
+
+<p>In order to use phpZenfolio, you will need to instantiate a new instance of the<br />
+phpZenfolio object and then call the methods you need.  phpZenfolio implements<br />
+all methods and arguments as documented in the Zenfolio API. Accordingly, when<br />
+calling a Zenfolio method, you will need to ensure that you pass the parameters<br />
+exactly as they are documented in the <a href="http://http://www.zenfolio.com/zf/help/api">Zenfolio API documentation</a>.</p>
+
+<p>Remember: <em>ALL</em> function names and arguments <em>ARE</em> case sensitive and the order<br />
+is important.</p>
+
+<p>To make things easy for developers, phpZenfolio also provides several of it’s<br />
+own methods.  These methods are: <code>login()</code>, <code>enableCache()</code>, <code>clearCache()</code>,
+<code>upload()</code>, <code>setProxy()</code>, <code>imageUrl()</code> and <code>setAdapter()</code>.  All phpZenfolio<br />
+methods, and its constructor, take their arguments either as an associative<br />
+array or as a list of <code>param=value</code> strings, unless otherwise documented.<br />
+These methods are documented in more detail later in this document.</p>
+
+<p>To use phpZenfolio, all you have to do is include the file in your PHP scripts<br />
+and create an instance.  For example:</p>
+
+<pre><code>require_once("phpZenfolio/phpZenfolio.php");
+$f = new phpZenfolio(... arguments go here ...);
+</code></pre>
+
+<p>The constructor takes two arguments, one obligatory and one optional:</p>
+
+<ul>
+  <li>
+    <p><code>AppName</code> - Required</p>
+
+    <p>This is the name, version and URL of the application you have built using<br />
+phpZenfolio. There is no required format, but something like:</p>
+
+    <pre><code>   "My Cool App/1.0 (http://my.url.com)"
+</code></pre>
+
+    <p>… would be very useful and will allow Zenfolio to identify your<br />
+application in the event of a problem.</p>
+  </li>
+  <li>
+    <p><code>APIVer</code> - Optional<br />
+Default: 1.6</p>
+
+    <p>Use this to set the endpoint you wish to use.  The default is 1.6 as this<br />
+is the latest endpoint provided by Zenfolio.</p>
+  </li>
+</ul>
+
+<p>As the constructor is a phpZenfolio specific method, it can be instantiated<br />
+using one of the following methods:</p>
+
+<p>Arguments as strings:</p>
+
+<pre><code>$f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.6");
+</code></pre>
+
+<p>Arguments as an associative array:</p>
+
+<pre><code>$f = new phpZenfolio( array(
+	"AppName" =&gt; "My Cool App/1.0 (http://app.com)",
+	"APIVer" =&gt; "1.6")
+	);
+</code></pre>
+
+<p>Naturally, you can predefine the array before instantiating the object and just<br />
+pass the array variable.</p>
+
+<p>With the instance instantiated, you can now interact with the Zenfolio API<br />
+using Zenfolio’s native methods exactly as they’re documented. Arguments to all<br />
+Zenfolio native methods must be provided in the order they are documented in<br />
+the API documentation.  For example, use the following to get all recent sets<br />
+that are of the PhotoSetType ‘Gallery’:</p>
+
+<pre><code>$f-&gt;GetRecentSets('Gallery', 0, 3);
+</code></pre>
+
+<p>Note the method’s capitalisation and the arguments, these are as they are<br />
+documented in the <a href="http://www.zenfolio.com/zf/help/api/ref/methods/getrecentsets">GetRecentSets()</a> method<br />
+documentation.</p>
+
+<p>Some of the Zenfolio API methods, like <code>CreatePhotoSet()</code>, require an object to<br />
+be passed as one of the arguments. The object can be passed either as an<br />
+associative array:</p>
+
+<pre><code>$photoSetUpdater = array(
+   "Title" =&gt; "PhotoSet Title",
+   "Caption" =&gt; "PhotoSet Caption via API",
+   "Keywords" =&gt; array("Keyword1", "keyword2"),
+   "Categories" =&gt; array(),
+   "CustomReference" =&gt; "testing/test-photoset"
+);
+$f-&gt;CreatePhotoSet(12345, 'Gallery', $photoSetUpdater );
+</code></pre>
+
+<p>… or as a standard class object:</p>
+
+<pre><code>$photoSetUpdater = new stdClass();
+$photoSetUpdater-&gt;Title = "PhotoSet Title";
+$photoSetUpdater-&gt;Caption = "PhotoSet Caption via Object"|;
+$photoSetUpdater-&gt;Keywords = array("Keyword1", "keyword2");
+$photoSetUpdater-&gt;Categories = array();
+$photoSetUpdater-&gt;CustomReference = "testing/test-photoset";
+$f-&gt;CreatePhotoSet(12345, 'Gallery', $photoSetUpdater );
+</code></pre>
+
+<p>All data returned by the method call is returned as the API documents it with<br />
+the exception being objects are actually returned as arrays by phpZenfolio.  In<br />
+the event of an error, phpZenfolio will throw one of two exceptions:<br />
+PhpZenfolioException in the event of a problem detected by phpZenfolio or<br />
+HttpRequestException in the event of a problem detected by the code used to<br />
+communicate with the API.  Your application will need to catch these exceptions.</p>
+
+<h1 id="authentication">Authentication</h1>
+
+<p>Many of the Zenfolio API methods are open to all users, whether they have<br />
+Zenfolio accounts or not, however anything private or related to modification<br />
+requires authentication.</p>
+
+<p>The Zenfolio API provides two methods of <a href="http://www.zenfolio.com/zf/help/api/guide/auth">authentication</a>: Plain-Text and<br />
+Challenge-Response.  Both are equally good with the slightly more secure method<br />
+being the Challenge-Response method as your password never travels across the<br />
+wire.</p>
+
+<p>phpZenfolio allows you to use the API methods as documented, however to make<br />
+things easy, a single <code>login()</code> method exists to allow you to authentication<br />
+using either of these authentication methods:</p>
+
+<ul>
+  <li>
+    <p>Challenge-Response (default):</p>
+
+    <pre><code>  $f-&gt;login("Username=&lt;username&gt;", "Password=&lt;password&gt;");
+</code></pre>
+  </li>
+  <li>
+    <p>Plain-Text:</p>
+
+    <pre><code>  $f-&gt;login("Username=&lt;username&gt;", "Password=&lt;password&gt;", "Plaintext=TRUE");
+</code></pre>
+  </li>
+</ul>
+
+<p>The Plain-Text method uses HTTPS/SSL for the authentication step to ensure your<br />
+username and password are encrypted when transmitted to Zenfolio.</p>
+
+<h1 id="caching">Caching</h1>
+
+<p>Caching can be very important to a project as it can drastically improve the<br />
+performance of your application.</p>
+
+<p>phpZenfolio has caching functionality that can cache data to a database or<br />
+files, you just need to enable it.</p>
+
+<p>It is recommended that caching is enabled immediately after a new phpZenfolio<br />
+instance is created, and before any other phpZenfolio methods are called.</p>
+
+<p>To enable caching, use the <code>enableCache()</code> function.</p>
+
+<p>The <code>enableCache()</code> method takes 4 arguments:</p>
+
+<ul>
+  <li>
+    <p><code>type</code> - Required<br />
+This is “db” for database or “fs” for filesystem.</p>
+  </li>
+  <li>
+    <p><code>dsn</code> - Required for type=db<br />
+This a PEAR::MDB2 DSN connection string, for example:</p>
+
+    <pre><code>   mysql://user:password@server/database
+</code></pre>
+
+    <p>phpZenfolio uses the MDB2 PEAR module to interact with the database if you<br />
+use database based caching.  phpZenfolio does <em>NOT</em> supply the necessary<br />
+PEAR modules.  If you with to use a database for caching, you will need to<br />
+download and install PEAR, the MDB2 PEAR module and the corresponding<br />
+database driver yourself.  See <a href="http://pear.php.net/manual/en/package.database.mdb2.intro.php">MDB2 Manual</a> for<br />
+details.</p>
+  </li>
+  <li>
+    <p><code>cache_dir</code> - Required for type=fs</p>
+
+    <p>This is the folder/directory that the web server has write access to. This<br />
+directory must already exist.</p>
+
+    <p>Use absolute paths for best results as relative paths may have unexpected<br />
+behaviour. They’ll usually work, you’ll just want to test them.</p>
+
+    <p>You may not want to allow the world to view the files that are created<br />
+during caching.  If you want to hide this information, either make sure<br />
+that your permissions are set correctly, or prevent the webserver from<br />
+displaying <code>*.cache</code> files.</p>
+
+    <p>In Apache, you can specify this in the configuration files or in a<br />
+.htaccess file with the following directives:</p>
+
+    <pre><code>   &lt;FilesMatch "\.cache$"&gt;
+      Deny from all
+   &lt;/FilesMatch&gt;
+</code></pre>
+
+    <p>Alternatively, you can specify a directory that is outside of the web<br />
+server’s document root.</p>
+  </li>
+  <li>
+    <p><code>cache_expire</code> - Optional<br />
+Default: 3600</p>
+
+    <p>This is the maximum age of each cache entry in seconds.</p>
+  </li>
+  <li>
+    <p><code>table</code> - Optional<br />
+Default: phpzenfolio_cache</p>
+
+    <p>This is the database table name that will be used for storing the cached<br />
+data.  This is only applicable for database (db) caching and will be<br />
+ignored if included for filesystem (fs) caching.</p>
+
+    <p>If the table does not exist, phpZenfolio will attempt to create it.</p>
+  </li>
+</ul>
+
+<p>Each of the caching methods can be enabled as follows:</p>
+
+<p>Filesystem based cache:</p>
+
+<pre><code>$f-&gt;enableCache("type=fs", "cache_dir=/tmp", "cache_expire=86400" );
+</code></pre>
+
+<p>Database based cache:</p>
+
+<pre><code>$f-&gt;enableCache("type=db", "dsn=mysql://USERNAME:PASSWORD_database", "cache_expire=86400");
+</code></pre>
+
+<p>If you have caching enabled, and you make changes, it’s a good idea to call
+<code>clearCache()</code> to refresh the cache so your changes are reflected immediately.</p>
+
+<h1 id="uploading">Uploading</h1>
+
+<p>Uploading is very easy.  You can either upload an image from your local system<br />
+using the phpZenfolio supplied <code>upload()</code> method, or from a location on the web<br />
+using the API’s <code>CreatePhotoFromUrl()</code> method.</p>
+
+<ul>
+  <li>
+    <p>Upload Local File:</p>
+
+    <p>To upload from your local filesystem using the phpZenfolio <code>upload()</code><br />
+method, you will need to have logged into Zenfolio via the API and have<br />
+the <code>PhotoSetId</code> or it’s <code>UploadUrl</code> as returned by the API.</p>
+
+    <p>Then it’s just a matter of calling the method with the various optional<br />
+parameters.</p>
+
+    <ul>
+      <li>
+        <p>Upload using the PhotoSetId:</p>
+
+        <pre><code>     $f-&gt;upload("PhotoSetId=123456", "File=/path/to/image.jpg");
+</code></pre>
+      </li>
+      <li>
+        <p>Upload using the UploadUrl:</p>
+
+        <pre><code>     $f-&gt;upload("UploadUrl=http://up.zenfolio.com/....",
+                   "File=/path/to/image.jpg");
+</code></pre>
+      </li>
+    </ul>
+
+    <p>At this time, the only supported options you can pass at the time of<br />
+uploading are a “filename” the “modified” parameter which takes a RFC2822<br />
+formatted date string…</p>
+
+    <pre><code>   $f-&gt;upload("PhotoSetId=123456",
+       "File=/path/to/image.jpg",
+       "filename=newfilename.jpg",
+       "modified=Thu, 14 Jan 2010 13:08:07 +0200");
+</code></pre>
+
+    <p>If you don’t specify a filename, the original filename is used.</p>
+  </li>
+  <li>
+    <p>Upload from the web:</p>
+
+    <p>Uploading to Zenfolio using a URL is done purely by the Zenfolio
+<code>CreatePhotoFromUrl()</code> API method:</p>
+
+    <pre><code>   $f-&gt;CreatePhotoFromUrl( 12344, "http://www.example.com/images/image.jpg", null );
+</code></pre>
+
+    <p>You can find full details on the options this method accepts in the
+<a href="http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl">CreatePhotoFromUrl</a><br />
+method documentation.</p>
+
+    <p>Unfortunately, there is no way to pass things like the photo title etc at<br />
+the time of upload. You will need to set these later using the
+<code>UpdatePhoto()</code> method.</p>
+  </li>
+</ul>
+
+<h1 id="replacing-photos">Replacing Photos</h1>
+
+<p>In order to replace a photo, you will need to upload a new photo and then<br />
+replace the old photo with the new using the Zenfolio <a href="http://www.zenfolio.com/zf/help/api/ref/methods/replacephoto">ReplacePhoto()</a> API method.</p>
+
+<h1 id="other-notes">Other Notes</h1>
+
+<ul>
+  <li>
+    <p>By default, phpZenfolio will attempt to use Curl to communicate with the<br />
+Zenfolio API endpoint if it’s available.  If not, it’ll revert to using<br />
+sockets based communication using <code>fsockopen()</code>.  If you wish to force the<br />
+use of sockets, you can do so using the phpZenfolio supplied
+<code>setAdapter()</code> right after instantiating your instance:</p>
+
+    <pre><code>   $f = new phpZenfolio("AppName=&lt;value&gt;");
+   $f-&gt;setAdapter("socket");
+</code></pre>
+
+    <p>Valid arguments are “curl” (default) and “socket”.</p>
+  </li>
+  <li>
+    <p>phpZenfolio implements Zenfolio <a href="http://www.zenfolio.com/zf/help/api/ref/objects">objects</a> as arrays.  This makes<br />
+implementation and usage easier.</p>
+  </li>
+  <li>
+    <p>Some people will need to use phpZenfolio from behind a proxy server.  You<br />
+can use the <code>setProxy()</code> method to set the appropriate proxy settings.</p>
+
+    <p>For example:</p>
+
+    <pre><code>   $f = new phpZenfolio("AppName=&lt;value&gt;");
+   $f-&gt;setProxy("server=&lt;proxy_server&gt;", "port=&lt;value&gt;");
+</code></pre>
+
+    <p>All your calls will then pass through the specified proxy on the specified<br />
+port.</p>
+
+    <p>If your proxy server requires a username and password, then add those<br />
+options to the <code>setProxy()</code> method arguments too.</p>
+
+    <p>For example:</p>
+
+    <pre><code>   $f = new phpZenfolio("AppName=&lt;value&gt;");
+   $f-&gt;setProxy("server=&lt;proxy_server&gt;",
+       "port=&lt;value&gt;",
+       "user=&lt;proxy_username&gt;",
+       "password=&lt;proxy_password&gt;");
+</code></pre>
+
+    <p>Note: Proxy support is currently only available when using the default
+“curl” adapter.</p>
+  </li>
+  <li>
+    <p>To make it easy to obtain the direct URL to an image, phpZenfolio supplies<br />
+a <code>imageURL()</code> method that takes the Photo object as returned by methods<br />
+like <code>LoadPhoto()</code> and <code>LoadPhotoSetPhotos()</code> and an integer for the<br />
+desired photo size where the integer is one of those <a href="http://www.zenfolio.com/zf/help/api/guide/download">documented</a>.</p>
+
+    <p>For example:</p>
+
+    <pre><code>   $f = new phpZenfolio("AppName=&lt;value&gt;");
+   $photos = $f-&gt;LoadPhotoSetPhotos(&lt;photosetID&gt;, &lt;startingIndex&gt;, &lt;numberOfPhotos&gt;);
+   foreach ($photos as $photo) {
+     echo '&lt;img src="',phpZenfolio::imageUrl($photo, 1),'" /&gt;';
+   }
+</code></pre>
+  </li>
+  <li>
+    <p>If phpZenfolio encounters an error, or Zenfolio returns a “failure”<br />
+response, an exception will be thrown and your application will stop<br />
+executing. If there is a problem with communicating with the endpoint, a<br />
+HttpRequestException will be thrown.  If an error is detected elsewhere, a<br />
+PhpZenfolioException will be thrown.</p>
+
+    <p>It is recommended that you configure your application to catch exceptions<br />
+from phpZenfolio.</p>
+  </li>
+</ul>
+
+<h1 id="examples">Examples</h1>
+
+<p>phpZenfolio comes with 3 examples to help get you on your way.</p>
+
+<ul>
+  <li>
+    <p><code>example-popular.php</code> illustrates how to obtain the 100 most popular<br />
+galleries and display their title image linking to each individual gallery.</p>
+  </li>
+  <li>
+    <p><code>example-login.php</code> illustrates how to login and display the images in<br />
+your first photoset or collection.</p>
+  </li>
+  <li>
+    <p><code>example-user.php</code> illustrates how to display the first 100 public photos<br />
+of the user’s the first public photoset found.</p>
+  </li>
+</ul>
+
+<p>And that’s all folks.</p>
+
+<p>Keep up to date on developments and enhancements to phpZenfolio at
+<a href="http://phpzenfolio.com/">phpzenfolio.com</a>.</p>
+
+    </div>
+      <div class="col-md-3">
+    <div id="sidebar" data-spy="affix" data-offset-top="100">
+      <ul class="nav docs-nav">
+        <li class="active"><a href="#requirements">Requirements</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#usage">Usage</a></li>
+        <li><a href="#authentication">Authentication</a></li>
+        <li><a href="#caching">Caching</a></li>
+        <li><a href="#uploading">Uploading</a></li>
+        <li><a href="#replacing-photos">Replacing Photos</a></li>
+        <li><a href="#other-notes">Other Notes</a></li>
+        <li><a href="#examples">Examples</a></li>
+        <li><a href="#top" class="to-top">Back to top</a></li>
+      </ul>
+    </div>
+  </div>
+
+  </div>
+</div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+</div>
+</div>
+</body>
+</html>
+

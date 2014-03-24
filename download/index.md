@@ -8,7 +8,18 @@ Download
 
 Download the latest and greatest revision of phpZenfolio:
 
-<div class="center"><a href="https://github.com/lildude/phpZenfolio/archive/1.2.zip"><span class="btn btn-primary">phpZenfolio 1.2 (zip)</span></a> <a href="https://github.com/lildude/phpZenfolio/archive/1.2.tar.gz"><span class="btn btn-primary">phpZenfolio 1.2 (tar.gz)</span></a></div>
+<div class="center dwn-btns">
+  <a href="https://github.com/lildude/phpZenfolio/archive/1.2.zip">
+    <button type="button" class="btn btn-primary btn-lg">
+      <i class="icon-download-alt"></i> phpZenfolio 1.2 (zip)
+    </button></a>
+  <a href="https://github.com/lildude/phpZenfolio/archive/1.2.tar.gz">
+    <button type="button" class="btn btn-primary btn-lg">
+      <i class="icon-download-alt"></i> phpZenfolio 1.2 (tar.gz)</button></a>
+  <a href="https://github.com/lildude/phpZenfolio">
+    <button type="button" class="btn btn-primary btn-lg">
+      <i class="icon-github"></i> View On GitHub</button></a>
+</div>
 
 ---
 
