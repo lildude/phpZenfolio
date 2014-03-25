@@ -13,7 +13,7 @@ Not already a [Zenfolio](http://www.zenfolio.com) user?  Here, have a $5 discoun
 
 # Using {{ site.name }}
 
-Everything you need to know about using {{ site.name }} can be found in the <a href="docs">documentation</a> and the almost identical README that is included with all <a href="download">downloads</a>.
+Everything you need to know about using {{ site.name }} can be found in the <a href="../docs">documentation</a> and the almost identical README that is included with all <a href="../download">downloads</a>.
 
 
 # Contributing
