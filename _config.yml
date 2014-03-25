@@ -1,6 +1,7 @@
 name:          phpZenfolio
+domain:        phpzenfolio.com    # This is used by the Analytics tracking code
 description:   PHP wrapper for the Zenfolio API
-analytics_id:  ''
+analytics_id:  UA-118457-10
 timezone:      Europe/London
 encoding:      UTF-8
 baseurl:       /phpZenfolio
