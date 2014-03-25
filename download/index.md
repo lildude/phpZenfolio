@@ -3,9 +3,6 @@ layout: default
 title: Download
 ---
 
-Download
-========
-
 Download the latest and greatest revision of phpZenfolio:
 
 <div class="center dwn-btns">
@@ -21,10 +18,9 @@ Download the latest and greatest revision of phpZenfolio:
       <i class="icon-github"></i> View On GitHub</button></a>
 </div>
 
----
 
 Previous Versions
------------------
+=================
 
 You can find all previous releases on the [releases page]({{ site.github.releases_url }}).
 

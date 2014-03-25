@@ -9,7 +9,10 @@ body {
 
 a { color: #C70; }
 
-h1 { font-weight: bold; }
+h1 {
+  font-weight: bold;
+  padding-top: 20px;
+}
 
 .container {
   max-width: 978px;
@@ -29,6 +32,7 @@ h1 { font-weight: bold; }
   text-indent: -9999px;
   height: 60px;
   margin-top: 0;
+  padding-top: 0;
 }
 
 .header a:hover { color: #C70; }
@@ -86,8 +90,6 @@ h1 { font-weight: bold; }
 
 .affix,
 .affix-top { position:static; }
-
-.docs h1 { padding-top: 20px; }
 
 article { padding-bottom: 30px; }
 
