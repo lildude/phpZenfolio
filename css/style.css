@@ -1,22 +1,22 @@
+html,
+body { height: 100%; }
+
 body {
   border-top: 5px solid #C70;
-  overflow-x: hidden;
   overflow-y: scroll;
   max-width: 100%;
 }
 
-a {
-  color: #C70;
-}
+a { color: #C70; }
 
-h1 {
-  font-weight: bold;
-}
+h1 { font-weight: bold; }
 
 .container {
   max-width: 978px;
   min-height:100%;
-  position:relative;
+  height: auto !important;
+  height: 100%;
+  margin-bottom: -195px;
 }
 
 .header {
@@ -31,26 +31,14 @@ h1 {
   margin-top: 0;
 }
 
-.header a:hover {
-  color: #C70;
-}
+.header a:hover { color: #C70; }
 
-.main_content {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
+.main_content { font-size: 20px; }
 
-.cover p {
-  text-align:center;
-}
+.cover p { text-align:center; }
 
-.main-nav {
-  margin-top: 10px;
-}
-
-.main-nav li {
-  margin-right: 10px;
-}
+.main-nav { margin-top: 10px; }
+.main-nav li { margin-right: 10px; }
 
 .main-nav a {
   text-transform: uppercase;
@@ -59,9 +47,7 @@ h1 {
 
 .nav-pills>li.active>a,
 .nav-pills>li.active>a:hover,
-.nav-pills>li.active>a:focus {
-  background-color: #C70;
-}
+.nav-pills>li.active>a:focus { background-color: #C70; }
 
 .intro {
   font-size: 3.2em;
@@ -69,34 +55,23 @@ h1 {
   padding-bottom: 40px;
 }
 
-.docs-nav {
-  font-size: 15px;
-}
+.docs-nav { font-size: 15px; }
 
 .docs-nav li {
   padding-left: 5px;
   border-left: 2px solid #fff;
 }
-.docs-nav > li > a {
-  padding: 0px;
-}
+.docs-nav > li > a { padding: 0px; }
 .docs-nav > li >a:hover,
-.docs-nav > li >a:focus {
-  background-color: #fff;
-}
+.docs-nav > li >a:focus { background-color: #fff; }
 
 .docs-nav > li > a.to-top {
   padding-top: 10px;
   font-size: 13px;
 }
 
-.docs-nav > li.active {
-  border-left: 2px solid #ccc;
-}
-
-.docs-nav > li.active a {
-  color: #2a6496;
-}
+.docs-nav > li.active { border-left: 2px solid #ccc; }
+.docs-nav > li.active a { color: #2a6496; }
 
 #sidebar.affix-top {
   position: static;
@@ -109,17 +84,12 @@ h1 {
   width: 100%;
 }
 
-.affix,.affix-top {
-   position:static;
-}
+.affix,
+.affix-top { position:static; }
 
-.docs h1 {
-  padding-top: 20px;
-}
+.docs h1 { padding-top: 20px; }
 
-article {
-  padding-bottom: 30px;
-}
+article { padding-bottom: 30px; }
 
 .post-meta {
   margin-top: -10px;
@@ -145,11 +115,11 @@ article {
   margin: 0 auto;
 }
 
-.dwn-btns {
-  padding: 20px 0;
-}
+.dwn-btns { padding: 20px 0; }
 
 /*---:[ Footer Collage ]:---*/
+
+#push { height: 195px; }
 
 footer {
   margin: 0;
@@ -159,16 +129,10 @@ footer {
   overflow-x: hidden;
 }
 
-footer.cover {
-  bottom: 0;
-  position: fixed;
-  overflow-x: visible;
-}
-
+/*-- collage inspired by that at http://cssdeck.com/labs/collage --*/
 #collage {
   width: 100%;
 	margin-top: 100px;
-  position: relative;
   text-align: center;
 }
 
@@ -202,9 +166,7 @@ footer.cover {
   filter:progid:DXImageTransform.Microsoft.dropshadow(OffX=1,OffY=1,Color=#33000000,Positive=true);
 }
 
-#collage a:first-child {
-  margin-left: 0px;
-}
+#collage a:first-child { margin-left: 0px; }
 
 #collage a:nth-child(1n) {
   transform:rotate(7deg);
