@@ -25,11 +25,10 @@ h1 {
 }
 
 .header h1 {
-  background: transparent url('../images/phpZenfolio-logo.png') no-repeat scroll 0 -18px;
+  background: transparent url('../images/phpZenfolio-logo.svg') no-repeat scroll 0 -18px;
   text-indent: -9999px;
   height: 60px;
   margin-top: 0;
-  width: 270px;
 }
 
 .header a:hover {
