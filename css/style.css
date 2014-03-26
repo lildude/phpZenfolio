@@ -33,6 +33,9 @@ h1 {
   height: 60px;
   margin-top: 0;
   padding-top: 0;
+  display: inline-block;
+  margin-left: -60px;
+  width: 330px;
 }
 
 .header a:hover { color: #C70; }
