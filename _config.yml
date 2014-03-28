@@ -6,6 +6,7 @@ timezone:      Europe/London
 encoding:      UTF-8
 baseurl:       /phpZenfolio
 permalink:     /news/:title/
+latest_version: 1.2
 gems:
   - jemoji
 markdown:      kramdown
