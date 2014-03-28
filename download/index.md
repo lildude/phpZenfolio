@@ -3,17 +3,17 @@ layout: default
 title: Download
 ---
 
-Download the latest and greatest revision of phpZenfolio:
+Download the latest and greatest revision of {{ site.name }}:
 
 <div class="center dwn-btns">
-  <a href="https://github.com/lildude/phpZenfolio/archive/1.2.zip">
+  <a href="https://github.com/lildude/{{ site.name }}/archive/{{ site.latest_version }}.zip">
     <button type="button" class="btn btn-primary btn-lg">
-      <i class="icon-download-alt"></i> phpZenfolio 1.2 (zip)
+      <i class="icon-download-alt"></i> {{ site.name }} {{ site.latest_version }} (zip)
     </button></a>
-  <a href="https://github.com/lildude/phpZenfolio/archive/1.2.tar.gz">
+  <a href="https://github.com/lildude/{{ site.name }}/archive/{{ site.latest_version }}.tar.gz">
     <button type="button" class="btn btn-primary btn-lg">
-      <i class="icon-download-alt"></i> phpZenfolio 1.2 (tar.gz)</button></a>
-  <a href="https://github.com/lildude/phpZenfolio">
+      <i class="icon-download-alt"></i> {{ site.name }} {{ site.latest_version }} (tar.gz)</button></a>
+  <a href="https://github.com/lildude/{{ site.name }}">
     <button type="button" class="btn btn-primary btn-lg">
       <i class="icon-github"></i> View On GitHub</button></a>
 </div>
