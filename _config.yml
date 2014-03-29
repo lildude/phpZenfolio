@@ -4,7 +4,7 @@ description:   PHP wrapper for the Zenfolio API
 analytics_id:  UA-118457-10
 timezone:      Europe/London
 encoding:      UTF-8
-baseurl:       /
+baseurl:       /phpZenfolio
 permalink:     /news/:title/
 latest_version: 1.2
 gems:
