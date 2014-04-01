@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: news_item
 title: '#phpZenfolio on Twitter'
 date: "2012-07-04 08:56:52 +0100"
 author: lildude

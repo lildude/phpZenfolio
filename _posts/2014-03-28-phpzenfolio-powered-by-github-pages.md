@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: news_item
 title: "phpZenfolio Now Powered by GitHub Pages"
 date: "2014-03-28 16:52:23 +0000"
 author: lildude

@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: news_item
 title: "phpZenfolio Now on GitHub"
 date: "2011-08-06 12:52:23 +0100"
 author: lildude

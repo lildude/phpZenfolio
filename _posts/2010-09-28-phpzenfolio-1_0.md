@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: news_item
 title: "phpZenfolio 1.0"
 date: "2010-09-28 13:00:28 +0100"
 author: lildude
