@@ -40,7 +40,10 @@ h1 {
 
 .header a:hover { color: #C70; }
 
-.main_content { font-size: 20px; }
+.main_content {
+  font-size: 20px;
+  clear: both;
+}
 
 .cover p { text-align:center; }
 
