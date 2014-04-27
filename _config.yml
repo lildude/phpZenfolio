@@ -1,6 +1,8 @@
 name:          phpZenfolio
 domain:        phpzenfolio.com    # This is used by the Analytics tracking code
 description:   PHP wrapper for the Zenfolio API
+url:           http://phpzenfolio.com
+author:        Colin Seymour (@lildude)
 analytics_id:  UA-118457-10
 timezone:      Europe/London
 encoding:      UTF-8
