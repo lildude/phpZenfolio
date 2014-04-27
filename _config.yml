@@ -11,6 +11,7 @@ permalink:     /news/:title/
 latest_version: 1.2
 gems:
   - jemoji
+  - jekyll-sitemap
 markdown:      kramdown
 kramdown:
   input: GFM
