@@ -1,0 +1,21 @@
+{
+    "name": "phpZenfolio/phpZenfolio",
+    "type": "library",
+    "description": "PHP wrapper for Zenfolio API",
+    "keywords": ["Zenfolio","Photos"],
+    "homepage": "http://phpzenfolio.com",
+    "license": "GNU General Public License version 3",
+    "authors": [
+        {
+            "name": "Colin Seymour",
+            "homepage": "http://colinseymour.co.uk"
+        }
+    ],
+    "require": {
+        "php": ">=5.2.0",
+	"ext-gd": "*"
+    },
+    "autoload": {
+        "files": ["phpZenfolio.php"]
+    }
+}
