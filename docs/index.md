@@ -76,36 +76,36 @@ Naturally, you can predefine the array before instantiating the object and just 
 
 With the instance instantiated, you can now interact with the Zenfolio API using Zenfolio's native methods exactly as they're documented. Arguments to all Zenfolio native methods must be provided in the order they are documented in the API documentation.  For example, use the following to get all recent sets that are of the PhotoSetType 'Gallery':
 
-  ```
-  $f->GetRecentSets('Gallery', 0, 3);
-  ```
+```
+$f->GetRecentSets('Gallery', 0, 3);
+```
 
 Note the method's capitalisation and the arguments, these are as they are documented in the [`GetRecentSets()`](http://www.zenfolio.com/zf/help/api/ref/methods/getrecentsets) method documentation.
 
 Some of the Zenfolio API methods, like `CreatePhotoSet()`, require an object to be passed as one of the arguments. The object can be passed either as an associative array:
 
-  ```
-  $photoSetUpdater = array(
-      "Title" => "PhotoSet Title",
-      "Caption" => "PhotoSet Caption via API",
-      "Keywords" => array("Keyword1", "keyword2"),
-      "Categories" => array(),
-      "CustomReference" => "testing/test-photoset"
-  );
-  $f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
+```
+$photoSetUpdater = array(
+    "Title" => "PhotoSet Title",
+    "Caption" => "PhotoSet Caption via API",
+    "Keywords" => array("Keyword1", "keyword2"),
+    "Categories" => array(),
+    "CustomReference" => "testing/test-photoset"
+);
+$f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
   ```
 
 ... or as a standard class object:
 
-  ```
-  $photoSetUpdater = new stdClass();
-  $photoSetUpdater->Title = "PhotoSet Title";
-  $photoSetUpdater->Caption = "PhotoSet Caption via Object";
-  $photoSetUpdater->Keywords = array("Keyword1", "keyword2");
-  $photoSetUpdater->Categories = array();
-  $photoSetUpdater->CustomReference = "testing/test-photoset";
-  $f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
-  ```
+```
+$photoSetUpdater = new stdClass();
+$photoSetUpdater->Title = "PhotoSet Title";
+$photoSetUpdater->Caption = "PhotoSet Caption via Object";
+$photoSetUpdater->Keywords = array("Keyword1", "keyword2");
+$photoSetUpdater->Categories = array();
+$photoSetUpdater->CustomReference = "testing/test-photoset";
+$f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
+```
 
 All data returned by the method call is returned as the API documents it with the exception being objects are actually returned as arrays by phpZenfolio.  In the event of an error, phpZenfolio will throw one of two exceptions: `PhpZenfolioException` in the event of a problem detected by phpZenfolio or `HttpRequestException` in the event of a problem detected by the code used to communicate with the API.  Your application will need to catch these exceptions.
 
@@ -231,12 +231,12 @@ Uploading is very easy.  You can either upload an image from your local system u
 
   At this time, the only supported options you can pass at the time of uploading are a `filename` the `modified` parameter which takes a RFC2822 formatted date string...
 
-    ```
-    $f->upload("PhotoSetId=123456",
-        "File=/path/to/image.jpg",
-        "filename=newfilename.jpg",
-        "modified=Thu, 14 Jan 2010 13:08:07 +0200");
-    ```
+  ```
+  $f->upload("PhotoSetId=123456",
+      "File=/path/to/image.jpg",
+      "filename=newfilename.jpg",
+      "modified=Thu, 14 Jan 2010 13:08:07 +0200");
+  ```
 
   If you don't specify a filename, the original filename is used.
 
