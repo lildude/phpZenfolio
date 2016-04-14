@@ -93,7 +93,7 @@ $photoSetUpdater = array(
     "CustomReference" => "testing/test-photoset"
 );
 $f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
-  ```
+```
 
 ... or as a standard class object:
 
