@@ -1,12 +1,12 @@
-<?php 
-/** 
+<?php
+/**
  * phpZenfolio - phpZenfolio is a PHP wrapper class for the Zenfolio API. The intention
  *		         of this class is to allow PHP application developers to quickly
  *			     and easily interact with the Zenfolio API in their applications,
  *			     without having to worry about the finer details of the API.
  *
  * @author Colin Seymour <lildood@gmail.com>
- * @version 1.2
+ * @version 1.3
  * @package phpZenfolio
  * @license GNU General Public License version 3 {@link http://www.gnu.org/licenses/gpl.html}
  * @copyright Copyright (c) 2010 Colin Seymour
@@ -26,16 +26,16 @@
  * You should have received a copy of the GNU General Public License
  * along with phpZenfolio.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 
+ *
  * For more information about the class and upcoming tools and toys using it,
  * visit {@link http://phpzenfolio.com/}.
  *
- * For installation and usage instructions, open the README.txt file 
+ * For installation and usage instructions, open the README.txt file
  * packaged with this class. If you don't have a copy, you can refer to the
  * documentation at:
- * 
+ *
  *          {@link http://phpzenfolio.com/docs/}
- * 
+ *
  * phpZenfolio is based on the worked I have done in phpSmug ({@link http://phpsmug.com}).
  *
  * Please help support the maintenance and development of phpZenfolio by making
@@ -54,7 +54,7 @@ class PhpZenfolioException extends Exception {}
  * @package phpZenfolio
  **/
 class phpZenfolio {
-	static $version = '1.2';
+	static $version = '1.3';
 	private $cacheType = FALSE;
 	private $cache_expire = 3600;
 	private $keyring;
@@ -72,14 +72,14 @@ class phpZenfolio {
 	 * You should try to set it high enough that the cleanup only
 	 * happens every once in a while, so this will depend on the growth
 	 * of your table.
-	 * 
+	 *
 	 * @var integer
 	 **/
 	var $max_cache_rows = 1000;
-	
+
 	/**
 	 * Constructor to set up a phpZenfolio instance.
-	 * 
+	 *
 	 * The Application Name (AppName) is obligatory as it helps Zenfolio identify
 	 * your application and diagnose any problems users of your application may encounter.
 	 *
@@ -95,13 +95,13 @@ class phpZenfolio {
 	 *					in the form "AppName/version (URI)"
 	 *					e.g. "My Cool App/1.0 (http://my.url.com)".
 	 * @param string	$APIVer (Optional) API endpoint you wish to use.
-	 *					Defaults to 1.6
+	 *					Defaults to 1.8
 	 * @return void
 	 **/
 	public function __construct()
 	{
 		$args = phpZenfolio::processArgs( func_get_args() );
-		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.6';
+		$this->APIVer = ( array_key_exists( 'APIVer', $args ) ) ? $args['APIVer'] : '1.8';
 		// Set the Application Name
 		if ( ! isset( $args['AppName'] ) ) {
 			throw new PhpZenfolioException( 'Application name missing.', -10001 );
@@ -114,7 +114,7 @@ class phpZenfolio {
 									  'X-Zenfolio-User-Agent' => "{$this->AppName} using phpZenfolio/" . phpZenfolio::$version,
 									  'Content-Type' => 'application/json' ) );
     }
-	
+
 	/**
 	 * General debug function used for testing and development of phpZenfolio.
 	 *
@@ -137,7 +137,7 @@ class phpZenfolio {
 		if ( $echo ) { ob_end_flush(); } else { $out = ob_get_clean(); }
 		return $out;
 	}
-	
+
 	/**
 	 * Function enables caching.
 	 *
@@ -145,7 +145,7 @@ class phpZenfolio {
 	 *
 	 * phpZenfolio uses the PEAR MDB2 module to interact with the database. You will
 	 * need to install PEAR, the MDB2 module and corresponding database driver yourself
-	 * in order to use database caching. 
+	 * in order to use database caching.
 	 *
 	 * @access public
 	 * @param string		$type The type of cache to use. It must be either
@@ -170,7 +170,7 @@ class phpZenfolio {
 	{
 		$args = phpZenfolio::processArgs( func_get_args() );
 		$this->cacheType = $args['type'];
-        
+
 		$this->cache_expire = ( array_key_exists( 'cache_expire', $args ) ) ? $args['cache_expire'] : '3600';
 		$this->cache_table  = ( array_key_exists( 'table', $args ) ) ? $args['table'] : 'phpzenfolio_cache';
 
@@ -258,7 +258,7 @@ class phpZenfolio {
     }
 
 	/**
-	 * Caches the unparsed serialized PHP of a request. 
+	 * Caches the unparsed serialized PHP of a request.
 	 *
 	 * @access private
 	 * @param array			$request Request to the Zenfolio API created by one
@@ -360,7 +360,7 @@ class phpZenfolio {
 		if ( ! is_null( $this->keyring ) ) {
 			$this->req->setHeader( 'X-Zenfolio-Keyring', $this->keyring );
 		}
-		
+
 		// To keep things unique, we set the ID to the md5 sum of the method
 		$this->id = md5( $command );
 		$args = array( 'method' => $command, 'params' => $args, 'id' => $this->id );
@@ -392,7 +392,7 @@ class phpZenfolio {
 
 		return $this->response;
     }
-	
+
 	/**
 	 * Set a proxy for all phpZenfolio calls.
 	 *
@@ -421,25 +421,25 @@ class phpZenfolio {
 									  'proxy_password' => $this->proxy['password'],
 									  'proxy_auth_scheme' => $this->proxy['auth_scheme'] ) );
     }
- 
+
 	/**
 	 * Force phpZenfolio to use HTTPS for ALL requests, not just authentication
 	 * requests.
-	 * 
+	 *
 	 * NOTE: This may have an adverse effect on performance if used for ALL requests.
 	 * Use with caution.
-	 * 
+	 *
 	 * @access public
 	 * @return void
-	 **/	
+	 **/
 	public function setSecureOnly()
 	{
 		$this->secure = TRUE;
 	}
-	
+
 	/**
 	 * Single login function for all login methods.
-	 * 
+	 *
 	 * I've created this function to make it easy to login to Zenfolio using either
 	 * the plaintext authentication method, or the more secure challenge-response (default)
 	 * authentication method.
@@ -473,7 +473,7 @@ class phpZenfolio {
 		}
 		return $this->authToken;
 	}
-	
+
 	/**
 	 * To make life easy for phpZenfolio users, I've created a single method that
 	 * can be used to upload files.  This uses the Simplified HTTP POST method as
@@ -543,7 +543,7 @@ class phpZenfolio {
 				$photoset = $this->LoadPhotoSet( $args['PhotoSetId'] );
 				$UploadUrl = 'http://up.zenfolio.com' . $photoset['UploadUrl'];
 			} else {
-				$photoset = ( $this->APIVer == '1.4' || $this->APIVer == '1.6' ) ? $this->LoadPhotoSet( $args['PhotoSetId'], 'Level1', FALSE ) : $this->LoadPhotoSet( $args['PhotoSetId'] );
+				$photoset = ( $this->APIVer == '1.4' || $this->APIVer == '1.6' || $this->APIVer == '1.8' ) ? $this->LoadPhotoSet( $args['PhotoSetId'], 'Level1', FALSE ) : $this->LoadPhotoSet( $args['PhotoSetId'] );
 				$UploadUrl = $photoset['UploadUrl'];
 			}
 		}
@@ -569,11 +569,11 @@ class phpZenfolio {
 
 		return $this->response;
 	}
-	
+
 	/**
 	 * Dynamic method handler.  This function handles all Zenfolio method calls
 	 * not explicitly implemented by phpZenfolio.
-	 * 
+	 *
  	 * @access public
 	 * @uses request
 	 * @param string	$method The Zenfolio method you want to call.
@@ -628,7 +628,7 @@ class phpZenfolio {
 			$this->req->setAdapter( $adapter );
 		}
 	}
-	
+
 	 /**
 	  * Process arguments passed to method
 	  *
@@ -950,7 +950,7 @@ class httpRequest
 	{
 		return $this->params;
 	}
-	
+
 	/**
 	 * Get the current configuration. This is more for unit testing purposes
 	 */
@@ -1106,7 +1106,7 @@ class httpRequest
 
 }
 
- 
+
 
 class PhpZenfolioCurlRequestProcessor implements PhpZenfolioRequestProcessor
 {
@@ -1225,7 +1225,7 @@ class PhpZenfolioCurlRequestProcessor implements PhpZenfolioRequestProcessor
 	}
 }
 
- 
+
 
 class PhpZenfolioSocketRequestProcessor implements PhpZenfolioRequestProcessor
 {
@@ -1234,17 +1234,17 @@ class PhpZenfolioSocketRequestProcessor implements PhpZenfolioRequestProcessor
 	private $executed = FALSE;
 	private $redir_count = 0;
 	private $can_followlocation = true;
-	
-	public function __construct ( ) 
-	{		
+
+	public function __construct ( )
+	{
 		// see if we can follow Location: headers
 		if ( ini_get( 'safe_mode' ) || ini_get( 'open_basedir' ) ) {
 			$this->can_followlocation = false;
-		}	
+		}
 	}
-		
-	public function execute ( $method, $url, $headers, $body, $config ) 
-	{	
+
+	public function execute ( $method, $url, $headers, $body, $config )
+	{
 		$merged_headers = array();
 		foreach ( $headers as $k => $v ) {
 			$merged_headers[] = $k . ': '. $v;
