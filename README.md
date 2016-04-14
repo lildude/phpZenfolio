@@ -45,8 +45,10 @@ To make things easy for developers, phpZenfolio also provides several of it's ow
 
 To use phpZenfolio, all you have to do is include the file in your PHP scripts and create an instance.  For example:
 
-    require_once("phpZenfolio/phpZenfolio.php");
-    $f = new phpZenfolio(... arguments go here ...);
+```
+require_once("phpZenfolio/phpZenfolio.php");
+$f = new phpZenfolio(... arguments go here ...);
+```
 
 The constructor takes two arguments, one obligatory and one optional:
 
@@ -54,7 +56,9 @@ The constructor takes two arguments, one obligatory and one optional:
 
   This is the name, version and URL of the application you have built using phpZenfolio. There is no required format, but something like:
 
-      "My Cool App/1.0 (http://my.url.com)"
+  ```
+  "My Cool App/1.0 (http://my.url.com)"
+  ```
 
   ... would be very useful and will allow Zenfolio to identify your application in the event of a problem.
 
@@ -65,45 +69,55 @@ The constructor takes two arguments, one obligatory and one optional:
 
 As the constructor is a phpZenfolio specific method, it can be instantiated using one of the following methods:
 
-Arguments as strings:
+* Arguments as strings:
 
-    $f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.8");
+  ```
+  $f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.8");
+  ```
 
-Arguments as an associative array:
+* Arguments as an associative array:
 
-    $f = new phpZenfolio( array(
-        "AppName" => "My Cool App/1.0 (http://app.com)",
-        "APIVer" => "1.8")
-    );
+  ```
+  $f = new phpZenfolio(array(
+      "AppName" => "My Cool App/1.0 (http://app.com)",
+      "APIVer" => "1.8")
+  );
+  ```
 
 Naturally, you can predefine the array before instantiating the object and just pass the array variable.
 
 With the instance instantiated, you can now interact with the Zenfolio API using Zenfolio's native methods exactly as they're documented. Arguments to all Zenfolio native methods must be provided in the order they are documented in the API documentation.  For example, use the following to get all recent sets that are of the PhotoSetType 'Gallery':
 
-    $f->GetRecentSets('Gallery', 0, 3);
+  ```
+  $f->GetRecentSets('Gallery', 0, 3);
+  ```
 
 Note the method's capitalisation and the arguments, these are as they are documented in the [`GetRecentSets()`](http://www.zenfolio.com/zf/help/api/ref/methods/getrecentsets) method documentation.
 
 Some of the Zenfolio API methods, like `CreatePhotoSet()`, require an object to be passed as one of the arguments. The object can be passed either as an associative array:
 
-    $photoSetUpdater = array(
-        "Title" => "PhotoSet Title",
-        "Caption" => "PhotoSet Caption via API",
-        "Keywords" => array("Keyword1", "keyword2"),
-        "Categories" => array(),
-        "CustomReference" => "testing/test-photoset"
-    );
-    $f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater );
+  ```
+  $photoSetUpdater = array(
+      "Title" => "PhotoSet Title",
+      "Caption" => "PhotoSet Caption via API",
+      "Keywords" => array("Keyword1", "keyword2"),
+      "Categories" => array(),
+      "CustomReference" => "testing/test-photoset"
+  );
+  $f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
+  ```
 
 ... or as a standard class object:
 
-    $photoSetUpdater = new stdClass();
-    $photoSetUpdater->Title = "PhotoSet Title";
-    $photoSetUpdater->Caption = "PhotoSet Caption via Object"|;
-    $photoSetUpdater->Keywords = array("Keyword1", "keyword2");
-    $photoSetUpdater->Categories = array();
-    $photoSetUpdater->CustomReference = "testing/test-photoset";
-    $f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater );
+  ```
+  $photoSetUpdater = new stdClass();
+  $photoSetUpdater->Title = "PhotoSet Title";
+  $photoSetUpdater->Caption = "PhotoSet Caption via Object";
+  $photoSetUpdater->Keywords = array("Keyword1", "keyword2");
+  $photoSetUpdater->Categories = array();
+  $photoSetUpdater->CustomReference = "testing/test-photoset";
+  $f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
+  ```
 
 All data returned by the method call is returned as the API documents it with the exception being objects are actually returned as arrays by phpZenfolio.  In the event of an error, phpZenfolio will throw one of two exceptions: `PhpZenfolioException` in the event of a problem detected by phpZenfolio or `HttpRequestException` in the event of a problem detected by the code used to communicate with the API.  Your application will need to catch these exceptions.
 
@@ -118,11 +132,15 @@ phpZenfolio allows you to use the API methods as documented, however to make thi
 
 * Challenge-Response (default):
 
-      $f->login("Username=<username>", "Password=<password>");
+  ```
+  $f->login("Username=<username>", "Password=<password>");
+  ```
 
 * Plain-Text:
 
-      $f->login("Username=<username>", "Password=<password>", "Plaintext=TRUE");
+  ```
+  $f->login("Username=<username>", "Password=<password>", "Plaintext=TRUE");
+  ```
 
 The Plain-Text method uses HTTPS/SSL for the authentication step to ensure your username and password are encrypted when transmitted to Zenfolio.
 
@@ -147,7 +165,9 @@ The `enableCache()` method takes 4 arguments:
 
   This a PEAR::MDB2 DSN connection string, for example:
 
-      mysql://user:password@server/database
+  ```
+  mysql://user:password@server/database
+  ```
 
 phpZenfolio uses the MDB2 PEAR module to interact with the database if you use database based caching.  phpZenfolio does *NOT* supply the necessary PEAR modules.  If you with to use a database for caching, you will need to download and install PEAR, the MDB2 PEAR module and the corresponding database driver yourself.  See [MDB2 Manual](http://pear.php.net/manual/en/package.database.mdb2.intro.php) for details.
 
@@ -161,9 +181,11 @@ You may not want to allow the world to view the files that are created during ca
 
 In Apache, you can specify this in the configuration files or in a .htaccess file with the following directives:
 
-    <FilesMatch "\.cache$">
-        Deny from all
-    </FilesMatch>
+```
+<FilesMatch "\.cache$">
+    Deny from all
+</FilesMatch>
+```
 
 Alternatively, you can specify a directory that is outside of the web server's document root.
 
@@ -183,11 +205,15 @@ Each of the caching methods can be enabled as follows:
 
 * Filesystem based cache:
 
-      $f->enableCache("type=fs", "cache_dir=/tmp", "cache_expire=86400" );
+  ```
+  $f->enableCache("type=fs", "cache_dir=/tmp", "cache_expire=86400");
+  ```
 
 * Database based cache:
 
-      $f->enableCache("type=db", "dsn=mysql://USERNAME:PASSWORD_database", "cache_expire=86400");
+  ```
+  $f->enableCache("type=db", "dsn=mysql://USERNAME:PASSWORD_database", "cache_expire=86400");
+  ```
 
 If you have caching enabled, and you make changes, it's a good idea to call `clearCache()` to refresh the cache so your changes are reflected immediately.
 
@@ -204,19 +230,25 @@ Uploading is very easy.  You can either upload an image from your local system u
 
   * Upload using the PhotoSetId:
 
-        $f->upload("PhotoSetId=123456", "File=/path/to/image.jpg");
+    ```
+    $f->upload("PhotoSetId=123456", "File=/path/to/image.jpg");
+    ```
 
   * Upload using the UploadUrl:
 
-        $f->upload("UploadUrl=http://up.zenfolio.com/....",
-            "File=/path/to/image.jpg");
+    ```
+    $f->upload("UploadUrl=http://up.zenfolio.com/....",
+        "File=/path/to/image.jpg");
+    ```
 
   At this time, the only supported options you can pass at the time of uploading are a `filename` the `modified` parameter which takes a RFC2822 formatted date string...
 
-      $f->upload("PhotoSetId=123456",
-          "File=/path/to/image.jpg",
-          "filename=newfilename.jpg",
-          "modified=Thu, 14 Jan 2010 13:08:07 +0200");
+    ```
+    $f->upload("PhotoSetId=123456",
+        "File=/path/to/image.jpg",
+        "filename=newfilename.jpg",
+        "modified=Thu, 14 Jan 2010 13:08:07 +0200");
+    ```
 
   If you don't specify a filename, the original filename is used.
 
@@ -225,7 +257,9 @@ Uploading is very easy.  You can either upload an image from your local system u
 
   Uploading to Zenfolio using a URL is done purely by the Zenfolio `CreatePhotoFromUrl()` API method:
 
-      $f->CreatePhotoFromUrl( 12344, "http://www.example.com/images/image.jpg", null );
+  ```
+  $f->CreatePhotoFromUrl(12344, "http://www.example.com/images/image.jpg", null);
+  ```
 
   You can find full details on the options this method accepts in the [CreatePhotoFromUrl](http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl) method documentation.
 
@@ -246,8 +280,10 @@ In order to replace a photo, you will need to upload a new photo and then replac
   use of sockets, you can do so using the phpZenfolio supplied
   `setAdapter()` right after instantiating your instance:
 
-      $f = new phpZenfolio("AppName=<value>");
-      $f->setAdapter("socket");
+  ```
+  $f = new phpZenfolio("AppName=<value>");
+  $f->setAdapter("socket");
+  ```
 
   Valid arguments are "curl" (default) and "socket".
 
@@ -257,8 +293,10 @@ In order to replace a photo, you will need to upload a new photo and then replac
 
   For example:
 
-      $f = new phpZenfolio("AppName=<value>");
-      $f->setProxy("server=<proxy_server>", "port=<value>");
+  ```
+  $f = new phpZenfolio("AppName=<value>");
+  $f->setProxy("server=<proxy_server>", "port=<value>");
+  ```
 
   All your calls will then pass through the specified proxy on the specified port.
 
@@ -266,11 +304,13 @@ In order to replace a photo, you will need to upload a new photo and then replac
 
   For example:
 
-      $f = new phpZenfolio("AppName=<value>");
-      $f->setProxy("server=<proxy_server>",
-          "port=<value>",
-          "user=<proxy_username>",
-          "password=<proxy_password>");
+  ```
+  $f = new phpZenfolio("AppName=<value>");
+  $f->setProxy("server=<proxy_server>",
+      "port=<value>",
+      "user=<proxy_username>",
+      "password=<proxy_password>");
+  ```
 
   Note: Proxy support is currently only available when using the default "curl" adapter.
 
@@ -278,11 +318,13 @@ In order to replace a photo, you will need to upload a new photo and then replac
 
   For example:
 
-      $f = new phpZenfolio("AppName=<value>");
-      $photos = $f->LoadPhotoSetPhotos(<photosetID>, <startingIndex>, <numberOfPhotos>);
-      foreach ($photos as $photo) {
-          echo '<img src="',phpZenfolio::imageUrl($photo, 1),'" />';
-      }
+  ```
+  $f = new phpZenfolio("AppName=<value>");
+  $photos = $f->LoadPhotoSetPhotos(<photosetID>, <startingIndex>, <numberOfPhotos>);
+  foreach ($photos as $photo) {
+      echo '<img src="',phpZenfolio::imageUrl($photo, 1),'" />';
+  }
+  ```
 
 * If phpZenfolio encounters an error, or Zenfolio returns a "failure" response, an exception will be thrown and your application will stop executing. If there is a problem with communicating with the endpoint, a HttpRequestException will be thrown.  If an error is detected elsewhere, a PhpZenfolioException will be thrown.
 
