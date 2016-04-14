@@ -6,7 +6,7 @@ author: lildude
 categories: release
 ---
 
-And just when you though phpZenfolio was dead, I go an release a new version.
+And just when you thought phpZenfolio was dead, I go an release a new version.
 
 Thankfully Zenfolio seems to be keeping their API quite stable so very few changes are required in phpZenfolio.  That said, I have made this point release just to provide you with the following changes:
 
