@@ -23,13 +23,13 @@ As of 2.0.0, this project adheres to [Semantic Versioning](http://semver.org/) a
 - The default API version is now 1.6
 
 ## [1.1] - 2011-03-28
-### Added
-
 ### Changed
-- Use md5 to generate a uniq ID for each request instead of using `intval()` to ensure correct and consistent behaviour on 32-bit and 64-bit platforms. (Ticket #1)
-- Corrected check for safe_dir OR open_basedir so fails over to socket connection correctly (Ticket #2)
 - Cache only successful requests
 - Improved connection settings
+
+### Fixed
+- Use md5 to generate a uniq ID for each request instead of using `intval()` to ensure correct and consistent behaviour on 32-bit and 64-bit platforms. (Ticket #1)
+- Corrected check for safe_dir OR open_basedir so fails over to socket connection correctly (Ticket #2)
 
 ### Removed
 - Removed erroneous re-instantiation of processor when setting adapter.
