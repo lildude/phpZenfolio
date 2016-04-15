@@ -351,25 +351,3 @@ issues with phpZenfolio in the GitHub repository at https://github.com/lildude/p
 If your issue is not there, please feel free to open a new issue and provide as many details as you can.
 
 This document is also available online at [phpzenfolio.com/docs](http://phpzenfolio.com/docs).
-
-
-### Change History
-
-* 1.3 - 14 Apr '16
-    * Changed default API version to 1.8 and made sure the rest of the library takes this API version into account.
-    * Changed the README to use Markdown instead of plaintext.
-
-* 1.2 - 10 June '12
-    * Changed API endpoint to use api.zenfolio.com as requested by Zenfolio
-    * Changed default API version to 1.6
-    * Added ability to perform ALL API requests over HTTPS (Ticket #4)
-
-* 1.1 - 28 Mar '11
-    * Use md5 to generate a uniq ID for each request instead of using `intval()` to ensure correct and consistent behaviour on 32-bit and 64-bit platforms. (Ticket #1)
-    * Removed erroneous re-instantiation of processor when setting adapter.
-    * Corrected check for safe_dir OR open_basedir so fails over to socket connection correctly (Ticket #2)
-    * Cache only successful requests
-    * Improved connection settings
-
-* 1.0 - 01 Oct '10
-    * Initial release.
