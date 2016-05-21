@@ -1,21 +1,36 @@
 {
-    "name": "phpZenfolio/phpZenfolio",
+    "name": "lildude/phpzenfolio",
     "type": "library",
-    "description": "PHP wrapper for Zenfolio API",
-    "keywords": ["Zenfolio","Photos"],
+    "description": "A simple object orientated wrapper for the Zenfolio API",
     "homepage": "http://phpzenfolio.com",
-    "license": "GNU General Public License version 3",
+    "keywords": ["zenfolio", "api"],
+    "license": "MIT",
     "authors": [
         {
             "name": "Colin Seymour",
-            "homepage": "http://colinseymour.co.uk"
+            "homepage": "http://lildude.co.uk"
+        },
+        {
+            "name": "phpZenfolio Contributors",
+            "homepage": "https://github.com/lildude/phpSmug/graphs/contributors"
         }
     ],
     "require": {
-        "php": ">=5.2.0",
-	"ext-gd": "*"
+        "php": ">=5.5.0",
+        "guzzlehttp/guzzle": "~6.1",
+        "guzzlehttp/oauth-subscriber": "0.3.*",
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+        "fabpot/php-cs-fixer": "~1.10",
+        "satooshi/php-coveralls": "dev-master"
     },
     "autoload": {
-        "files": ["phpZenfolio.php"]
+        "psr-4": { "phpZenfolio\\": "lib/phpZenfolio/" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
+        }
     }
 }
