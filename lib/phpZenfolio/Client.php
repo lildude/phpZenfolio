@@ -7,6 +7,7 @@ use GuzzleHttp\HandlerStack;
 use phpZenfolio\Exception\InvalidArgumentException;
 use phpZenfolio\Exception\BadMethodCallException;
 use phpZenfolio\Exception\UnexpectedValueException;
+use phpZenfolio\Exception\RuntimeException;
 
 class Client
 {
@@ -141,9 +142,14 @@ class Client
     {
         $body = json_decode((string) $this->response->getBody());
 
-        # Bail early if the ID returned doesn't match that sent.
+        # Bail if the ID returned doesn't match that sent.
         if ($body->id != $this->id) {
             throw new UnexpectedValueException("Incorrect response ID. (request ID: {$this->id}, response ID: {$body->id})");
+        }
+
+        # Bail if there is an error
+        if (!is_null($body->error)) {
+            throw new RuntimeException("{$body->error->code}: {$body->error->message}");
         }
 
         return $body->result;
