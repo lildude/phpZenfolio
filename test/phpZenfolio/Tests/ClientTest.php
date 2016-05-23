@@ -59,3 +59,91 @@ class ClientTest extends \PHPUnit_Framework_TestCase
       $options = $client->getDefaultOptions();
       $this->assertEquals('1.6', $options['api_version']);
     }
+
+    /**
+     * @test
+     */
+    public function shouldGetReasonPhrase()
+    {
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->fauxGoodResponse),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+
+        $client->TestMethod('foobar');
+        $this->assertEquals('OK', $client->getReasonPhrase());
+    }
+
+    /**
+     * @test
+     */
+    public function shouldGetHeaders()
+    {
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->fauxGoodResponse),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+
+        $r = $client->TestMethod('foobar');
+
+        $this->assertArrayHasKey('X-Foo', $client->getHeaders());
+    }
+
+    /**
+     * @test
+     */
+    public function shouldGetStatusCode()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxGoodResponse),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+
+        $r = $client->TestMethod('foobar');
+
+        $this->assertEquals('200', $client->getStatusCode());
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnUntouchedResponse()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxGoodResponse),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+        $client->TestMethod('foobar');
+        $decoded_response = (json_decode((string) $client->getResponse()->getBody()));
+        $this->assertNotNull($decoded_response->result);
+        $this->assertNotNull($decoded_response->id);
+        $this->assertNull($decoded_response->error);
+        $this->assertEquals('bar', $decoded_response->result->foo);
+        $this->assertEquals('745aa3524078c47a1c4bdfa4877f2529549795a2', $decoded_response->id);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnResultObject()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxGoodResponse),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+
+        $response = $client->TestMethod('foobar');
+
+        $this->assertObjectHasAttribute('foo', $response);
+        $this->assertEquals('bar', $response->foo);
+    }

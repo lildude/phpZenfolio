@@ -160,3 +160,59 @@ class Client
         }
     }
 
+    /**
+     * @return object HttpClient object instantiated with this class.
+     */
+    public function getHttpClient()
+    {
+        return $this->httpClient;
+    }
+
+    /**
+     * @return interval HTTP status code for the last request
+     */
+    public function getStatusCode()
+    {
+        return $this->response->getStatusCode();
+    }
+
+    /**
+     * @return array HTTP headers as an array for the last request
+     */
+    public function getHeaders()
+    {
+        return $this->response->getHeaders();
+    }
+
+    /**
+     * @return string HTTP status message for the last request
+     */
+    public function getReasonPhrase()
+    {
+        return $this->response->getReasonPhrase();
+    }
+
+    /**
+     * @return array Default options instantiated with this class.
+     */
+    public function getDefaultOptions()
+    {
+        return $this->default_options;
+    }
+
+    /**
+     * @return object Full json_decoded response from Zenfolio without any phpZenfolio touches.
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    /**
+     * @return array Request options that are set just before a request is made and cleared before every request.
+     */
+    public function getRequestOptions()
+    {
+        return $this->request_options;
+    }
+
