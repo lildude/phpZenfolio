@@ -20,6 +20,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->user = 'random-user';
         $this->fauxGoodResponse = '{"error":null,"id":"'.sha1('TestMethod').'","result":{"foo":"bar"}}';
         $this->fauxBadIdResponse = '{"error":null,"id":"I-am-a-unique-id","result":{"foo":"bar"}}';
+        $this->fauxErrorResponse = '{"result":null,"error":{"code":"E_DUMMYERROR","message":"This is a dummy error."},"id":"'.sha1('TestMethod').'"}';
         $this->fauxChallengeResponse = '{"result":{"$type":"AuthChallenge","PasswordSalt":[0,9,8,7,6,5],"Challenge":[0,1,2,3,4,5,6,7,8,9,0]},"error":null,"id":"'.sha1('GetChallenge').'"}';
         $this->fauxAuthenticateResponse = '{"result":"this-is-the-auth-token","error":null,"id":"'.sha1('Authenticate').'"}';
         $this->fauxAuthenticatePlainResponse = '{"result":"this-is-the-auth-token","error":null,"id":"'.sha1('AuthenticatePlain').'"}';
@@ -202,4 +203,21 @@ class ClientTest extends \PHPUnit_Framework_TestCase
       $response = $client->login($this->user, 'secret', true);
       $this->assertEquals('this-is-the-auth-token', $response);
       $this->assertEquals($client->getAuthToken(), $response);
+    }
+
+    /**
+     * @test
+     * @expectedException phpZenfolio\Exception\RuntimeException
+     * @expectedExceptionMessage E_DUMMYERROR: This is a dummy error.
+     */
+    public function shouldThrowExceptionOnErrorFromZenfolio()
+    {
+      $mock = new MockHandler([
+          new Response(200, [], $this->fauxErrorResponse),
+      ]);
+
+      $handler = HandlerStack::create($mock);
+      $client = new Client($this->AppName, ['handler' => $handler]);
+
+      $response = $client->TestMethod();
     }
