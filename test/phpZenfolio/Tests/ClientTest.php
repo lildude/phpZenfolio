@@ -184,6 +184,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
       $response = $client->login($this->user, 'secret');
       $this->assertEquals('this-is-the-auth-token', $response);
+      $this->assertEquals($client->getAuthToken(), $response);
     }
 
     /**
@@ -200,4 +201,5 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
       $response = $client->login($this->user, 'secret', true);
       $this->assertEquals('this-is-the-auth-token', $response);
+      $this->assertEquals($client->getAuthToken(), $response);
     }
