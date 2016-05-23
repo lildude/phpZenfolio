@@ -10,19 +10,31 @@ phpZenfolio is a simple object orientated wrapper for the Zenfolio API, written 
 * [Guzzle 6](https://github.com/guzzle/guzzle) library and the [Guzzle OAuth1 Subscriber](https://github.com/guzzle/oauth-subscriber),
 * (optional) [PHPUnit](https://phpunit.de/) and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
 
-If you wish to use a database for caching, you will also need the following PEAR packages:
-
-* [MDB2 2.5.0b3](http://pear.php.net/package/MDB2) or later.
-
-* The corresponding [MDB2\_Driver_*](http://pear.php.net/search.php?q=MDB2_Driver&in=packages&setPerPage=20) for the database you wish to use.
-
-Please consult the above links for details on installing the PEAR modules.
-
-
 ## Installation
 
-Copy the files from the installation package into a folder on your server. They need to be readable by your web server.  You can put them into an include folder defined in your `php.ini` file, if you like, though it's not required.
+The recommended method of installing phpZenfolio is using [Composer](http://getcomposer.org). If you have Composer installed, you can install phpZenfolio and all its dependencies from within your project directory:
 
+```bash
+$ composer require lildude/phpzenfolio
+```
+
+Alternatively, you can add the following to your project's `composer.json`:
+
+```json
+{
+    "require": {
+        "lildude/phpzenfolio": "^2.0"
+    }
+}
+```
+
+.. and then run `composer update` from within your project directory.
+
+If you don't have Composer installed, you can download it using:
+
+```bash
+$ curl -s http://getcomposer.org/installer | php
+```
 
 ## Usage
 
