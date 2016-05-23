@@ -5,7 +5,9 @@ namespace phpZenfolio;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
 use phpZenfolio\Exception\InvalidArgumentException;
+use phpZenfolio\Exception\BadMethodCallException;
 use phpZenfolio\Exception\UnexpectedValueException;
+
 class Client
 {
     /**
@@ -161,6 +163,64 @@ class Client
     }
 
     /**
+     * Single login function for all login methods.
+     *
+     * I've created this function to make it easy to login to Zenfolio using either
+     * the plaintext authentication method, or the more secure challenge-response (default)
+     * authentication method.
+     *
+     * Params can be passed as an associative array or a set of param=value strings.
+     *
+     * @access public
+     * @uses request
+     * @param string	$username The Zenfolio username
+     * @param string	$password The Zenfolio username's password
+     * @param boolean	$plaintext (Optional) Set whether the login should use
+     *					the plaintext (true) or the challenge-response authentication
+     *					method (false). Defaults to false.
+     * @return string
+     */
+    public function login($username, $password, $plaintext = false)
+    {
+        if ($plaintext === true) {
+            $this->authToken = $this->AuthenticatePlain($username, $password);
+        } else {
+            $cr = $this->GetChallenge($username);
+            $salt = self::byteArrayDecode($cr['PasswordSalt']);
+            $challenge = self::byteArrayDecode($cr['Challenge']);
+            $password = utf8_encode($password);
+
+            $passHash = hash('sha256', $salt.$password, true);
+            $chalHash = hash('sha256', $challenge.$passHash, true);
+            $proof = array_values(unpack('C*', $chalHash));
+            $this->setAuthToken($this->Authenticate($cr['Challenge'] , $proof));
+        }
+        return $this->authToken;
+    }
+
+    /**
+     * Set authToken.  This is useful for those who want to reuse the same authentication
+     * token within a 24 hour period.
+     * @param string	$token Token returned from login() method. Set to an empty string to unset.
+     * @return void
+     */
+    public function setAuthToken( $token )
+    {
+        $this->authToken = $token;
+    }
+
+    /**
+     * Get the authToken.  This is only valid for just over 24 hours.
+     *
+     * @return string
+     */
+    public function getAuthToken()
+    {
+        return $this->authToken;
+    }
+
+
+    /**
      * @return object HttpClient object instantiated with this class.
      */
     public function getHttpClient()
@@ -216,3 +276,20 @@ class Client
         return $this->request_options;
     }
 
+    /**
+     * Private function that converts the JSON array we recieve in response to
+     * GetChallenge to a string.
+     *
+     * The JSON data returned is actually a byte array, but as JSON has no concept
+     * of a byte array, it's returned as a normal array.  This function converts
+     * this normal array to a string.
+     *
+     * @access private
+     * @param array
+     * @return string
+     */
+    private static function byteArrayDecode($array)
+    {
+        return call_user_func_array('pack', array_merge(array('C*'),(array) $array));
+    }
+}
