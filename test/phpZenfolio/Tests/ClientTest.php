@@ -147,3 +147,23 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('foo', $response);
         $this->assertEquals('bar', $response->foo);
     }
+
+    /**
+     * @test
+     * @expectedException phpZenfolio\Exception\InvalidArgumentException
+     * @expectedExceptionMessage All methods need an argument.
+     */
+    public function shouldThrowExceptionIfNoMethodArgs()
+    {
+        $client = new Client($this->AppName);
+        $client->TestMethod();
+    }
+
+    /**
+     * @test
+     * @expectedException phpZenfolio\Exception\UnexpectedValueException
+     * @expectedExceptionMessage Incorrect response ID. (request ID: 745aa3524078c47a1c4bdfa4877f2529549795a2, response ID: I-am-a-unique-id)
+     */
+    public function shouldThrowExceptionIfResponseIdDoesntMatchRequestId()
+    {
+      $mock = new MockHandler([
