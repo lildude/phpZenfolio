@@ -167,3 +167,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function shouldThrowExceptionIfResponseIdDoesntMatchRequestId()
     {
       $mock = new MockHandler([
+          new Response(200, [], $this->fauxBadIdResponse),
+      ]);
+
+      $handler = HandlerStack::create($mock);
+      $client = new Client($this->AppName, ['handler' => $handler]);
+
+      $response = $client->TestMethod('foobar');
+    }
