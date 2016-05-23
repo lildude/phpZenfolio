@@ -4,6 +4,7 @@ namespace phpZenfolio;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
+use phpZenfolio\Exception\InvalidArgumentException;
 class Client
 {
     /**
