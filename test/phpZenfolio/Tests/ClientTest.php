@@ -39,3 +39,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(30, $options['timeout']);
     }
 
+    /**
+     * @test
+     * @expectedException phpZenfolio\Exception\InvalidArgumentException
+     * @expectedExceptionMessage An application name is required for all Zenfolio interactions.
+     */
+    public function shouldThrowExceptionIfNoAppName()
+    {
+        $client = new Client();
+    }
