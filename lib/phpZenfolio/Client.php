@@ -169,15 +169,13 @@ class Client
      * the plaintext authentication method, or the more secure challenge-response (default)
      * authentication method.
      *
-     * Params can be passed as an associative array or a set of param=value strings.
-     *
      * @access public
      * @uses request
-     * @param string	$username The Zenfolio username
-     * @param string	$password The Zenfolio username's password
-     * @param boolean	$plaintext (Optional) Set whether the login should use
-     *					the plaintext (true) or the challenge-response authentication
-     *					method (false). Defaults to false.
+     * @param string  $username The Zenfolio username
+     * @param string  $password The Zenfolio username's password
+     * @param boolean $plaintext (Optional) Set whether the login should use
+     *        the plaintext (true) or the challenge-response authentication
+     *        method (false). Defaults to false.
      * @return string
      */
     public function login($username, $password, $plaintext = false)
@@ -186,14 +184,14 @@ class Client
             $this->authToken = $this->AuthenticatePlain($username, $password);
         } else {
             $cr = $this->GetChallenge($username);
-            $salt = self::byteArrayDecode($cr['PasswordSalt']);
-            $challenge = self::byteArrayDecode($cr['Challenge']);
+            $salt = self::byteArrayDecode($cr->PasswordSalt);
+            $challenge = self::byteArrayDecode($cr->Challenge);
             $password = utf8_encode($password);
 
             $passHash = hash('sha256', $salt.$password, true);
             $chalHash = hash('sha256', $challenge.$passHash, true);
             $proof = array_values(unpack('C*', $chalHash));
-            $this->setAuthToken($this->Authenticate($cr['Challenge'] , $proof));
+            $this->setAuthToken($this->Authenticate($cr->Challenge , $proof));
         }
         return $this->authToken;
     }
