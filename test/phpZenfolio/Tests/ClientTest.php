@@ -77,7 +77,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client($this->AppName, ['handler' => $handler]);
 
-        $client->TestMethod('foobar');
+        $client->TestMethod();
         $this->assertEquals('OK', $client->getReasonPhrase());
     }
 
@@ -93,7 +93,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client($this->AppName, ['handler' => $handler]);
 
-        $r = $client->TestMethod('foobar');
+        $r = $client->TestMethod();
 
         $this->assertArrayHasKey('X-Foo', $client->getHeaders());
     }
@@ -110,7 +110,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client($this->AppName, ['handler' => $handler]);
 
-        $r = $client->TestMethod('foobar');
+        $r = $client->TestMethod();
 
         $this->assertEquals('200', $client->getStatusCode());
     }
@@ -126,7 +126,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $handler = HandlerStack::create($mock);
         $client = new Client($this->AppName, ['handler' => $handler]);
-        $client->TestMethod('foobar');
+        $client->TestMethod();
         $decoded_response = (json_decode((string) $client->getResponse()->getBody()));
         $this->assertNotNull($decoded_response->result);
         $this->assertNotNull($decoded_response->id);
@@ -147,7 +147,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client($this->AppName, ['handler' => $handler]);
 
-        $response = $client->TestMethod('foobar');
+        $response = $client->TestMethod();
 
         $this->assertObjectHasAttribute('foo', $response);
         $this->assertEquals('bar', $response->foo);
@@ -167,7 +167,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
       $handler = HandlerStack::create($mock);
       $client = new Client($this->AppName, ['handler' => $handler]);
 
-      $response = $client->TestMethod('foobar');
+      $response = $client->TestMethod();
     }
 
     /**
