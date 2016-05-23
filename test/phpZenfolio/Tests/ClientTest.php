@@ -18,7 +18,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $this->AppName = 'Testing phpZenfolio';
         $this->user = 'random-user';
-        $this->fauxGoodResponse = '{"error":null,"id":"181f23563bbfb826c0321f586cfafa64680620af","result":{"foo":"bar"}}';
+        $this->fauxGoodResponse = '{"error":null,"id":"'.sha1('TestMethod').'","result":{"foo":"bar"}}';
         $this->fauxBadIdResponse = '{"error":null,"id":"I-am-a-unique-id","result":{"foo":"bar"}}';
         $this->fauxChallengeResponse = '{"result":{"$type":"AuthChallenge","PasswordSalt":[0,9,8,7,6,5],"Challenge":[0,1,2,3,4,5,6,7,8,9,0]},"error":null,"id":"'.sha1('GetChallenge').'"}';
         $this->fauxAuthenticateResponse = '{"result":"this-is-the-auth-token","error":null,"id":"'.sha1('Authenticate').'"}';
@@ -68,7 +68,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function shouldGetReasonPhrase()
     {
         $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Bar'], $this->fauxGoodResponse),
+            new Response(200, [], $this->fauxGoodResponse),
         ]);
 
         $handler = HandlerStack::create($mock);
