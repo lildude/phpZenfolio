@@ -154,17 +154,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\InvalidArgumentException
-     * @expectedExceptionMessage All methods need an argument.
-     */
-    public function shouldThrowExceptionIfNoMethodArgs()
-    {
-        $client = new Client($this->AppName);
-        $client->TestMethod();
-    }
-
-    /**
-     * @test
      * @expectedException phpZenfolio\Exception\UnexpectedValueException
      * @expectedExceptionMessage Incorrect response ID. (request ID: 181f23563bbfb826c0321f586cfafa64680620af, response ID: I-am-a-unique-id)
      */
