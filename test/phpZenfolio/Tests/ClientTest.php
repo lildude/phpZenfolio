@@ -48,3 +48,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $client = new Client();
     }
+
+    /**
+     * @test
+     */
+    public function shouldSetApiVer()
+    {
+      $client = new Client($this->AppName, ['api_version' => '1.6']);
+      $this->assertInstanceOf('GuzzleHttp\Client', $client->getHttpClient());
+      $options = $client->getDefaultOptions();
+      $this->assertEquals('1.6', $options['api_version']);
+    }
