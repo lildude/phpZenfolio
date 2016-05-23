@@ -149,17 +149,7 @@ class Client
             throw new UnexpectedValueException("Incorrect response ID. (request ID: {$this->id}, response ID: {$body->id})");
         }
 
-        switch ($method) {
-            case 'AuthenticatePlain':
-                $this->authToken = $result;
-            break;
-            case 'KeyringAddKeyPlain':
-                $this->keyring = $result;
-            break;
-            default:
-                return $body->result;
-            break;
-        }
+        return $body->result;
     }
 
     /**
@@ -181,7 +171,7 @@ class Client
     public function login($username, $password, $plaintext = false)
     {
         if ($plaintext === true) {
-            $this->authToken = $this->AuthenticatePlain($username, $password);
+            $authToken = $this->AuthenticatePlain($username, $password);
         } else {
             $cr = $this->GetChallenge($username);
             $salt = self::byteArrayDecode($cr->PasswordSalt);
@@ -191,8 +181,9 @@ class Client
             $passHash = hash('sha256', $salt.$password, true);
             $chalHash = hash('sha256', $challenge.$passHash, true);
             $proof = array_values(unpack('C*', $chalHash));
-            $this->setAuthToken($this->Authenticate($cr->Challenge , $proof));
+            $authToken = $this->Authenticate($cr->Challenge , $proof);
         }
+        $this->setAuthToken($authToken);
         return $this->authToken;
     }
 
