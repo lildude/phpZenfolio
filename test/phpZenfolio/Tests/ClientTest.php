@@ -18,7 +18,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $this->AppName = 'Testing phpZenfolio';
         $this->user = 'random-user';
-        $this->fauxGoodResponse = '{"error":null,"id":"745aa3524078c47a1c4bdfa4877f2529549795a2","result":{"foo":"bar"}}';
+        $this->fauxGoodResponse = '{"error":null,"id":"181f23563bbfb826c0321f586cfafa64680620af","result":{"foo":"bar"}}';
         $this->fauxBadIdResponse = '{"error":null,"id":"I-am-a-unique-id","result":{"foo":"bar"}}';
         $this->fauxDeleteResponse = '';
     }
@@ -127,7 +127,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($decoded_response->id);
         $this->assertNull($decoded_response->error);
         $this->assertEquals('bar', $decoded_response->result->foo);
-        $this->assertEquals('745aa3524078c47a1c4bdfa4877f2529549795a2', $decoded_response->id);
+        $this->assertEquals('181f23563bbfb826c0321f586cfafa64680620af', $decoded_response->id);
     }
 
     /**
@@ -162,7 +162,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException phpZenfolio\Exception\UnexpectedValueException
-     * @expectedExceptionMessage Incorrect response ID. (request ID: 745aa3524078c47a1c4bdfa4877f2529549795a2, response ID: I-am-a-unique-id)
+     * @expectedExceptionMessage Incorrect response ID. (request ID: 181f23563bbfb826c0321f586cfafa64680620af, response ID: I-am-a-unique-id)
      */
     public function shouldThrowExceptionIfResponseIdDoesntMatchRequestId()
     {

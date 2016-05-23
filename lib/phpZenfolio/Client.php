@@ -119,7 +119,7 @@ class Client
     private function performRequest($method, $url, $args)
     {
         # To keep things unique, we set the ID to the sha1 of the method
-        $this->id = sha1($method . implode($args));
+        $this->id = sha1($method);
 
         $this->request_options['json'] = array('method' => $method, 'params' => $args, 'id' => $this->id);
 
