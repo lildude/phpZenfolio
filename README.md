@@ -1,25 +1,14 @@
-phpZenfolio 1.3 - PHP Wrapper for the Zenfolio API
-==================================================
+phpZenfolio
+===========
 
-Written by Colin Seymour
-Project Homepage: [phpzenfolio.com](http://phpzenfolio.com/)
-
-phpZenfolio is a PHP wrapper class for the Zenfolio API and is based on work I
-have done in [phpSmug](http://phpsmug.com).
-
-Released under [GNU General Public License version 3](http://www.gnu.org/licenses/gpl.html)
-
-Copyright (C) 2010 Colin Seymour
-
-For more information about the class and upcoming tools and applications using
-phpZenfolio, visit [phpzenfolio.com](http://phpzenfolio.com/).
+phpZenfolio is a simple object orientated wrapper for the Zenfolio API, written in PHP.
 
 
 ## Requirements
 
-phpZenfolio is written in PHP and utilises functionality supplied with PHP 5.2 and later and optionally PEAR.
-
-From a PHP perspective, the only requirement is PHP 5.2 compiled with GD and optionally, curl support enabled.
+* PHP >= 5.6.0,
+* [Guzzle 6](https://github.com/guzzle/guzzle) library and the [Guzzle OAuth1 Subscriber](https://github.com/guzzle/oauth-subscriber),
+* (optional) [PHPUnit](https://phpunit.de/) and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
 
 If you wish to use a database for caching, you will also need the following PEAR packages:
 
