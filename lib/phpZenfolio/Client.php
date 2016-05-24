@@ -194,6 +194,24 @@ class Client
         return $this->authToken;
     }
 
+
+    /**
+     * Public function that returns the image url for an image. This is only for
+     * sizes other than the original size.
+     *
+     * @access public
+     * @param array $photo The Photo object of the photo you with to obtain the url for.
+     * @param int   $size The Zenfolio supplied image size.
+     *
+     * @see http://www.zenfolio.com/zf/help/api/guide/download
+     *
+     * @return string
+     */
+    public static function imageUrl($photo, $size)
+    {
+        return "http://{$photo['UrlHost']}/{$photo['UrlCore']}-{$size}.jpg?sn={$photo['Sequence']}&tk={$photo['UrlToken']}";
+    }
+
     /**
      * Set authToken.  This is useful for those who want to reuse the same authentication
      * token within a 24 hour period.
