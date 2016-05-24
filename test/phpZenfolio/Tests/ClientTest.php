@@ -60,10 +60,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldSetApiVer()
     {
-      $client = new Client($this->AppName, ['api_version' => '1.6']);
-      $this->assertInstanceOf('GuzzleHttp\Client', $client->getHttpClient());
-      $options = $client->getDefaultOptions();
-      $this->assertEquals('1.6', $options['api_version']);
+        $client = new Client($this->AppName, ['api_version' => '1.6']);
+        $this->assertInstanceOf('GuzzleHttp\Client', $client->getHttpClient());
+        $options = $client->getDefaultOptions();
+        $this->assertEquals('1.6', $options['api_version']);
     }
 
     /**
@@ -161,14 +161,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldThrowExceptionIfResponseIdDoesntMatchRequestId()
     {
-      $mock = new MockHandler([
-          new Response(200, [], $this->fauxBadIdResponse),
-      ]);
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxBadIdResponse),
+        ]);
 
-      $handler = HandlerStack::create($mock);
-      $client = new Client($this->AppName, ['handler' => $handler]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
 
-      $response = $client->TestMethod();
+        $response = $client->TestMethod();
     }
 
     /**
@@ -176,17 +176,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldLoginAndGetAuthTokenUsingChallenge()
     {
-      $mock = new MockHandler([
-          new Response(200, [], $this->fauxChallengeResponse),
-          new Response(200, [], $this->fauxAuthenticateResponse),
-      ]);
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxChallengeResponse),
+            new Response(200, [], $this->fauxAuthenticateResponse),
+        ]);
 
-      $handler = HandlerStack::create($mock);
-      $client = new Client($this->AppName, ['handler' => $handler]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
 
-      $response = $client->login($this->user, 'secret');
-      $this->assertEquals($this->fauxAuthToken, $response);
-      $this->assertEquals($client->getAuthToken(), $response);
+        $response = $client->login($this->user, 'secret');
+        $this->assertEquals($this->fauxAuthToken, $response);
+        $this->assertEquals($client->getAuthToken(), $response);
     }
 
     /**
@@ -194,16 +194,16 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldLoginAndGetAuthTokenUsingPlaintext()
     {
-      $mock = new MockHandler([
-          new Response(200, [], $this->fauxAuthenticatePlainResponse),
-      ]);
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxAuthenticatePlainResponse),
+        ]);
 
-      $handler = HandlerStack::create($mock);
-      $client = new Client($this->AppName, ['handler' => $handler]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
 
-      $response = $client->login($this->user, 'secret', true);
-      $this->assertEquals($this->fauxAuthToken, $response);
-      $this->assertEquals($client->getAuthToken(), $response);
+        $response = $client->login($this->user, 'secret', true);
+        $this->assertEquals($this->fauxAuthToken, $response);
+        $this->assertEquals($client->getAuthToken(), $response);
     }
 
     /**
@@ -213,14 +213,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldThrowExceptionOnErrorFromZenfolio()
     {
-      $mock = new MockHandler([
-          new Response(200, [], $this->fauxErrorResponse),
-      ]);
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxErrorResponse),
+        ]);
 
-      $handler = HandlerStack::create($mock);
-      $client = new Client($this->AppName, ['handler' => $handler]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
 
-      $response = $client->TestMethod();
+        $response = $client->TestMethod();
     }
 
     /**
