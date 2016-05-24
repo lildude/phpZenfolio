@@ -261,6 +261,14 @@ class Client
     }
 
     /**
+     * @return array Request options that are set just before a request is made and cleared before every request.
+     */
+    public function getRequestOptions()
+    {
+        return $this->request_options;
+    }
+
+    /**
      * Private function that converts the JSON array we recieve in response to
      * GetChallenge to a string.
      *
