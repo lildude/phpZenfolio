@@ -133,7 +133,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($decoded_response->id);
         $this->assertNull($decoded_response->error);
         $this->assertEquals('bar', $decoded_response->result->foo);
-        $this->assertEquals('181f23563bbfb826c0321f586cfafa64680620af', $decoded_response->id);
+        $this->assertEquals(sha1('TestMethod'), $decoded_response->id);
     }
 
     /**
