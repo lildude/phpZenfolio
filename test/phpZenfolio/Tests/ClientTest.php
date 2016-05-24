@@ -222,3 +222,23 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
       $response = $client->TestMethod();
     }
+
+    /**
+     * @test
+     */
+    public function shouldSetXZenfolioTokenHeader()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxGoodResponse),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+        $client->setAuthToken($this->fauxAuthToken);
+
+        $client->TestMethod();
+
+        $request_options = $client->getRequestOptions();
+        $this->assertArrayHasKey('X-Zenfolio-Token', $request_options['headers']);
+        $this->assertEquals($this->fauxAuthToken, $request_options['headers']['X-Zenfolio-Token']);
+    }
