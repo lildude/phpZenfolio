@@ -18,13 +18,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $this->AppName = 'Testing phpZenfolio';
         $this->user = 'random-user';
+        $this->fauxAuthToken = 'this-is-the-auth-token';
         $this->fauxGoodResponse = '{"error":null,"id":"'.sha1('TestMethod').'","result":{"foo":"bar"}}';
         $this->fauxBadIdResponse = '{"error":null,"id":"I-am-a-unique-id","result":{"foo":"bar"}}';
         $this->fauxErrorResponse = '{"result":null,"error":{"code":"E_DUMMYERROR","message":"This is a dummy error."},"id":"'.sha1('TestMethod').'"}';
         $this->fauxChallengeResponse = '{"result":{"$type":"AuthChallenge","PasswordSalt":[0,9,8,7,6,5],"Challenge":[0,1,2,3,4,5,6,7,8,9,0]},"error":null,"id":"'.sha1('GetChallenge').'"}';
-        $this->fauxAuthenticateResponse = '{"result":"this-is-the-auth-token","error":null,"id":"'.sha1('Authenticate').'"}';
-        $this->fauxAuthenticatePlainResponse = '{"result":"this-is-the-auth-token","error":null,"id":"'.sha1('AuthenticatePlain').'"}';
-
+        $this->fauxAuthenticateResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('Authenticate').'"}';
+        $this->fauxAuthenticatePlainResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('AuthenticatePlain').'"}';
+        $this->fauxAuthdResponse = 'TBC';
         $this->fauxDeleteResponse = '';
     }
     /**
@@ -184,7 +185,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
       $client = new Client($this->AppName, ['handler' => $handler]);
 
       $response = $client->login($this->user, 'secret');
-      $this->assertEquals('this-is-the-auth-token', $response);
+      $this->assertEquals($this->fauxAuthToken, $response);
       $this->assertEquals($client->getAuthToken(), $response);
     }
 
@@ -201,7 +202,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
       $client = new Client($this->AppName, ['handler' => $handler]);
 
       $response = $client->login($this->user, 'secret', true);
-      $this->assertEquals('this-is-the-auth-token', $response);
+      $this->assertEquals($this->fauxAuthToken, $response);
       $this->assertEquals($client->getAuthToken(), $response);
     }
 
