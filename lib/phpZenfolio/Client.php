@@ -152,6 +152,10 @@ class Client
             throw new RuntimeException("{$body->error->code}: {$body->error->message}");
         }
 
+        if ($method == 'KeyringAddKeyPlain') {
+    			   $this->keyring = $body->result;
+    		}
+
         return $body->result;
     }
 
@@ -210,7 +214,6 @@ class Client
     {
         return $this->authToken;
     }
-
 
     /**
      * @return object HttpClient object instantiated with this class.

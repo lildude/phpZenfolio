@@ -19,12 +19,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->AppName = 'Testing phpZenfolio';
         $this->user = 'random-user';
         $this->fauxAuthToken = 'this-is-the-auth-token';
+        $this->fauxKeyring = 'this-is-the-keyring';
         $this->fauxGoodResponse = '{"error":null,"id":"'.sha1('TestMethod').'","result":{"foo":"bar"}}';
         $this->fauxBadIdResponse = '{"error":null,"id":"I-am-a-unique-id","result":{"foo":"bar"}}';
         $this->fauxErrorResponse = '{"result":null,"error":{"code":"E_DUMMYERROR","message":"This is a dummy error."},"id":"'.sha1('TestMethod').'"}';
         $this->fauxChallengeResponse = '{"result":{"$type":"AuthChallenge","PasswordSalt":[0,9,8,7,6,5],"Challenge":[0,1,2,3,4,5,6,7,8,9,0]},"error":null,"id":"'.sha1('GetChallenge').'"}';
         $this->fauxAuthenticateResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('Authenticate').'"}';
         $this->fauxAuthenticatePlainResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('AuthenticatePlain').'"}';
+        $this->fauxKeyringResponse = '{"result":"'.$this->fauxKeyring.'","error":null,"id":"'.sha1('KeyringAddKeyPlain').'"}';;
         $this->fauxAuthdResponse = 'TBC';
         $this->fauxDeleteResponse = '';
     }
@@ -241,4 +243,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $request_options = $client->getRequestOptions();
         $this->assertArrayHasKey('X-Zenfolio-Token', $request_options['headers']);
         $this->assertEquals($this->fauxAuthToken, $request_options['headers']['X-Zenfolio-Token']);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldSetXZenfolioKeyringHeader()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxKeyringResponse),
+            new Response(200, [], $this->fauxGoodResponse)
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+
+        $client->KeyringAddKeyPlain(array('keyring' => 'the-keyring', 'realmId' => '1234567890', 'password' => 'the-password'));
+        $client->TestMethod();
+
+        $request_options = $client->getRequestOptions();
+        $this->assertArrayHasKey('X-Zenfolio-Keyring', $request_options['headers']);
+        $this->assertEquals($this->fauxKeyring, $request_options['headers']['X-Zenfolio-Keyring']);
     }
