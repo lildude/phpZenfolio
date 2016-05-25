@@ -123,7 +123,6 @@ class Client
 
         # Merge the request and default options
         $this->request_options = array_merge($this->default_options, $this->request_options);
-
         # Perform the API request
         $this->response = $this->client->request('POST', $url, $this->request_options);
     }
@@ -209,7 +208,7 @@ class Client
      */
     public static function imageUrl($photo, $size)
     {
-        return "http://{$photo['UrlHost']}/{$photo['UrlCore']}-{$size}.jpg?sn={$photo['Sequence']}&tk={$photo['UrlToken']}";
+        return "http://{$photo->UrlHost}{$photo->UrlCore}-{$size}.jpg?sn={$photo->Sequence}&tk={$photo->UrlToken}";
     }
 
     /**
