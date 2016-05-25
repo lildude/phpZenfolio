@@ -26,8 +26,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->fauxChallengeResponse = '{"result":{"$type":"AuthChallenge","PasswordSalt":[0,9,8,7,6,5],"Challenge":[0,1,2,3,4,5,6,7,8,9,0]},"error":null,"id":"'.sha1('GetChallenge').'"}';
         $this->fauxAuthenticateResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('Authenticate').'"}';
         $this->fauxAuthenticatePlainResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('AuthenticatePlain').'"}';
-        $this->fauxKeyringResponse = '{"result":"'.$this->fauxKeyring.'","error":null,"id":"'.sha1('KeyringAddKeyPlain').'"}';;
-        $this->fauxAuthdResponse = 'TBC';
+        $this->fauxKeyringResponse = '{"result":"'.$this->fauxKeyring.'","error":null,"id":"'.sha1('KeyringAddKeyPlain').'"}';
+        # The photoObject has been cutdown to just the fields we need for the URL generation.
+        $this->photoObject = json_decode('{"Sequence": "","UrlCore": "/img/s/v-2/p1234567890","UrlHost": "'.$this->user.'.zenfolio.com","UrlToken": "this-is-the-url-token"}');
+        $this->photoSize = '11';  # Large thumbnail
         $this->fauxDeleteResponse = '';
     }
     /**
@@ -258,10 +260,21 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client($this->AppName, ['handler' => $handler]);
 
-        $client->KeyringAddKeyPlain(array('keyring' => 'the-keyring', 'realmId' => '1234567890', 'password' => 'the-password'));
+        $client->KeyringAddKeyPlain('the-keyring', '1234567890', 'the-password');
         $client->TestMethod();
 
         $request_options = $client->getRequestOptions();
         $this->assertArrayHasKey('X-Zenfolio-Keyring', $request_options['headers']);
         $this->assertEquals($this->fauxKeyring, $request_options['headers']['X-Zenfolio-Keyring']);
     }
+
+    /**
+     * @test
+     */
+    public function shouldReturnImgUrl()
+    {
+        $photo_url = \phpZenfolio\Client::imageUrl($this->photoObject, $this->photoSize);
+
+        $this->assertEquals("http://{$this->user}.zenfolio.com/img/s/v-2/p1234567890-{$this->photoSize}.jpg?sn=&tk=this-is-the-url-token", $photo_url);
+    }
+
