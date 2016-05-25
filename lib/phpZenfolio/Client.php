@@ -149,7 +149,11 @@ class Client
 
         # Bail if there is an error
         if (!is_null($body->error)) {
-            throw new RuntimeException("{$body->error->code}: {$body->error->message}");
+            if ($body->error->message == "No such method") {
+              throw new BadMethodCallException("{$body->error->code}: {$body->error->message}");
+            } else {
+              throw new RuntimeException("{$body->error->code}: {$body->error->message}");
+            }
         }
 
         if ($method == 'KeyringAddKeyPlain') {
