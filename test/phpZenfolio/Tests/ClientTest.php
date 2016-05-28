@@ -316,3 +316,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("http://{$this->user}.zenfolio.com/img/s/v-2/p1234567890-{$this->photoSize}.jpg?sn=&tk=this-is-the-url-token", $photo_url);
     }
 
+    /**
+     * @test
+     * @expectedException phpZenfolio\Exception\InvalidArgumentException
+     * @expectedExceptionMessage File not found: /path/to/non/existant/file.jpg
+     */
+    public function shouldThrowExceptionIfUploadFileNotFound()
+    {
+        $client = new Client($this->AppName);
+        $client->upload(123456789, '/path/to/non/existant/file.jpg');
+    }
