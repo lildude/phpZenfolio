@@ -24,6 +24,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->fauxBadIdResponse = '{"error":null,"id":"I-am-a-unique-id","result":{"foo":"bar"}}';
         $this->fauxErrorResponse = '{"result":null,"error":{"code":"E_DUMMYERROR","message":"This is a dummy error."},"id":"'.sha1('TestMethod').'"}';
         $this->fauxBadMethodResponse = '{"result":null,"error":{"code":"E_INVALIDPARAM","message":"No such method"},"id":"'.sha1('BogusMethod').'"}';
+        $this->fauxUnexpectedErrorResponse = '{"result":null,"error":{"message":"An unexpected error has occurred. Please try again later. If this problem persists, contact Support.","error":null},"id":"'.sha1('LoadPhotoSet').'"}';
+
         $this->fauxChallengeResponse = '{"result":{"$type":"AuthChallenge","PasswordSalt":[0,9,8,7,6,5],"Challenge":[0,1,2,3,4,5,6,7,8,9,0]},"error":null,"id":"'.sha1('GetChallenge').'"}';
         $this->fauxAuthenticateResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('Authenticate').'"}';
         $this->fauxAuthenticatePlainResponse = '{"result":"'.$this->fauxAuthToken.'","error":null,"id":"'.sha1('AuthenticatePlain').'"}';
@@ -226,6 +228,24 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client = new Client($this->AppName, ['handler' => $handler]);
 
         $response = $client->TestMethod();
+    }
+
+    /**
+     * @test
+     * @expectedException phpZenfolio\Exception\RuntimeException
+     * @expectedExceptionMessage An unexpected error has occurred. Please try again later. If this problem persists, contact Zenfolio Support.
+     */
+    public function shouldThrowExceptionOnUnexpectedErrorFromZenfolio()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxUnexpectedErrorResponse),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+
+        # This is a valid call that results in an unexpected error because of the missing "loadphotos" bool.
+        $response = $client->LoadPhotoSet(12345, "Level1");
     }
 
     /**

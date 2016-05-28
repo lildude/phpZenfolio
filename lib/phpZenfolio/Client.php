@@ -152,7 +152,9 @@ class Client
             if ($body->error->message == "No such method") {
               throw new BadMethodCallException("{$body->error->code}: {$body->error->message}");
             } else {
-              throw new RuntimeException("{$body->error->code}: {$body->error->message}");
+              # If the message contains "contact Support" it's referring to Zenfolio support, so lets make that clear.
+              $msg = ((isset($body->error->code)) ? $body->error->code.': ' : '') . str_replace('contact Support', 'contact Zenfolio Support', $body->error->message);
+              throw new RuntimeException($msg);
             }
         }
 
