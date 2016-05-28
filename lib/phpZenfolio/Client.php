@@ -171,8 +171,6 @@ class Client
      * the plaintext authentication method, or the more secure challenge-response (default)
      * authentication method.
      *
-     * @uses request
-     *
      * @param string $username  The Zenfolio username
      * @param string $password  The Zenfolio username's password
      * @param bool   $plaintext (Optional) Set whether the login should use
