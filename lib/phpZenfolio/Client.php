@@ -44,14 +44,14 @@ class Client
                         'Accept' => 'application/json',
                       ],
         'timeout' => 30,
-        'debug' => true
+        'debug' => true,
     );
 
     /**
      * Instantiate a new Zenfolio client.
      *
-     * @param string $AppName  The name of your application.
-     * @param string $APIVer   The API endpoint. Defaults to 1.8.
+     * @param string $AppName The name of your application.
+     * @param string $APIVer  The API endpoint. Defaults to 1.8.
      *
      * @return object
      */
@@ -67,7 +67,7 @@ class Client
         $this->default_options['headers']['X-Zenfolio-User-Agent'] = $this->default_options['headers']['User-Agent'];
 
         if (isset($options['api_version'])) {
-          $this->default_options['api_version'] = $options['api_version'];
+            $this->default_options['api_version'] = $options['api_version'];
         }
 
         # Setup the handler stack - we'll need this later.
@@ -100,9 +100,8 @@ class Client
         }
 
         if (!is_null($this->keyring)) {
-          $this->request_options['headers']['X-Zenfolio-Keyring'] = $this->keyring;
+            $this->request_options['headers']['X-Zenfolio-Keyring'] = $this->keyring;
         }
-
 
         $this->performRequest($method, $url, $args);
 
@@ -149,18 +148,18 @@ class Client
 
         # Bail if there is an error
         if (!is_null($body->error)) {
-            if ($body->error->message == "No such method") {
-              throw new BadMethodCallException("{$body->error->code}: {$body->error->message}");
+            if ($body->error->message == 'No such method') {
+                throw new BadMethodCallException("{$body->error->code}: {$body->error->message}");
             } else {
-              # If the message contains "contact Support" it's referring to Zenfolio support, so lets make that clear.
-              $msg = ((isset($body->error->code)) ? $body->error->code.': ' : '') . str_replace('contact Support', 'contact Zenfolio Support', $body->error->message);
-              throw new RuntimeException($msg);
+                # If the message contains "contact Support" it's referring to Zenfolio support, so lets make that clear.
+              $msg = ((isset($body->error->code)) ? $body->error->code.': ' : '').str_replace('contact Support', 'contact Zenfolio Support', $body->error->message);
+                throw new RuntimeException($msg);
             }
         }
 
         if ($method == 'KeyringAddKeyPlain') {
-    			   $this->keyring = $body->result;
-    		}
+            $this->keyring = $body->result;
+        }
 
         return $body->result;
     }
@@ -172,13 +171,14 @@ class Client
      * the plaintext authentication method, or the more secure challenge-response (default)
      * authentication method.
      *
-     * @access public
      * @uses request
-     * @param string  $username The Zenfolio username
-     * @param string  $password The Zenfolio username's password
-     * @param boolean $plaintext (Optional) Set whether the login should use
-     *        the plaintext (true) or the challenge-response authentication
-     *        method (false). Defaults to false.
+     *
+     * @param string $username  The Zenfolio username
+     * @param string $password  The Zenfolio username's password
+     * @param bool   $plaintext (Optional) Set whether the login should use
+     *                          the plaintext (true) or the challenge-response authentication
+     *                          method (false). Defaults to false.
+     *
      * @return string
      */
     public function login($username, $password, $plaintext = false)
@@ -194,27 +194,29 @@ class Client
             $passHash = hash('sha256', $salt.$password, true);
             $chalHash = hash('sha256', $challenge.$passHash, true);
             $proof = array_values(unpack('C*', $chalHash));
-            $authToken = $this->Authenticate($cr->Challenge , $proof);
+            $authToken = $this->Authenticate($cr->Challenge, $proof);
         }
         $this->setAuthToken($authToken);
+
         return $this->authToken;
     }
 
     /**
      * To make life easy for phpZenfolio users, I've created a single method that
      * can be used to upload files.  This uses the Simplified HTTP POST method as
-     * detailed at {@link http://www.zenfolio.com/zf/help/api/guide/upload}
+     * detailed at {@link http://www.zenfolio.com/zf/help/api/guide/upload}.
      *
-     * @access public
-     * @param string  $photoSet The ID, object or URL of the PhotoSet into which
-     *                you wish the image to be uploaded.
-     * @param string  $file The path to the local file that is being uploaded.
-     * @param array   $args An array of optional arguments for the upload. The
-     *                only supported options are `filename` to specify the filename
-     *                to use, `modified` to specify the modification date and `type`
-     *                to specify the upload type of `video` or `raw`. `type`
-     *                defaults to `photo`.
+     * @param string $photoSet The ID, object or URL of the PhotoSet into which
+     *                         you wish the image to be uploaded.
+     * @param string $file     The path to the local file that is being uploaded.
+     * @param array  $args     An array of optional arguments for the upload. The
+     *                         only supported options are `filename` to specify the filename
+     *                         to use, `modified` to specify the modification date and `type`
+     *                         to specify the upload type of `video` or `raw`. `type`
+     *                         defaults to `photo`.
+     *
      * @return string
+     *
      * @link http://www.zenfolio.com/zf/help/api/guide/upload
      **/
     public function upload($photoSet, $file, $args = array())
@@ -225,7 +227,7 @@ class Client
             $data = fread($fp, filesize($file));
             fclose($fp);
         } else {
-            throw new InvalidArgumentException("File not found: ".$file);
+            throw new InvalidArgumentException('File not found: '.$file);
         }
     }
 
@@ -233,9 +235,8 @@ class Client
      * Public function that returns the image url for an image. This is only for
      * sizes other than the original size.
      *
-     * @access public
      * @param array $photo The Photo object of the photo you with to obtain the url for.
-     * @param int   $size The Zenfolio supplied image size.
+     * @param int   $size  The Zenfolio supplied image size.
      *
      * @see http://www.zenfolio.com/zf/help/api/guide/download
      *
@@ -249,10 +250,10 @@ class Client
     /**
      * Set authToken.  This is useful for those who want to reuse the same authentication
      * token within a 24 hour period.
-     * @param string	$token Token returned from login() method. Set to an empty string to unset.
-     * @return void
+     *
+     * @param string $token Token returned from login() method. Set to an empty string to unset.
      */
-    public function setAuthToken( $token )
+    public function setAuthToken($token)
     {
         $this->authToken = $token;
     }
@@ -331,12 +332,12 @@ class Client
      * of a byte array, it's returned as a normal array.  This function converts
      * this normal array to a string.
      *
-     * @access private
      * @param array
+     *
      * @return string
      */
     private static function byteArrayDecode($array)
     {
-        return call_user_func_array('pack', array_merge(array('C*'),(array) $array));
+        return call_user_func_array('pack', array_merge(array('C*'), (array) $array));
     }
 }
