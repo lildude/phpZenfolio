@@ -200,6 +200,34 @@ class Client
         return $this->authToken;
     }
 
+    /**
+     * To make life easy for phpZenfolio users, I've created a single method that
+     * can be used to upload files.  This uses the Simplified HTTP POST method as
+     * detailed at {@link http://www.zenfolio.com/zf/help/api/guide/upload}
+     *
+     * @access public
+     * @param string  $photoSet The ID, object or URL of the PhotoSet into which
+     *                you wish the image to be uploaded.
+     * @param string  $file The path to the local file that is being uploaded.
+     * @param array   $args An array of optional arguments for the upload. The
+     *                only supported options are `filename` to specify the filename
+     *                to use, `modified` to specify the modification date and `type`
+     *                to specify the upload type of `video` or `raw`. `type`
+     *                defaults to `photo`.
+     * @return string
+     * @link http://www.zenfolio.com/zf/help/api/guide/upload
+     **/
+    public function upload($photoSet, $file, $args = array())
+    {
+        if (is_file($file)) {
+            $fileinfo = getimagesize($file); # We need this to get the content type.
+            $fp = fopen($file, 'rb');
+            $data = fread($fp, filesize($file));
+            fclose($fp);
+        } else {
+            throw new InvalidArgumentException("File not found: ".$file);
+        }
+    }
 
     /**
      * Public function that returns the image url for an image. This is only for
