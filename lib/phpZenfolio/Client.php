@@ -119,7 +119,9 @@ class Client
         # To keep things unique, we set the ID to the sha1 of the method
         $this->id = sha1($method);
 
-        $this->request_options['json'] = array('method' => $method, 'params' => $args, 'id' => $this->id);
+        if ($method != 'upload') {
+            $this->request_options['json'] = array('method' => $method, 'params' => $args, 'id' => $this->id);
+        }
 
         # Merge the request and default options
         $this->request_options = array_merge($this->default_options, $this->request_options);
@@ -141,13 +143,15 @@ class Client
     {
         $body = json_decode((string) $this->response->getBody());
 
-        # Bail if the ID returned doesn't match that sent.
-        if ($body->id != $this->id) {
-            throw new UnexpectedValueException("Incorrect response ID. (request ID: {$this->id}, response ID: {$body->id})");
+        # Bail if the ID returned doesn't match that sent for non-upload methods.
+        if ($method != 'upload') {
+            if ($body->id != $this->id) {
+                throw new UnexpectedValueException("Incorrect response ID. (request ID: {$this->id}, response ID: {$body->id})");
+            }
         }
 
         # Bail if there is an error
-        if (!is_null($body->error)) {
+        if (isset($body->error) && !is_null($body->error)) {
             if ($body->error->message == 'No such method') {
                 throw new BadMethodCallException("{$body->error->code}: {$body->error->message}");
             } else {
@@ -161,7 +165,7 @@ class Client
             $this->keyring = $body->result;
         }
 
-        return $body->result;
+        return ($method == 'upload') ? $body : $body->result;
     }
 
     /**
