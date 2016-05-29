@@ -227,6 +227,45 @@ class Client
         } else {
             throw new InvalidArgumentException('File not found: '.$file);
         }
+
+        $type_url = ((isset($args['type']) && ($args['type'] == 'video' || $args['type'] == 'raw')) ? ucfirst($args['type']) : '').'UploadUrl';
+        if (is_object($photoSet)) {
+            $upload_url = $photoSet->$type_url;
+        } elseif (is_long($photoSet)) {
+            $photo_set = $this->LoadPhotoSet($photoSet, 'Level1', false);
+            $upload_url = $photo_set->$type_url;
+        } else {
+            # Assumes this is the correct upload URL
+            $upload_url = $photoSet;
+        }
+
+        # Ensure the per-request options are empty
+        $this->request_options = [];
+        $this->client = self::getHttpClient();
+
+        # Required headers
+        $this->request_options['headers']['Content-Type'] = $fileinfo['mime'];
+        $this->request_options['headers']['Content-Length'] = filesize($file);
+
+        if (!is_null($this->authToken)) {
+          $this->request_options['headers']['X-Zenfolio-Token'] = $this->authToken;
+        }
+
+        if (!is_null($this->keyring)) {
+          $this->request_options['headers']['X-Zenfolio-Keyring'] = $this->keyring;
+        }
+
+        $this->request_options['query']['filename'] = (isset($args['filename'])) ? $args['filename'] : basename($file);
+        if (isset($args['modified'])) {
+          $this->request_options['query']['modified'];
+        }
+
+        $this->request_options['body'] = $data;
+        
+        $this->performRequest('upload', $upload_url);
+
+        return $this->processResponse('upload');
+
     }
 
     /**
