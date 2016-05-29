@@ -114,7 +114,7 @@ class Client
      * @param string $method The HTTP method for the request.
      * @param string $url    The destination URL for the request.
      */
-    private function performRequest($method, $url, $args)
+    private function performRequest($method, $url, $args = null)
     {
         # To keep things unique, we set the ID to the sha1 of the method
         $this->id = sha1($method);
