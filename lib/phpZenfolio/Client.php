@@ -92,7 +92,6 @@ class Client
         $this->request_options = [];
         $this->client = self::getHttpClient();
 
-        # TODO: Can I move this into the constructor?
         $url = '/api/'.$this->default_options['api_version'].'/zfapi.asmx';
 
         if (!is_null($this->authToken)) {
