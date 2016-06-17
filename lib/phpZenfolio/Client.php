@@ -250,11 +250,11 @@ class Client
         $this->request_options['headers']['Content-Length'] = filesize($file);
 
         if (!is_null($this->authToken)) {
-          $this->request_options['headers']['X-Zenfolio-Token'] = $this->authToken;
+            $this->request_options['headers']['X-Zenfolio-Token'] = $this->authToken;
         }
 
         if (!is_null($this->keyring)) {
-          $this->request_options['headers']['X-Zenfolio-Keyring'] = $this->keyring;
+            $this->request_options['headers']['X-Zenfolio-Keyring'] = $this->keyring;
         }
 
         $this->request_options['query']['filename'] = (isset($args['filename'])) ? $args['filename'] : basename($file);
@@ -267,7 +267,6 @@ class Client
         $this->performRequest('upload', $upload_url);
 
         return $this->processResponse('upload');
-
     }
 
     /**
