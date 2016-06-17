@@ -32,6 +32,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->fauxKeyringResponse = '{"result":"'.$this->fauxKeyring.'","error":null,"id":"'.sha1('KeyringAddKeyPlain').'"}';
         # The photoObject has been cutdown to just the fields we need for the URL generation.
         $this->photoObject = json_decode('{"Sequence": "","UrlCore": "/img/s/v-2/p1234567890","UrlHost": "'.$this->user.'.zenfolio.com","UrlToken": "this-is-the-url-token"}');
+        # The photoSetObject has been cutdown to just the fields we need for obtaining the upload URL.
+        $this->fauxPhotoSetObjectResponse = '{"result":{"UploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/upload2.ushx","VideoUploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/video.ushx","RawUploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/raw.ushx"},"error":null,"id":"'.sha1('LoadPhotoSet').'"}';
         $this->photoSize = '11';  # Large thumbnail
         $this->fauxDeleteResponse = '';
     }
@@ -326,3 +328,77 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client = new Client($this->AppName);
         $client->upload(123456789, '/path/to/non/existant/file.jpg');
     }
+
+    /**
+     * @test
+     */
+    public function shouldUploadToPhotoSet()
+    {
+      $mock = new MockHandler([
+          new Response(200, []),  # Upload using photoset object
+          new Response(200, [], $this->fauxPhotoSetObjectResponse), # LoadPhotoSet() called when using photoset ID for upload
+          new Response(200, []), # Upload using photoset ID
+          new Response(200, []), # Upload using upload URL
+      ]);
+
+      $handler = HandlerStack::create($mock);
+      $container = [];
+      // Add the history middleware to the handler stack.
+      $history = Middleware::history($container);
+      $handler->push($history);
+
+      $client = new Client($this->AppName, ['handler' => $handler]);
+      $client->setAuthToken($this->fauxAuthToken);
+
+      # Upload by photoSet object with type=video, even though it's not a video ;-)
+      $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result, './examples/phpZenfolio-logo.png', ['type' => 'video']);
+      # Confirm our request options
+      $request_options = $client->getRequestOptions();
+      $this->assertArrayHasKey('Content-Type', $request_options['headers']);
+      $this->assertEquals('image/png', $request_options['headers']['Content-Type']);
+      $this->assertArrayHasKey('Content-Length', $request_options['headers']);
+      $this->assertEquals(filesize('./examples/phpZenfolio-logo.png'), $request_options['headers']['Content-Length']);
+      $this->assertArrayHasKey('filename', $request_options['query']);
+      $this->assertEquals('phpZenfolio-logo.png', $request_options['query']['filename']);
+
+      # Upload by photoset ID, with filename, modified and type=raw
+      $mod_date = gmdate(DATE_RFC2822, time());
+      $client->upload(123456789, './examples/phpZenfolio-logo.png', ["filename" => "newfilename.png", "modified" => $mod_date, "type" => "raw"]);
+      # Confirm out request options
+      $request_options = $client->getRequestOptions();
+      $this->assertArrayHasKey('modified', $request_options['query']);
+      $this->assertEquals($mod_date, $request_options['query']['modified']);
+
+      # Upload by photoset URL
+      $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, './examples/phpZenfolio-logo.png');
+      $request_options = $client->getRequestOptions();
+
+
+      # Confirm the options are actually used
+      foreach ($container as $key => $transaction) {
+          $url = $transaction['request']->getUri();
+          $query = $url->getQuery();
+          switch($key) {
+              case 0:
+                  # Video upload url
+                  $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->VideoUploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
+                  $this->assertEquals('filename=phpZenfolio-logo.png', $query);
+              break;
+              case 1:
+                  # Skip as this is the LoadPhotoSet call
+              break;
+              case 2:
+                  # Raw upload URL
+                  $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->RawUploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
+                  $this->assertEquals('filename=newfilename.png&modified='.rawurlencode($mod_date), $query);
+              break;
+
+              case 3:
+                  # Upload url
+                  $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
+                  $this->assertEquals('filename=phpZenfolio-logo.png', $query);
+              break;
+          }
+        }
+    }
+
