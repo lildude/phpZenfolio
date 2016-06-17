@@ -402,3 +402,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @test
+     * @expectedException phpZenfolio\Exception\BadMethodCallException
+     * @expectedExceptionMessage Invalid method: badmethod
+     */
+    public function shouldThrowBadMethodCallException()
+    {
+        # Skipping as Zenfolio currently has a bug where it throws a 500 error
+        # when querying using a bogus method. This only affects json queries.
+        $this->markTestSkipped('Skipping due to Zenfolio bug');
+
+        $client = new Client($this->AppName);
+        $client->BogusMethod();
+    }
