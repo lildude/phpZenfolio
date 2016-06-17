@@ -260,11 +260,11 @@ class Client
 
         $this->request_options['query']['filename'] = (isset($args['filename'])) ? $args['filename'] : basename($file);
         if (isset($args['modified'])) {
-          $this->request_options['query']['modified'];
+            $this->request_options['query']['modified'] = $args['modified'];
         }
 
         $this->request_options['body'] = $data;
-        
+
         $this->performRequest('upload', $upload_url);
 
         return $this->processResponse('upload');
