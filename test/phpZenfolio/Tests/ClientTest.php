@@ -5,7 +5,6 @@ namespace phpZenfolio\Tests;
 use phpZenfolio\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Middleware;
 
@@ -247,7 +246,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client = new Client($this->AppName, ['handler' => $handler]);
 
         # This is a valid call that results in an unexpected error because of the missing "loadphotos" bool.
-        $response = $client->LoadPhotoSet(12345, "Level1");
+        $response = $client->LoadPhotoSet(12345, 'Level1');
     }
 
     /**
@@ -294,7 +293,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $mock = new MockHandler([
             new Response(200, [], $this->fauxKeyringResponse),
-            new Response(200, [], $this->fauxGoodResponse)
+            new Response(200, [], $this->fauxGoodResponse),
         ]);
 
         $handler = HandlerStack::create($mock);
@@ -334,51 +333,50 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldUploadToPhotoSet()
     {
-      $mock = new MockHandler([
+        $mock = new MockHandler([
           new Response(200, []),  # Upload using photoset object
           new Response(200, [], $this->fauxPhotoSetObjectResponse), # LoadPhotoSet() called when using photoset ID for upload
           new Response(200, []), # Upload using photoset ID
           new Response(200, []), # Upload using upload URL
       ]);
 
-      $handler = HandlerStack::create($mock);
-      $container = [];
+        $handler = HandlerStack::create($mock);
+        $container = [];
       // Add the history middleware to the handler stack.
       $history = Middleware::history($container);
-      $handler->push($history);
+        $handler->push($history);
 
-      $client = new Client($this->AppName, ['handler' => $handler]);
-      $client->setAuthToken($this->fauxAuthToken);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+        $client->setAuthToken($this->fauxAuthToken);
 
       # Upload by photoSet object with type=video, even though it's not a video ;-)
       $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result, './examples/phpZenfolio-logo.png', ['type' => 'video']);
       # Confirm our request options
       $request_options = $client->getRequestOptions();
-      $this->assertArrayHasKey('Content-Type', $request_options['headers']);
-      $this->assertEquals('image/png', $request_options['headers']['Content-Type']);
-      $this->assertArrayHasKey('Content-Length', $request_options['headers']);
-      $this->assertEquals(filesize('./examples/phpZenfolio-logo.png'), $request_options['headers']['Content-Length']);
-      $this->assertArrayHasKey('filename', $request_options['query']);
-      $this->assertEquals('phpZenfolio-logo.png', $request_options['query']['filename']);
+        $this->assertArrayHasKey('Content-Type', $request_options['headers']);
+        $this->assertEquals('image/png', $request_options['headers']['Content-Type']);
+        $this->assertArrayHasKey('Content-Length', $request_options['headers']);
+        $this->assertEquals(filesize('./examples/phpZenfolio-logo.png'), $request_options['headers']['Content-Length']);
+        $this->assertArrayHasKey('filename', $request_options['query']);
+        $this->assertEquals('phpZenfolio-logo.png', $request_options['query']['filename']);
 
       # Upload by photoset ID, with filename, modified and type=raw
       $mod_date = gmdate(DATE_RFC2822, time());
-      $client->upload(123456789, './examples/phpZenfolio-logo.png', ["filename" => "newfilename.png", "modified" => $mod_date, "type" => "raw"]);
+        $client->upload(123456789, './examples/phpZenfolio-logo.png', ['filename' => 'newfilename.png', 'modified' => $mod_date, 'type' => 'raw']);
       # Confirm out request options
       $request_options = $client->getRequestOptions();
-      $this->assertArrayHasKey('modified', $request_options['query']);
-      $this->assertEquals($mod_date, $request_options['query']['modified']);
+        $this->assertArrayHasKey('modified', $request_options['query']);
+        $this->assertEquals($mod_date, $request_options['query']['modified']);
 
       # Upload by photoset URL
       $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, './examples/phpZenfolio-logo.png');
-      $request_options = $client->getRequestOptions();
-
+        $request_options = $client->getRequestOptions();
 
       # Confirm the options are actually used
       foreach ($container as $key => $transaction) {
           $url = $transaction['request']->getUri();
           $query = $url->getQuery();
-          switch($key) {
+          switch ($key) {
               case 0:
                   # Video upload url
                   $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->VideoUploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
@@ -399,7 +397,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
                   $this->assertEquals('filename=phpZenfolio-logo.png', $query);
               break;
           }
-        }
+      }
     }
 
     /**
