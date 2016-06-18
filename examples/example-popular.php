@@ -1,7 +1,7 @@
 <?php
 /* Last updated with phpZenfolio 2.0.0
  *
- * This example file shows you how to get a list of the 100 most popular public
+ * This example file shows you how to get a list of the 96 most popular public
  * galleries created on Zenfolio.
  *
  * You'll need to set:
@@ -31,7 +31,7 @@ require_once 'vendor/autoload.php';
 try {
     $client = new phpZenfolio\Client($appname);
     // Get list of recent galleries
-    $galleries = $client->GetPopularSets('Gallery', 0, 100);
+    $galleries = $client->GetPopularSets('Gallery', 0, 96);
     // Display the 60x60 cropped thumbnails and link to the gallery page for each.
     foreach ($galleries as $gallery) {
         echo '<a href="'.$gallery->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($gallery->TitlePhoto, 1).'" title="'.$gallery->Title.'" alt="'.$gallery->Id.'" width="60" height="60" /></a>';
