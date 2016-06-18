@@ -280,7 +280,7 @@ class Client
      *
      * @return string
      */
-    public static function imageUrl($photo, $size)
+    public static function imageUrl(\stdClass $photo, $size)
     {
         return "http://{$photo->UrlHost}{$photo->UrlCore}-{$size}.jpg?sn={$photo->Sequence}&tk={$photo->UrlToken}";
     }
