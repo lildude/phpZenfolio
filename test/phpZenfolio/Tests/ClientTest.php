@@ -414,3 +414,4 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client = new Client($this->AppName);
         $client->BogusMethod();
     }
+}
