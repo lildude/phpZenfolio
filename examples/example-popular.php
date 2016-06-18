@@ -36,8 +36,7 @@ try {
     foreach ($galleries as $gallery) {
         echo '<a href="'.$gallery->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($gallery->TitlePhoto, 1).'" title="'.$gallery->Title.'" alt="'.$gallery->Id.'" width="60" height="60" /></a>';
     }
-}
-catch (Exception $e) {
+} catch (Exception $e) {
     echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
 }
 ?>

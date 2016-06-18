@@ -39,17 +39,17 @@ try {
     $h = $client->LoadGroupHierarchy($username);
     // Now traverse the tree and locate the first public gallery and display it's first 96 photos
     array_walk($h->Elements, 'displayImgs', $client);
-}
-catch (Exception $e) {
+} catch (Exception $e) {
     echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
 }
 
-function displayImgs(\stdClass $element, $_, phpZenfolio\Client $client) {
-    if ( $element->{'$type'} == 'Group' ) {
+function displayImgs(\stdClass $element, $_, phpZenfolio\Client $client)
+{
+    if ($element->{'$type'} == 'Group') {
         array_walk($element->Elements, 'displayImgs', $client);
     } else {
-        if ( $element->PhotoCount > 0 ) {
-            $pictures = $client->LoadPhotoSetPhotos($element->Id, 0, 96 );
+        if ($element->PhotoCount > 0) {
+            $pictures = $client->LoadPhotoSetPhotos($element->Id, 0, 96);
             // Display the 60x60 cropped thumbnails and link to the photo page for each.
             foreach ($pictures as $picture) {
                 echo '<a href="'.$pic->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($picture, 1).'" title="'.$picture->Title.'" alt="'.$picture->Id.'" /></a>';
