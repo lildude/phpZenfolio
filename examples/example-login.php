@@ -22,7 +22,7 @@ $password = 'A_PASSWORD';
     <title>phpZenfolio First Album With Login Example</title>
     <style type="text/css">
         body { background-color: #fff; color: #444; font-family: sans-serif; }
-        div { width: 600px; margin: 0 auto; text-align: center; }
+        div { width: 750px; margin: 0 auto; text-align: center; }
         img { border: 0;}
     </style>
 </head>
