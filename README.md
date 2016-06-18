@@ -1,8 +1,12 @@
-phpZenfolio
-===========
+# phpZenfolio
 
-phpZenfolio is a simple object orientated wrapper for the Zenfolio API, written in PHP.
+[![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) [![Build Status](https://travis-ci.org/lildude/phpZenfolio.svg)](https://travis-ci.org/lildude/phpZenfolio)
 
+A simple object orientated wrapper for the Zenfolio API, written in PHP.
+
+The intention of this class is to allow PHP application developers quick and easy interaction with the Zenfolio API, without having to worry about the finer details of the API.
+
+**Note: phpZenfolio 2.0.0 and later is not backwardly compatible with earlier releases.**
 
 ## Requirements
 
