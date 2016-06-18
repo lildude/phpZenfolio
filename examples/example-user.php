@@ -1,41 +1,8 @@
 <?php
-/**
- * Copyright (c) 2010 Colin Seymour
- *
- * This file is part of phpZenfolio.
- *
- * phpZenfolio is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * phpZenfolio is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with phpZenfolio.  If not, see <http://www.gnu.org/licenses/>.
- */
-?>
-<html>
-<head>
-	<title>phpZenfolio First User Gallery/Collection Example</title>
-	<style type="text/css">
-		body { background-color: #fff; color: #444; }
-		div { width: 600px; margin: 0 auto; text-align: center; }
-		img { border: 0;}
-	</style>
-</head>
-<body>
-	<div>
-		<a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
-		<h2>phpZenfolio First User Gallery/Collection Example</h2>
-<?php
-/* Last updated with phpZenfolio 1.0
+/* Last updated with phpZenfolio 2.0.0
  *
  * This example file shows you how to get a list of the specified user's public
- * galleries and collections created on Zenfolio and display the first 100 images
+ * galleries and collections created on Zenfolio and display the first 96 images
  * in the first gallery or collection in the list.
  *
  * You'll need to set:
@@ -47,35 +14,48 @@
  *
  * You can see this example in action at http://phpzenfolio.com/examples/
  */
-require_once("../phpZenfolio.php");
-
-$appname = '';
-$username = '';
+$appname = 'YOUR_APP_NAME/VER (URL)';
+$username = 'A_USERNAME';
+?>
+<html>
+<head>
+    <title>phpZenfolio First User Gallery/Collection Example</title>
+    <style type="text/css">
+        body { background-color: #fff; color: #444; font-family: sans-serif; }
+        div { width: 750px; margin: 0 auto; text-align: center; }
+        img { border: 0;}
+    </style>
+</head>
+<body>
+    <div>
+        <a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
+        <h2>phpZenfolio First User Gallery/Collection Example</h2>
+<?php
+require_once 'vendor/autoload.php';
 
 try {
-	$f = new phpZenfolio("AppName={$appname}");
-	// Get list of recent galleries and collections
-	$h = $f->LoadGroupHierarchy($username);
-	// Now traverse the tree and locate the first public gallery and display it's first 100 photos
-	array_walk($h['Elements'], 'displayImgs', $f);
+    $client = new phpZenfolio\Client($appname);
+    // Get list of recent galleries and collections
+    $h = $client->LoadGroupHierarchy($username);
+    // Now traverse the tree and locate the first public gallery and display it's first 96 photos
+    array_walk($h->Elements, 'displayImgs', $client);
 }
 catch (Exception $e) {
-	echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
+    echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
 }
 
-function displayImgs($element, $key, $f) {
-	if ( $element['$type'] == 'Group' ) {
-		array_walk($element['Elements'], 'displayImgs', $f);
-	} else {
-		if ( $element['PhotoCount'] > 0 ) {
-			$pictures = $f->LoadPhotoSetPhotos($element['Id'], 0, 100 );
-			// Display the 60x60 cropped thumbnails and link to the photo page for each.
-			foreach ($pictures as $pic) {
-				echo '<a href="',$pic['PageUrl'],'"><img src="',phpZenfolio::imageUrl($pic, 1),'" title="',$pic['Title'],'" alt="',$pic['Id'],'" /></a>';
-			}
-			break;
-		} 
-	}
+function displayImgs($element, $key, phpZenfolio\Client $client) {
+    if ( $element->{'$type'} == 'Group' ) {
+        array_walk($element->Elements, 'displayImgs', $client);
+    } else {
+        if ( $element->PhotoCount > 0 ) {
+            $pictures = $client->LoadPhotoSetPhotos($element->Id, 0, 96 );
+            // Display the 60x60 cropped thumbnails and link to the photo page for each.
+            foreach ($pictures as $picture) {
+                echo '<a href="'.$pic->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($picture, 1).'" title="'.$picture->Title.'" alt="'.$picture->Id.'" /></a>';
+            }
+        }
+    }
 }
 ?>
 </body>
