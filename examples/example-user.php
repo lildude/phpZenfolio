@@ -44,7 +44,7 @@ catch (Exception $e) {
     echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
 }
 
-function displayImgs($element, $key, phpZenfolio\Client $client) {
+function displayImgs(\stdClass $element, $key, phpZenfolio\Client $client) {
     if ( $element->{'$type'} == 'Group' ) {
         array_walk($element->Elements, 'displayImgs', $client);
     } else {
