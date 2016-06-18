@@ -43,7 +43,7 @@ try {
     $photos = $client->LoadPhotoSetPhotos($h->Elements[0]->Id, 0, $h->Elements[0]->PhotoCount);
     # Display the 60x60 cropped thumbnails and link to the image page for each image in the first gallery/collection.
     foreach ($photos as $photo) {
-        echo '<a href="'.$photo->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($photo, 1).'" title="'.$photo->Title.'" alt="'.$photo->Id.'" /></a>';
+        echo '<a href="'.$photo->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($photo, 1).'" title="'.$photo->Title.'" alt="'.$photo->Id.'" width="60" height="60" /></a>';
     }
 }
 catch (Exception $e) {
