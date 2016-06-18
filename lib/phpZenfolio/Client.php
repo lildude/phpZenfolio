@@ -44,7 +44,7 @@ class Client
                         'Accept' => 'application/json',
                       ],
         'timeout' => 30,
-        'debug' => true,
+        'debug' => false,
     );
 
     /**
