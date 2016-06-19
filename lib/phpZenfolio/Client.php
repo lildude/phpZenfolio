@@ -66,9 +66,7 @@ class Client
         # Set the required X-Zenfolio-User-Agent to match the User-Agent
         $this->default_options['headers']['X-Zenfolio-User-Agent'] = $this->default_options['headers']['User-Agent'];
 
-        if (isset($options['api_version'])) {
-            $this->default_options['api_version'] = $options['api_version'];
-        }
+        $this->default_options = array_merge($this->default_options, $options);
 
         # Setup the handler stack - we'll need this later.
         $this->stack = (isset($options['handler'])) ? $options['handler'] : HandlerStack::create();
