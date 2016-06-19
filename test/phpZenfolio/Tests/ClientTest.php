@@ -76,6 +76,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * TODO: Start a proxy and ensure it's actually used.
+     */
+    public function shouldSetProxy()
+    {
+        $client = new Client($this->AppName, ['proxy' => 'http://proxy.foo:8080']);
+        $options = $client->getDefaultOptions();
+        $this->assertEquals('http://proxy.foo:8080', $options['proxy']);
+    }
+
+    /**
+     * @test
      */
     public function shouldGetReasonPhrase()
     {
