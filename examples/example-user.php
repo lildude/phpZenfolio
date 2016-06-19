@@ -52,7 +52,7 @@ function displayImgs(\stdClass $element, $_, phpZenfolio\Client $client)
             $pictures = $client->LoadPhotoSetPhotos($element->Id, 0, 96);
             // Display the 60x60 cropped thumbnails and link to the photo page for each.
             foreach ($pictures as $picture) {
-                echo '<a href="'.$pic->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($picture, 1).'" title="'.$picture->Title.'" alt="'.$picture->Id.'" /></a>';
+                echo '<a href="'.$picture->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($picture, 1).'" title="'.$picture->Title.'" alt="'.$picture->Id.'" /></a>';
             }
         }
     }
