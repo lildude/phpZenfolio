@@ -74,6 +74,10 @@ The best way to get help with implementing phpZenfolio into your projects is to 
 
 Please don't be shy. If you've got a question, problem or are just curious about something, there's a very good chance someone else is too, so go ahead and open an issue and ask.
 
+## Contributing
+
+Found a bug or want to make phpZenfolio even better? Please feel free to open a pull request with your changes, but be sure to check out the [CONTRIBUTING.md](CONTRIBUTING.md) first for some tips and guidelines. No pull request is too small.
+
 ## License
 
 phpZenfolio is licensed under the MIT License - see the LICENSE file for details
