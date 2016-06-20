@@ -39,7 +39,7 @@ Uploading is very easy.  You can either upload an image from your local system u
   If you don't specify a filename, the original filename is used.
 
 
-* Upload from the web:
+* Upload an Image from a URL:
 
   Uploading to Zenfolio using a URL is done purely by the Zenfolio `CreatePhotoFromUrl()` API method:
 
