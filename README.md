@@ -1,6 +1,6 @@
 # phpZenfolio
 
-[![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) [![Build Status](https://travis-ci.org/lildude/phpZenfolio.svg)](https://travis-ci.org/lildude/phpZenfolio)
+[![MIT License badge]()]() [![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) [![Build Status](https://travis-ci.org/lildude/phpZenfolio.svg)](https://travis-ci.org/lildude/phpZenfolio)
 
 A simple object orientated wrapper for the Zenfolio API, written in PHP.
 
@@ -78,6 +78,10 @@ Please don't be shy. If you've got a question, problem or are just curious about
 
 Found a bug or want to make phpZenfolio even better? Please feel free to open a pull request with your changes, but be sure to check out the [CONTRIBUTING.md](CONTRIBUTING.md) first for some tips and guidelines. No pull request is too small.
 
+## Changes
+
+All notable changes to this project are documented in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
-phpZenfolio is licensed under the MIT License - see the LICENSE file for details
+[![MIT License badge]()]() phpZenfolio is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
