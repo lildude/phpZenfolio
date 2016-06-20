@@ -29,3 +29,5 @@ If you don't have Composer installed, you can download it using:
 ```bash
 $ curl -s http://getcomposer.org/installer | php
 ```
+
+**Note: phpZenfolio 2.0.0 and later is not backwardly compatible with earlier releases.**
