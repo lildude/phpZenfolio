@@ -3,7 +3,6 @@
 namespace phpZenfolio\Tests;
 
 use phpZenfolio\Client;
-use GuzzleHttp\Client as GuzzleClient;
 
 class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
 {
@@ -25,5 +24,4 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
             return;
         }
     }
-
 }
