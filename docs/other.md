@@ -45,6 +45,10 @@ Don't be shy, feel free to ask any question.
 
 Found a bug or want to make phpZenfolio even better? Please feel free to open a pull request with your changes, but be sure to check out the [CONTRIBUTING.md](CONTRIBUTING.md) first for some tips and guidelines. No pull request is too small.
 
+## Changes
+
+All notable changes to this project are documented in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
-phpZenfolio is licensed under the MIT License - see the [LICENSE.md]() file for details
+![MIT License badge]() phpZenfolio is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
