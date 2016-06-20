@@ -305,6 +305,28 @@ class Client
     }
 
     /**
+     * Set keyring.
+     *
+     * TODO: Check this.
+     *
+     * @param string $keyring Keyring returned from login() method. Set to an empty string to unset.
+     */
+    public function setKeyring($keyring)
+    {
+        $this->keyring = $keyring;
+    }
+
+    /**
+     * Get the authToken.
+     *
+     * @return string
+     */
+    public function getKeyring()
+    {
+        return $this->keyring;
+    }
+
+    /**
      * @return object HttpClient object instantiated with this class.
      */
     public function getHttpClient()
