@@ -2,12 +2,20 @@
 All notable changes to this project will be documented in this file.
 As of 2.0.0, this project adheres to [Semantic Versioning](http://semver.org/) and the format is based on the suggestions a <http://keepachangelog.com/>.
 
-## [2.0] - TBC
-### Added
-
+## [2.0.0] - TBC
 ### Changed
+- Complete rewrite of phpZenfolio.
+- Introduction of proper semantic versioning.
+- Switched to using Guzzle for requests to the API.  This means more reliable and predictable behaviour and allows for easier future improvements in phpZenfolio without having to worry about maintaining a library that submits requests.
+- All requests, except image uploads, use HTTPS. Zenfolio has not implemented image uploads over HTTPS yet.
+- phpZenfolio now requires PHP 5.6.0 or later.
+- All tests are now public and run on Travis CI with every push.
+- phpZenfolio is now licensed under the MIT license.
+- PSR-1, PSR-2, and PSR-4 coding standards are implemented and enforced by unit testing.
+- phpZenfolio 2.0.0 is _not_ backwardly compatible with phpZenfolio 1.x and earlier.
 
 ### Removed
+- Caching has been removed from this release. This will be reintroduced in a future release.
 
 ## [1.3] - 2016-04-16
 ### Changed
