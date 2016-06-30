@@ -413,6 +413,37 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     */
+    public function shouldUploadToPhotoSetUsingKeyringAuth()
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->fauxKeyringResponse),
+            new Response(200, []),
+        ]);
+
+        $handler = HandlerStack::create($mock);
+        $client = new Client($this->AppName, ['handler' => $handler]);
+        $client->KeyringAddKeyPlain('the-keyring', '1234567890', 'the-password');
+
+        $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, './examples/phpZenfolio-logo.png');
+
+        $request_options = $client->getRequestOptions();
+        $this->assertArrayHasKey('X-Zenfolio-Keyring', $request_options['headers']);
+        $this->assertEquals($this->fauxKeyring, $request_options['headers']['X-Zenfolio-Keyring']);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldSetAndGetKeyring()
+    {
+        $client = new Client($this->AppName);
+        $client->setKeyring($this->fauxKeyring);
+        $this->assertEquals($this->fauxKeyring, $client->getKeyring());
+    }
+
+    /**
+     * @test
      * @expectedException phpZenfolio\Exception\BadMethodCallException
      * @expectedExceptionMessage Invalid method: badmethod
      */
