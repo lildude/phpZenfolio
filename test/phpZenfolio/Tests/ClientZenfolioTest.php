@@ -8,7 +8,7 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
 {
     public function setup()
     {
-        $this->client = new Client('phpZenfolio Unit Testing/'.Client::VERSION.' (https://phpzenfolio.com)');
+        $this->client = new Client('phpZenfolio Unit Testing/'.Client::VERSION.' (https://phpzenfolio.com)', ['verify' => true]);
         $this->client->setAuthToken(getenv('AUTH_TOKEN'));
     }
 
