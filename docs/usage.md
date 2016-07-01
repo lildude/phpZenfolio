@@ -43,18 +43,11 @@ Remember: *ALL* function names and arguments *ARE* case sensitive and the order 
 **Note:** phpZenfolio does not currently support asynchronous requests, though as we now rely on Guzzle, this shouldn't be too hard to implement in future.
 
 
-### Making Changes
+### Creating Objects and Making Changes
 
-TBC
+Some of the Zenfolio API methods, like `CreatePhotoSet()`, or `UpdatePhoto()` require an [Updater object](http://www.zenfolio.com/zf/help/api/ref/objects/updaters) to be passed as one of the arguments. phpZenfolio allows you to pass the object either as an associative array:
 
-
-### Special Cases
-
-TBC - It's possible the use of JSON negates the need to differentiate.
-
-Some of the Zenfolio API methods, like `CreatePhotoSet()`, require an object to be passed as one of the arguments. The object can be passed either as an associative array:
-
-```
+```php
 $photoSetUpdater = array(
     "Title" => "PhotoSet Title",
     "Caption" => "PhotoSet Caption via API",
@@ -63,18 +56,18 @@ $photoSetUpdater = array(
     "CustomReference" => "testing/test-photoset"
 );
 $client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
-  ```
+```
 
 ... or as a standard class object:
 
-  ```
-  $photoSetUpdater = new stdClass();
-  $photoSetUpdater->Title = "PhotoSet Title";
-  $photoSetUpdater->Caption = "PhotoSet Caption via Object";
-  $photoSetUpdater->Keywords = array("Keyword1", "keyword2");
-  $photoSetUpdater->Categories = array();
-  $photoSetUpdater->CustomReference = "testing/test-photoset";
-  $client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
-  ```
+```php
+$photoSetUpdater = new stdClass();
+$photoSetUpdater->Title = "PhotoSet Title";
+$photoSetUpdater->Caption = "PhotoSet Caption via Object";
+$photoSetUpdater->Keywords = array("Keyword1", "keyword2");
+$photoSetUpdater->Categories = array();
+$photoSetUpdater->CustomReference = "testing/test-photoset";
+$client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
+```
 
 All data returned by the method call is returned as the API documents it.

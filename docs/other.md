@@ -6,12 +6,12 @@
 Accessing Zenfolio with phpZenfolio through a proxy is possible by passing the `proxy` option when instantiating the client:
 
 ```php
-$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['proxy' => 'http://[proxy_address]:[port]']));
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['proxy' => 'http://[PROXY_ADDRESS]:[PORT]']));
 ```
 
 All your requests will pass through the specified proxy on the specified port.
 
-If you need a username and password to access your proxy, you can include them in the URL in the form: `http://[username]:[password]@[proxy_address]:[port]`.
+If you need a username and password to access your proxy, you can include them in the URL in the form: `http://[USERNAME]:[PASSWORD]@[PROXY_ADDRESS]:[PORT]`.
 
 ## Image URLs Helper
 
@@ -21,7 +21,7 @@ To make it easy to obtain the direct URL to an image, phpZenfolio supplies an `i
 
   ```
   $client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)');
-  $photos = $client->LoadPhotoSetPhotos(<photosetID>, <startingIndex>, <numberOfPhotos>);
+  $photos = $client->LoadPhotoSetPhotos('[PHOTOSETID]', [STARTINGINDEX], [NUMBEROFPHOTOS]);
   foreach ($photos as $photo) {
       echo '<img src="'.phpZenfolio\Client::imageUrl($photo, 1).'" />';
   }

@@ -9,15 +9,22 @@ phpZenfolio allows you to use the API methods as documented, however to make thi
 
 * Challenge-Response (default):
 
-  ```
-  $client->login("<username>", "<password>");
+  ```php
+  $client->login('[USERNAME]', '[PASSWORD]');
   ```
 
 * Plain-Text:
 
-  ```
+  ```php
   # Setting the third argument to `true` confirms you want to use plain-text
-  $client->login("<username>", "<password>", true);
+  $client->login('[USERNAME]', '[PASSWORD]', true);
   ```
 
 Both methods use HTTPS/SSL for the authentication step to ensure your username and password are encrypted when transmitted to Zenfolio.
+
+The `login()` method returns the authentication token.  You can store this and re-use it in future requests using phpZenfolio's `setAuthToken()` method:
+
+```php
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)'));
+$client->setAuthToken('[AUTH_TOKEN]');
+```
