@@ -23,6 +23,6 @@ All contributions are automatically checked against these standards using [php-c
 
 # Licensing
 
-By contributing code you agree to license your contribution under the MIT license.
+By contributing code you agree to license your contribution under the [MIT license](https://opensource.org/licenses/MIT).
 
-By contributing documentation, examples, or any other non-code assets you agree to license your contribution under the CC BY 3.0 license. Attribution shall be given according to the current bylaws of this group.
+By contributing documentation, examples, or any other non-code assets you agree to license your contribution under the [CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/). Attribution shall be given according to the current bylaws of this group.
