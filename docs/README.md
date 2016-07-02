@@ -6,8 +6,7 @@
   - More In-depth Usage Details
     - Instantiating the Client
     - Interacting with the Zenfolio API
-      - Making Changes
-      - Special Cases
+      - Creating Objects and Making Changes
 - [Authentication](authentication.md)
 - [Uploading & Replacing Images](uploading.md)
   - Upload a Local File
@@ -17,7 +16,7 @@
   - Access Zenfolio via a Proxy
   - Image URLs Helper
   - Examples
-  - Getting Help or Have Questions
+  - Need Help or Have Questions
   - Contributing
   - Changes
   - License
