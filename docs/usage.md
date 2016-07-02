@@ -49,11 +49,11 @@ Some of the Zenfolio API methods, like `CreatePhotoSet()`, or `UpdatePhoto()` re
 
 ```php
 $photoSetUpdater = array(
-    "Title" => "PhotoSet Title",
-    "Caption" => "PhotoSet Caption via API",
-    "Keywords" => array("Keyword1", "keyword2"),
-    "Categories" => array(),
-    "CustomReference" => "testing/test-photoset"
+    'Title' => 'PhotoSet Title',
+    'Caption' => 'PhotoSet Caption via API',
+    'Keywords' => array('Keyword1', 'keyword2'),
+    'Categories' => array(),
+    'CustomReference' => 'testing/test-photoset'
 );
 $client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
 ```
@@ -62,11 +62,11 @@ $client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
 
 ```php
 $photoSetUpdater = new stdClass();
-$photoSetUpdater->Title = "PhotoSet Title";
-$photoSetUpdater->Caption = "PhotoSet Caption via Object";
-$photoSetUpdater->Keywords = array("Keyword1", "keyword2");
+$photoSetUpdater->Title = 'PhotoSet Title';
+$photoSetUpdater->Caption = 'PhotoSet Caption via Object';
+$photoSetUpdater->Keywords = array('Keyword1', 'keyword2');
 $photoSetUpdater->Categories = array();
-$photoSetUpdater->CustomReference = "testing/test-photoset";
+$photoSetUpdater->CustomReference = 'testing/test-photoset';
 $client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
 ```
 
