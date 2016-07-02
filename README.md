@@ -84,4 +84,4 @@ All notable changes to this project are documented in [CHANGELOG.md](CHANGELOG.m
 
 ## License
 
-phpZenfolio is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+All code is licensed under the [MIT License](https://opensource.org/licenses/MIT) and all documentation is licensed under the [CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/).
