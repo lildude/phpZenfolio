@@ -2,7 +2,7 @@
 
 ## The Get Going Quick Guide
 
-1. Fork the phpZenfolio repository on GitHub.
+1. Fork the phpZenfolio repository on [GitHub](https://github.com/lildude/phpZenfolio).
 2. If you're submitting a fix or improvement to the phpZenfolio code or submitting a new example, create a new branch from the `master` branch, for example: `your-fork/some-cool-feature` or `your-fork/fixing-something-broken` branch.
 3. If you're submitting a fix or improvement to the phpZenfolio website or documentation, create a new branch from the `gh-pages` branch.
 4. If you're submitting code changes, as opposed to documentation, write tests that fail without your changes and pass with them.
