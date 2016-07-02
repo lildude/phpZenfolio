@@ -6,30 +6,29 @@
  * in the first gallery or collection in the list.
  *
  * You'll need to set:
+ *
  * - $appname to your application name, version and URL
  * - $username to your Zenfolio username
  *
  * The application name and version is required, but there is no required format.
- * See the README.txt for a suggested format.
- *
- * You can see this example in action at http://phpzenfolio.com/examples/
+ * See the README.md for a suggested format.
  */
 $appname = 'YOUR_APP_NAME/VER (URL)';
 $username = 'A_USERNAME';
 ?>
 <html>
-<head>
+  <head>
     <title>phpZenfolio First User Gallery/Collection Example</title>
     <style type="text/css">
-        body { background-color: #fff; color: #444; font-family: sans-serif; }
-        div { width: 750px; margin: 0 auto; text-align: center; }
-        img { border: 0;}
+      body { background-color: #fff; color: #444; font-family: sans-serif; }
+      div { width: 750px; margin: 0 auto; text-align: center; }
+      img { border: 0;}
     </style>
-</head>
+  </head>
 <body>
-    <div>
-        <a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
-        <h2>phpZenfolio First User Gallery/Collection Example</h2>
+  <div>
+    <a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
+    <h2>phpZenfolio First User Gallery/Collection Example</h2>
 <?php
 require_once 'vendor/autoload.php';
 
@@ -58,5 +57,6 @@ function displayImgs(\stdClass $element, $_, phpZenfolio\Client $client)
     }
 }
 ?>
+  </div>
 </body>
 </html>

@@ -5,12 +5,13 @@
  * first photoset or collection, regardless of whether it's public or not.
  *
  * You'll need to set the following:
+ *
  * - $appname to your application name, version and URL
  * - $username to your Zenfolio username
  * - $password to your user's password
  *
  * The application name and version is required, but there is no required format.
- * See the README.txt for a suggested format.
+ * See the README.md for a suggested format.
  */
 
 $appname = 'YOUR_APP_NAME/VER (URL)';
@@ -19,12 +20,12 @@ $password = 'A_PASSWORD';
 ?>
 <html>
 <head>
-    <title>phpZenfolio First Album With Login Example</title>
-    <style type="text/css">
-        body { background-color: #fff; color: #444; font-family: sans-serif; }
-        div { width: 750px; margin: 0 auto; text-align: center; }
-        img { border: 0;}
-    </style>
+  <title>phpZenfolio First Album With Login Example</title>
+  <style type="text/css">
+    body { background-color: #fff; color: #444; font-family: sans-serif; }
+    div { width: 750px; margin: 0 auto; text-align: center; }
+    img { border: 0;}
+  </style>
 </head>
 <body>
   <div>
@@ -49,6 +50,6 @@ try {
     echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
 }
 ?>
-    </div>
+  </div>
 </body>
 </html>

@@ -6,6 +6,7 @@
  * gallery.
  *
  * You'll need to set the following:
+ *
  * - $appname to your application name, version and URL
  * - $username to your Zenfolio username
  * - $password to your user's password
@@ -22,12 +23,12 @@ $file = '/PATH/TO/A/FILE/TO/UPLOAD.EXT';
 ?>
 <html>
 <head>
-    <title>phpZenfolio Create Gallery and Upload Example</title>
-    <style type="text/css">
-        body { background-color: #fff; color: #444; font-family: sans-serif; }
-        div { width: 750px; margin: 0 auto; text-align: center; }
-        img { border: 0;}
-    </style>
+  <title>phpZenfolio Create Gallery and Upload Example</title>
+  <style type="text/css">
+    body { background-color: #fff; color: #444; font-family: sans-serif; }
+    div { width: 750px; margin: 0 auto; text-align: center; }
+    img { border: 0;}
+  </style>
 </head>
 <body>
   <div>
@@ -73,6 +74,6 @@ try {
     echo "{$e->getMessage()} (Error Code: {$e->getCode()})";
 }
 ?>
-    </div>
+  </div>
 </body>
 </html>
