@@ -9,7 +9,7 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
     public function setup()
     {
         $this->client = new Client('phpZenfolio Unit Testing/'.Client::VERSION.' (https://phpzenfolio.com)', ['verify' => true]);
-        $this->client->setAuthToken(getenv('AUTH_TOKEN'));
+        $this->client->login(getenv('USERNAME'), getenv('PASSWORD'));
     }
 
     /**
@@ -18,10 +18,12 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
      */
     public function checkEnvVars()
     {
-        if (empty(getenv('AUTH_TOKEN'))) {
-            $this->markTestSkipped("Environment variable 'AUTH_TOKEN' not set.");
+        foreach (['USERNAME', 'PASSWORD'] as $env_var) {
+            if (empty(getenv($env_var))) {
+                $this->markTestSkipped("Environment variable $env_var not set.");
 
-            return;
+                return;
+            }
         }
     }
 
