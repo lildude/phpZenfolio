@@ -28,7 +28,7 @@ All pull requests will be reviewed and will be merged once all tests have passed
 
 # Getting Help or Have Questions
 
-The best way to get help with implementing phpZenfolio into your projects is to open an issue. This allows you to easily search for other issues where others may have asked to the same questions or hit the same problems and if they haven't, your issue will add to the resources available to others at a later date.
+The best way to get help with implementing {{ site.name }} into your projects is to open an issue. This allows you to easily search for other issues where others may have asked to the same questions or hit the same problems and if they haven't, your issue will add to the resources available to others at a later date.
 
 Please don't be shy. If you've got a question, problem or are just curious about something, there's a very good chance someone else is too, so go ahead and open an issue and ask.
 
@@ -48,6 +48,6 @@ If you're using {{ site.name }} and wish to let the world know, drop me a line a
 
 # License
 
-{{ site.name }} is licensed under the [MIT License]().
+All code is licensed under the [MIT License](https://opensource.org/licenses/MIT) and all documentation is licensed under the [CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/).
 
 <small>The images in the footer are the possession of Zenfolio and are taken from one of their [demo galleries](http://demo.zenfolio.com/p844670625).</small>
