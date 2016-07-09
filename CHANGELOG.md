@@ -20,7 +20,7 @@ As of 2.0.0, this project adheres to [Semantic Versioning](http://semver.org/) a
 - PSR-1, PSR-2, and PSR-4 coding standards are implemented and enforced by unit testing.
 
 ### Removed
-- Caching has been removed from this release. This will be reintroduced in a future release.
+- Caching has been removed from phpZenfolio as there are better Guzzle-friendly implementations that tie-in with phpZenfolio thanks to the use of Guzzle.
 
 ## [1.3] - 2016-04-16
 ### Changed
