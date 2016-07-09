@@ -1,6 +1,23 @@
 
 # Other Notes
 
+## Caching API Responses
+
+Caching has been removed from phpZenfolio as the headers in the Zenfolio API responses discourage caching and now phpZenfolio is using Guzzle, we can take advantage of much better Guzzle-friendly middleware implementations, like [guzzle-cache-middleware](https://github.com/Kevinrob/guzzle-cache-middleware), that better tie-in with the various frameworks you may already be using.
+
+In order to use one of these middleware caching mechanisms, you'll need to [create and pass a handler stack](http://docs.guzzlephp.org/en/latest/handlers-and-middleware.html) with the cache middleware you plan to use when instantiating the phpZenfolio client. For example:
+
+```php
+<?php
+$handler_stack = HandlerStack::create();
+$handler_stack->push(new YourChosenCachingMiddleware(), 'cache');
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['handler' => $handler_stack]);
+```
+
+Keeps in mind tht phpZenfolio uses POST to the same URL for all requests.  You may need to take this into account when configuring your caching implementation.
+
+Please refer to your chosen caching implementation documentation for further details on how to use and implement that side of things with Guzzle.
+
 ## Access Zenfolio via a Proxy
 
 Accessing Zenfolio with phpZenfolio through a proxy is possible by passing the `proxy` option when instantiating the client:
