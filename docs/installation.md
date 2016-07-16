@@ -1,7 +1,7 @@
 # Requirements
 
 * PHP >= 5.6.0,
-* [Guzzle 6](https://github.com/guzzle/guzzle) library and the [Guzzle OAuth1 Subscriber](https://github.com/guzzle/oauth-subscriber),
+* [Guzzle 6](https://github.com/guzzle/guzzle) library,
 * (optional) [PHPUnit](https://phpunit.de/) and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
 
 # Installation
