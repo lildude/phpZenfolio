@@ -2,7 +2,7 @@
 
 * PHP >= 5.6.0,
 * [Guzzle 6](https://github.com/guzzle/guzzle) library,
-* (optional) [PHPUnit](https://phpunit.de/) and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
+* (optional) [PHPUnit](https://phpunit.de/), [php-coveralls]() and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
 
 # Installation
 
