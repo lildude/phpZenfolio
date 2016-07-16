@@ -14,7 +14,7 @@ $handler_stack->push(new YourChosenCachingMiddleware(), 'cache');
 $client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['handler' => $handler_stack]);
 ```
 
-Keeps in mind tht phpZenfolio uses POST to the same URL for all requests.  You may need to take this into account when configuring your caching implementation.
+Keeps in mind that phpZenfolio uses POST to the same URL for all requests.  You may need to take this into account when configuring your caching implementation.
 
 Please refer to your chosen caching implementation documentation for further details on how to use and implement that side of things with Guzzle.
 
