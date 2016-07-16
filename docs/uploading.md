@@ -3,6 +3,7 @@
 
 Uploading is very easy.  You can either upload an image from your local system using the phpZenfolio supplied `upload()` method, or from a location on the web using the API's `CreatePhotoFromUrl()` method.
 
+
 ## Upload a Local File:
 
 To upload from your local filesystem using the phpZenfolio `upload()` method, you will need to have logged into Zenfolio via the API using the `login()` method and have the photoset object, the `PhotoSetId`, or it's `UploadUrl` as returned by the API.

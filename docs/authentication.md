@@ -18,7 +18,7 @@ phpZenfolio allows you to use the API methods as documented, however to make thi
 
   ```php
   <?php
-  # Setting the third argument to `true` confirms you want to use plain-text
+  // Setting the third argument to `true` confirms you want to use plain-text
   $client->login('[USERNAME]', '[PASSWORD]', true);
   ```
 

@@ -26,11 +26,15 @@ The `phpZenfolio\Client()` constructor takes two arguments:
 
 - An array of options - Optional.
 
-    The options you pass here become the default options applied to all requests by default, unless explicitly overwritten elsewhere and can be made up of any combination of the following options:
+    The options you pass here become the default options applied to all requests by default, unless explicitly overwritten elsewhere, and can be made up of any combination of the following options:
 
-    - `api_version` - The API version you wish to use. This defaults to `1.8` as this is the only version of the API this version of phpZenfolio is compatible with.  This is really only for "future proofing".
+    - `api_version` - (string) The API version you wish to use. This defaults to `1.8` as this is the only version of the API this version of phpZenfolio is compatible with.  This is really only for "future proofing".
 
-Additionally, you can pass any [Guzzle request option](http://docs.guzzlephp.org/en/latest/request-options.html) though `debug` and `proxy` are probably the only options you may need to set.
+    - `proxy` - (string) Configure all phpZenfolio requests to pass through a proxy. See the "Access Zenfolio via a Proxy" section for more details.
+
+    - `debug` - (boolean) Enables Guzzle's debug output. This is only really useful during development.
+
+Additionally, you can pass any [Guzzle request option](http://docs.guzzlephp.org/en/latest/request-options.html) though `debug` and `proxy` are probably the only options you may want to set.
 
 
 ## Interacting with the Zenfolio API
@@ -39,7 +43,7 @@ Once you've instantiated an instance of the `phpZenfolio\Client`, you can use an
 
 Remember: *ALL* function names and arguments *ARE* case sensitive and the order of arguments is important.
 
-**Note:** phpZenfolio does not currently support asynchronous requests, though as we now rely on Guzzle, this shouldn't be too hard to implement in future.
+**Note:** phpZenfolio does not currently support asynchronous requests, though as we now rely on Guzzle, this shouldn't be too hard to implement in future (PRs welcome :wink:).
 
 
 ### Creating Objects and Making Changes
