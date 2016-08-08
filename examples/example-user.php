@@ -12,6 +12,10 @@
  *
  * The application name and version is required, but there is no required format.
  * See the README.md for a suggested format.
+ *
+ * NOTE: If you set a username that is not yours, your access to their content will
+ * be limited by the access they have granted. This may present itself as a `E_NOSUCHOBJECT`
+ * error for method calls like LoadGroupHierarchy() and LoadPublicProfile().
  */
 $appname = 'YOUR_APP_NAME/VER (URL)';
 $username = 'A_USERNAME';
