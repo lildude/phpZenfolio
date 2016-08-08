@@ -33,3 +33,5 @@ $client->setAuthToken('[AUTH_TOKEN]');
 ```
 
 Keep in mind that the authentication token is only valid for slightly more than 24 hours. If you expect your application to run for longer than 24 hours, it needs to periodically reauthenticate to obtain a fresh authentication token.
+
+Additionally, keep in mind that when authenticating, you will gain full access to _your_ content and only gain access to the albums, collections and photos of other users granted to you by that user. This means methods like `[LoadGroupHierarchy()](http://www.zenfolio.com/zf/help/api/ref/methods/loadgrouphierarchy)` and `[LoadPublicProfile()](http://www.zenfolio.com/zf/help/api/ref/methods/loadpublicprofile)` will only return information if the user in question has explicitly granted you access to their root photoset group or if they have made their root photoset group public.
