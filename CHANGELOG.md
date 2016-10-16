@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 As of 2.0.0, this project adheres to [Semantic Versioning](http://semver.org/) and the format is based on the suggestions a <http://keepachangelog.com/>.
 
-## [2.0.0] - TBC
+## [2.0.0] - 2016-10-16
 ### Added
 - A new example showing how to create a gallery and upload an image to it.
 
