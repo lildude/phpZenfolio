@@ -12,7 +12,7 @@ $client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)'));
 $photoset = $client->LoadPhotoSet(12345, 'Level1');
 ```
 
-From the `$client` object, you can access to all the Zenfolio API methods.
+From the `$client` object, you can access all the Zenfolio API methods.
 
 # More In-depth Usage Details
 
