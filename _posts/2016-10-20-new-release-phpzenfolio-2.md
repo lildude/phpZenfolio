@@ -1,7 +1,7 @@
 ---
 layout: news_item
 title: "New Release: phpZenfolio 2.0.0"
-date: "2016-10-20 16:42:02 +0100"
+date: "2016-10-16 14:44:02 +0100"
 author: lildude
 categories: release
 ---
