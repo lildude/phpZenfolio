@@ -282,12 +282,12 @@ Please don't be shy. If you've got a question, problem or are just curious about
 
 ## Contributing
 
-Found a bug or want to make phpZenfolio even better? Please feel free to open a pull request with your changes, but be sure to check out the [CONTRIBUTING.md](CONTRIBUTING.md) first for some tips and guidelines. No pull request is too small.
+Found a bug or want to make phpZenfolio even better? Please feel free to open a pull request with your changes, but be sure to check out the [CONTRIBUTING.md](https://github.com/lildude/phpZenfolio/blob/master/CONTRIBUTING.md) first for some tips and guidelines. No pull request is too small.
 
 
 ## Changes
 
-All notable changes to this project are documented in [CHANGELOG.md](CHANGELOG.md).
+All notable changes to this project are documented in [CHANGELOG.md](https://github.com/lildude/phpZenfolio/blob/master/CHANGELOG.md).
 
 
 ## License
