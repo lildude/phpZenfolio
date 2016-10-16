@@ -50,8 +50,8 @@ class Client
     /**
      * Instantiate a new Zenfolio client.
      *
-     * @param string $AppName The name of your application.
-     * @param string $APIVer  The API endpoint. Defaults to 1.8.
+     * @param string $AppName The name of your application
+     * @param string $APIVer  The API endpoint. Defaults to 1.8
      *
      * @return object
      */
@@ -63,12 +63,12 @@ class Client
         }
 
         $this->default_options['headers']['User-Agent'] = sprintf('%s using %s/%s', $this->AppName, $this->default_options['headers']['User-Agent'], self::VERSION);
-        # Set the required X-Zenfolio-User-Agent to match the User-Agent
+        // Set the required X-Zenfolio-User-Agent to match the User-Agent
         $this->default_options['headers']['X-Zenfolio-User-Agent'] = $this->default_options['headers']['User-Agent'];
 
         $this->default_options = array_merge($this->default_options, $options);
 
-        # Setup the handler stack - we'll need this later.
+        // Setup the handler stack - we'll need this later.
         $this->stack = (isset($options['handler'])) ? $options['handler'] : HandlerStack::create();
         $this->default_options['handler'] = $this->stack;
 
@@ -79,14 +79,14 @@ class Client
      * Dynamic method handler.  This function handles all HTTP method calls
      * not explicitly implemented as separate functions by phpZenfolio.
      *
-     * @param string $method HTTP method.
-     * @param array  $args   Array of options for the HTTP method.
+     * @param string $method HTTP method
+     * @param array  $args   Array of options for the HTTP method
      *
-     * @return object Decoded JSON response from Zenfolio.
+     * @return object Decoded JSON response from Zenfolio
      */
     public function __call($method, $args)
     {
-        # Ensure the per-request options are empty
+        // Ensure the per-request options are empty
         $this->request_options = [];
         $this->client = self::getHttpClient();
 
@@ -108,20 +108,20 @@ class Client
     /**
      * Private function that performs the actual request to the Zenfolio API.
      *
-     * @param string $method The HTTP method for the request.
-     * @param string $url    The destination URL for the request.
+     * @param string $method The HTTP method for the request
+     * @param string $url    The destination URL for the request
      */
     private function performRequest($method, $url, $args = null)
     {
         if ($method != 'upload') {
-            # To keep things unique, we set the ID to the sha1 of the method
+            // To keep things unique, we set the ID to the sha1 of the method
             $this->id = sha1($method);
             $this->request_options['json'] = array('method' => $method, 'params' => $args, 'id' => $this->id);
         }
 
-        # Merge the request and default options
+        // Merge the request and default options
         $this->request_options = array_merge($this->default_options, $this->request_options);
-        # Perform the API request
+        // Perform the API request
         $this->response = $this->client->request('POST', $url, $this->request_options);
     }
 
@@ -131,7 +131,7 @@ class Client
      *
      * This is in a single function so we don't repeat the same steps for each method.
      *
-     * @param string|null $method The method we're expecting the output for.
+     * @param string|null $method The method we're expecting the output for
      *
      * @return mixed
      */
@@ -139,19 +139,19 @@ class Client
     {
         $body = json_decode((string) $this->response->getBody());
 
-        # Bail if the ID returned doesn't match that sent for non-upload methods.
+        // Bail if the ID returned doesn't match that sent for non-upload methods.
         if ($method != 'upload') {
             if ($body->id != $this->id) {
                 throw new UnexpectedValueException("Incorrect response ID. (request ID: {$this->id}, response ID: {$body->id})");
             }
         }
 
-        # Bail if there is an error
+        // Bail if there is an error
         if (isset($body->error) && !is_null($body->error)) {
             if ($body->error->message == 'No such method') {
                 throw new BadMethodCallException("{$body->error->code}: {$body->error->message}");
             } else {
-                # If the message contains "contact Support" it's referring to Zenfolio support, so lets make that clear.
+                // If the message contains "contact Support" it's referring to Zenfolio support, so lets make that clear.
               $msg = ((isset($body->error->code)) ? $body->error->code.': ' : '').str_replace('contact Support', 'contact Zenfolio Support', $body->error->message);
                 throw new RuntimeException($msg);
             }
@@ -175,7 +175,7 @@ class Client
      * @param string $password  The Zenfolio username's password
      * @param bool   $plaintext (Optional) Set whether the login should use
      *                          the plaintext (true) or the challenge-response authentication
-     *                          method (false). Defaults to false.
+     *                          method (false). Defaults to false
      *
      * @return string
      */
@@ -205,13 +205,13 @@ class Client
      * detailed at {@link http://www.zenfolio.com/zf/help/api/guide/upload}.
      *
      * @param string $photoSet The ID, object or URL of the PhotoSet into which
-     *                         you wish the image to be uploaded.
-     * @param string $file     The path to the local file that is being uploaded.
+     *                         you wish the image to be uploaded
+     * @param string $file     The path to the local file that is being uploaded
      * @param array  $args     An array of optional arguments for the upload. The
      *                         only supported options are `filename` to specify the filename
      *                         to use, `modified` to specify the modification date and `type`
      *                         to specify the upload type of `video` or `raw`. `type`
-     *                         defaults to `photo`.
+     *                         defaults to `photo`
      *
      * @return string
      *
@@ -220,7 +220,7 @@ class Client
     public function upload($photoSet, $file, $args = array())
     {
         if (is_file($file)) {
-            $fileinfo = getimagesize($file); # We need this to get the content type.
+            $fileinfo = getimagesize($file); // We need this to get the content type.
             $fp = fopen($file, 'rb');
             $data = fread($fp, filesize($file));
             fclose($fp);
@@ -235,15 +235,15 @@ class Client
             $photo_set = $this->LoadPhotoSet($photoSet, 'Level1', false);
             $upload_url = $photo_set->$type_url;
         } else {
-            # Assumes this is the correct upload URL
+            // Assumes this is the correct upload URL
             $upload_url = $photoSet;
         }
 
-        # Ensure the per-request options are empty
+        // Ensure the per-request options are empty
         $this->request_options = [];
         $this->client = self::getHttpClient();
 
-        # Required headers
+        // Required headers
         $this->request_options['headers']['Content-Type'] = $fileinfo['mime'];
         $this->request_options['headers']['Content-Length'] = filesize($file);
 
@@ -271,8 +271,8 @@ class Client
      * Public function that returns the image url for an image. This is only for
      * sizes other than the original size.
      *
-     * @param array $photo The Photo object of the photo you with to obtain the url for.
-     * @param int   $size  The Zenfolio supplied image size.
+     * @param array $photo The Photo object of the photo you with to obtain the url for
+     * @param int   $size  The Zenfolio supplied image size
      *
      * @see http://www.zenfolio.com/zf/help/api/guide/download
      *
@@ -287,7 +287,7 @@ class Client
      * Set authToken.  This is useful for those who want to reuse the same authentication
      * token within a 24 hour period.
      *
-     * @param string $token Token returned from login() method. Set to an empty string to unset.
+     * @param string $token Token returned from login() method. Set to an empty string to unset
      */
     public function setAuthToken($token)
     {
@@ -307,7 +307,7 @@ class Client
     /**
      * Set keyring.
      *
-     * @param string $keyring Keyring returned from login() method. Set to an empty string to unset.
+     * @param string $keyring Keyring returned from login() method. Set to an empty string to unset
      */
     public function setKeyring($keyring)
     {
@@ -325,7 +325,7 @@ class Client
     }
 
     /**
-     * @return object HttpClient object instantiated with this class.
+     * @return object HttpClient object instantiated with this class
      */
     public function getHttpClient()
     {
@@ -357,7 +357,7 @@ class Client
     }
 
     /**
-     * @return array Default options instantiated with this class.
+     * @return array Default options instantiated with this class
      */
     public function getDefaultOptions()
     {
@@ -365,7 +365,7 @@ class Client
     }
 
     /**
-     * @return object Full json_decoded response from Zenfolio without any phpZenfolio touches.
+     * @return object Full json_decoded response from Zenfolio without any phpZenfolio touches
      */
     public function getResponse()
     {
@@ -373,7 +373,7 @@ class Client
     }
 
     /**
-     * @return array Request options that are set just before a request is made and cleared before every request.
+     * @return array Request options that are set just before a request is made and cleared before every request
      */
     public function getRequestOptions()
     {

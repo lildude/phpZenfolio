@@ -54,7 +54,7 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
     {
         $uniqid = uniqid('UnitTesting-');
 
-        # The photoSetUpdater can be an array or a stdObject.
+        // The photoSetUpdater can be an array or a stdObject.
         $photoSetUpdater = [
             'Title' => $uniqid,
             'Caption' => 'Gallery created via unit testing phpZenfolio',
@@ -85,7 +85,7 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
         $response = $this->client->upload($photoSetObject, 'examples/phpZenfolio-logo.png');
         $this->assertTrue(is_int($response));
 
-        # Return the photo ID
+        // Return the photo ID
         return $response;
     }
 

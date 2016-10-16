@@ -40,13 +40,13 @@ require_once 'vendor/autoload.php';
 
 try {
     $client = new phpZenfolio\Client($appname);
-    # Login. As Plaintext is not passed, the challenge-response authentication method is used.
+    // Login. As Plaintext is not passed, the challenge-response authentication method is used.
     $client->login($username, $password);
-    # Load the User's hierachy
+    // Load the User's hierachy
     $h = $client->LoadGroupHierarchy($username);
-    # Load the photos for the first set/collection
+    // Load the photos for the first set/collection
     $photos = $client->LoadPhotoSetPhotos($h->Elements[0]->Id, 0, $h->Elements[0]->PhotoCount);
-    # Display the 60x60 cropped thumbnails and link to the image page for each image in the first gallery/collection.
+    // Display the 60x60 cropped thumbnails and link to the image page for each image in the first gallery/collection.
     foreach ($photos as $photo) {
         echo '<a href="'.$photo->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($photo, 1).'" title="'.$photo->Title.'" alt="'.$photo->Id.'" width="60" height="60" /></a>';
     }

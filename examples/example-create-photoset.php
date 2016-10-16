@@ -39,34 +39,34 @@ require_once 'vendor/autoload.php';
 
 try {
     $client = new phpZenfolio\Client($appname);
-    # Login. As Plaintext is not passed, the challenge-response authentication method is used.
+    // Login. As Plaintext is not passed, the challenge-response authentication method is used.
     $client->login($username, $password);
-    # Load the User's hierachy.
+    // Load the User's hierachy.
     $h = $client->LoadGroupHierarchy($username);
-    # Create the photoSetUpdater object. This can be either an associative array
-    # or standard class object. This example uses an array.
+    // Create the photoSetUpdater object. This can be either an associative array
+    // or standard class object. This example uses an array.
     $photoSetUpdater = [
         'Title' => 'phpZenfolio-created Gallery',
         'Caption' => 'This gallery was created by the phpZenfolio example-create-photoset.php example',
         'Keywords' => ['phpZenfolio', 'example'],
         'CustomReference' => 'phpzenfolio/example-gallery',
     ];
-    # Create the gallery in the root photoset group
+    // Create the gallery in the root photoset group
     $photoSet = $client->CreatePhotoSet($h->Id, 'Gallery', $photoSetUpdater);
-    # Upload the file
+    // Upload the file
     $photo = $client->upload($photoSet, $file);
-    # Create the photoUpdater object. As with all updater objects, this can be
-    # an associative array or a standard class object. This example uses an array.
+    // Create the photoUpdater object. As with all updater objects, this can be
+    // an associative array or a standard class object. This example uses an array.
     $photoUpdater = [
         'Title' => 'phpZenfolio-uploaded photo',
         'Caption' => 'This photo was uploaded by the phpZenfolio example-create-photoset.php example',
         'Keywords' => ['phpZenfolio', 'example'],
     ];
-    # Set the title, caption and keywords on the image just uploaded.
+    // Set the title, caption and keywords on the image just uploaded.
     $photo = $client->UpdatePhoto($photo, $photoUpdater);
 
-    # Send a message confirming the upload and display the medium-sized image.
-    # NOTE: this can take a while to display whilst Zenfolio generates the various sizes.
+    // Send a message confirming the upload and display the medium-sized image.
+    // NOTE: this can take a while to display whilst Zenfolio generates the various sizes.
     echo '<p>"'.$photoSetUpdater['Title'].'" successfully created.</p>';
     echo '<p><code>'.$file.'</code> successfully uploaded to it and displayed below:</p>';
     echo '<a href="'.$photo->PageUrl.'"><img src="'.phpZenfolio\Client::imageUrl($photo, 3).'" title="'.$photo->Title.'" alt="'.$photo->Id.'" /></a>';
