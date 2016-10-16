@@ -9,7 +9,9 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
     public function setup()
     {
         $this->client = new Client('phpZenfolio Unit Testing/'.Client::VERSION.' (https://phpzenfolio.com)', ['verify' => true]);
-        $this->client->login(getenv('USERNAME'), getenv('PASSWORD'));
+        if (isset($_ENV['USERNAME']) && isset($_ENV['PASSWORD'])) {
+            $this->client->login(getenv('USERNAME'), getenv('PASSWORD'));
+        }
     }
 
     /**
