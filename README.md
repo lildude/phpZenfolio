@@ -1,6 +1,6 @@
 # phpZenfolio
 
-[![MIT Licence](https://img.shields.io/badge/license-MIT-blue.svg?maxAge=31622400)](https://opensource.org/licenses/MIT) [![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) [![Build Status](https://travis-ci.org/lildude/phpZenfolio.svg)](https://travis-ci.org/lildude/phpZenfolio)
+[![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) [![Build Status](https://travis-ci.org/lildude/phpZenfolio.svg)](https://travis-ci.org/lildude/phpZenfolio)
 
 A simple object orientated wrapper for the Zenfolio API, written in PHP.
 
