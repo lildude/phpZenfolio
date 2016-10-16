@@ -3,361 +3,293 @@ layout: docs
 title: Documentation
 ---
 
-## Requirements
+# Requirements
 
-phpZenfolio is written in PHP and utilises functionality supplied with PHP 5.2 and later and optionally PEAR.
+* PHP >= 5.6.0,
+* [Guzzle 6](https://github.com/guzzle/guzzle) library and the [Guzzle OAuth1 Subscriber](https://github.com/guzzle/oauth-subscriber),
+* (optional) [PHPUnit](https://phpunit.de/) and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
 
-From a PHP perspective, the only requirement is PHP 5.2 compiled with GD and optionally, curl support enabled.
+# Installation
 
-If you wish to use a database for caching, you will also need the following PEAR packages:
+The recommended method of installing phpZenfolio is using [Composer](http://getcomposer.org). If you have Composer installed, you can install phpZenfolio and all its dependencies from within your project directory:
 
-* [MDB2 2.5.0b3](http://pear.php.net/package/MDB2) or later.
-
-* The corresponding [MDB2\_Driver_*](http://pear.php.net/search.php?q=MDB2_Driver&in=packages&setPerPage=20) for the database you wish to use.
-
-Please consult the above links for details on installing the PEAR modules.
-
-
-## Installation
-
-Copy the files from the installation package into a folder on your server. They need to be readable by your web server.  You can put them into an include folder defined in your `php.ini` file, if you like, though it's not required.
-
-
-## Usage
-
-In order to use phpZenfolio, you will need to instantiate a new instance of the phpZenfolio object and then call the methods you need.  phpZenfolio implements all methods and arguments as documented in the Zenfolio API. Accordingly, when calling a Zenfolio method, you will need to ensure that you pass the parameters exactly as they are documented in the [Zenfolio API documentation](http://http://www.zenfolio.com/zf/help/api).
-
-Remember: *ALL* function names and arguments *ARE* case sensitive and the order is important.
-
-To make things easy for developers, phpZenfolio also provides several of it's own methods.  These methods are: `login()`, `enableCache()`, `clearCache()`, `upload()`, `setProxy()`, `imageUrl()` and `setAdapter()`.  All phpZenfolio methods, and its constructor, take their arguments either as an associative array or as a list of `param=value` strings, unless otherwise documented. These methods are documented in more detail later in this document.
-
-To use phpZenfolio, all you have to do is include the file in your PHP scripts and create an instance.  For example:
-
-```
-require_once("phpZenfolio/phpZenfolio.php");
-$f = new phpZenfolio(... arguments go here ...);
+```bash
+$ composer require lildude/phpzenfolio
 ```
 
-The constructor takes two arguments, one obligatory and one optional:
+Alternatively, you can add the following to your project's `composer.json`:
 
-* `AppName` - Required
-
-  This is the name, version and URL of the application you have built using phpZenfolio. There is no required format, but something like:
-
-  ```
-  "My Cool App/1.0 (http://my.url.com)"
-  ```
-
-  ... would be very useful and will allow Zenfolio to identify your application in the event of a problem.
-
-* `APIVer` - Optional  
-  Default: 1.8
-
-  Use this to set the endpoint you wish to use.  The default is 1.8 as this is the latest endpoint provided by Zenfolio.
-
-As the constructor is a phpZenfolio specific method, it can be instantiated using one of the following methods:
-
-* Arguments as strings:
-
-  ```
-  $f = new phpZenfolio("AppName=My Cool App/1.0 (http://app.com)", "APIVer=1.8");
-  ```
-
-* Arguments as an associative array:
-
-  ```
-  $f = new phpZenfolio(array(
-      "AppName" => "My Cool App/1.0 (http://app.com)",
-      "APIVer" => "1.8")
-  );
-  ```
-
-Naturally, you can predefine the array before instantiating the object and just pass the array variable.
-
-With the instance instantiated, you can now interact with the Zenfolio API using Zenfolio's native methods exactly as they're documented. Arguments to all Zenfolio native methods must be provided in the order they are documented in the API documentation.  For example, use the following to get all recent sets that are of the PhotoSetType 'Gallery':
-
-```
-$f->GetRecentSets('Gallery', 0, 3);
+```json
+{
+    "require": {
+        "lildude/phpzenfolio": "^2.0"
+    }
+}
 ```
 
-Note the method's capitalisation and the arguments, these are as they are documented in the [`GetRecentSets()`](http://www.zenfolio.com/zf/help/api/ref/methods/getrecentsets) method documentation.
+.. and then run `composer update` from within your project directory.
 
-Some of the Zenfolio API methods, like `CreatePhotoSet()`, require an object to be passed as one of the arguments. The object can be passed either as an associative array:
+If you don't have Composer installed, you can download it using:
 
+```bash
+$ curl -s http://getcomposer.org/installer | php
 ```
+
+**Note: phpZenfolio 2.0.0 and later is not backwardly compatible with earlier releases.**
+
+# Basic Usage
+
+`phpZenfolio` follows the PSR-1, PSR-2 and PSR-4 conventions, which means you can easily use Composer's [autoloading](https://getcomposer.org/doc/01-basic-usage.md#autoloading) to integrate `phpZenfolio` into your projects.
+
+```php
+<?php
+// This file is generated by Composer
+require_once 'vendor/autoload.php';
+
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)'));
+$photoset = $client->LoadPhotoSet(12345, 'Level1');
+```
+
+From the `$client` object, you can access all the Zenfolio API methods.
+
+# More In-depth Usage Details
+
+## Instantiating the Client
+
+The `phpZenfolio\Client()` constructor takes two arguments:
+
+- `AppName` - **Required**.
+
+    The name, version and URL of the application you have built using the phpZenfolio. There is no required format, but something like `My Cool App/1.0 (http://my.url.com)` would be very useful.
+
+- An array of options - Optional.
+
+    The options you pass here become the default options applied to all requests by default, unless explicitly overwritten elsewhere, and can be made up of any combination of the following options:
+
+    - `api_version` - (string) The API version you wish to use. This defaults to `1.8` as this is the only version of the API this version of phpZenfolio is compatible with.  This is really only for "future proofing".
+
+    - `proxy` - (string) Configure all phpZenfolio requests to pass through a proxy. See the "Access Zenfolio via a Proxy" section for more details.
+
+    - `debug` - (boolean) Enables Guzzle's debug output. This is only really useful during development.
+
+Additionally, you can pass any [Guzzle request option](http://docs.guzzlephp.org/en/latest/request-options.html) though `debug` and `proxy` are probably the only options you may want to set.
+
+
+## Interacting with the Zenfolio API
+
+Once you've instantiated an instance of the `phpZenfolio\Client`, you can use any of the [Zenfolio methods](http://www.zenfolio.com/zf/help/api/ref/methods/), exactly as they're documented, to interact with the API. This means you will need to pass the arguments in the order, case and form that Zenfolio expects.
+
+Remember: *ALL* function names and arguments *ARE* case sensitive and the order of arguments is important.
+
+**Note:** phpZenfolio does not currently support asynchronous requests, though as we now rely on Guzzle, this shouldn't be too hard to implement in future (PRs welcome :wink:).
+
+
+### Creating Objects and Making Changes
+
+Some of the Zenfolio API methods, like `CreatePhotoSet()`, or `UpdatePhoto()` require an [Updater object](http://www.zenfolio.com/zf/help/api/ref/objects/updaters) to be passed as one of the arguments. phpZenfolio allows you to pass the object either as an associative array:
+
+```php
+<?php
 $photoSetUpdater = array(
-    "Title" => "PhotoSet Title",
-    "Caption" => "PhotoSet Caption via API",
-    "Keywords" => array("Keyword1", "keyword2"),
-    "Categories" => array(),
-    "CustomReference" => "testing/test-photoset"
+    'Title' => 'PhotoSet Title',
+    'Caption' => 'PhotoSet Caption via API',
+    'Keywords' => array('Keyword1', 'keyword2'),
+    'Categories' => array(),
+    'CustomReference' => 'testing/test-photoset'
 );
-$f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
+$client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
 ```
 
 ... or as a standard class object:
 
-```
+```php
+<?php
 $photoSetUpdater = new stdClass();
-$photoSetUpdater->Title = "PhotoSet Title";
-$photoSetUpdater->Caption = "PhotoSet Caption via Object";
-$photoSetUpdater->Keywords = array("Keyword1", "keyword2");
+$photoSetUpdater->Title = 'PhotoSet Title';
+$photoSetUpdater->Caption = 'PhotoSet Caption via Object';
+$photoSetUpdater->Keywords = array('Keyword1', 'keyword2');
 $photoSetUpdater->Categories = array();
-$photoSetUpdater->CustomReference = "testing/test-photoset";
-$f->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
+$photoSetUpdater->CustomReference = 'testing/test-photoset';
+$client->CreatePhotoSet(12345, 'Gallery', $photoSetUpdater);
 ```
 
-All data returned by the method call is returned as the API documents it with the exception being objects are actually returned as arrays by phpZenfolio.  In the event of an error, phpZenfolio will throw one of two exceptions: `PhpZenfolioException` in the event of a problem detected by phpZenfolio or `HttpRequestException` in the event of a problem detected by the code used to communicate with the API.  Your application will need to catch these exceptions.
+All data returned by the method call is returned as the API documents it.
 
-
-## Authentication
+# Authentication
 
 Many of the Zenfolio API methods are open to all users, whether they have Zenfolio accounts or not, however anything private or related to modification requires authentication.
 
 The Zenfolio API provides [two methods of authentication](http://www.zenfolio.com/zf/help/api/guide/auth): Plain-Text and Challenge-Response.  Both are equally good with the slightly more secure method being the Challenge-Response method as your password never travels across the wire.
 
-phpZenfolio allows you to use the API methods as documented, however to make things easy, a single `login()` method exists to allow you to authentication using either of these authentication methods:
+phpZenfolio allows you to use the API methods as documented, however to make things easy, a single `login()` method exists to allow you to authenticate using either of these authentication methods:
 
 * Challenge-Response (default):
 
-  ```
-  $f->login("Username=<username>", "Password=<password>");
+  ```php
+  <?php
+  $client->login('[USERNAME]', '[PASSWORD]');
   ```
 
 * Plain-Text:
 
-  ```
-  $f->login("Username=<username>", "Password=<password>", "Plaintext=TRUE");
-  ```
-
-The Plain-Text method uses HTTPS/SSL for the authentication step to ensure your username and password are encrypted when transmitted to Zenfolio.
-
-
-## Caching
-
-Caching can be very important to a project as it can drastically improve the performance of your application.
-
-phpZenfolio has caching functionality that can cache data to a database or files, you just need to enable it.
-
-It is recommended that caching is enabled immediately after a new phpZenfolio instance is created, and before any other phpZenfolio methods are called.
-
-To enable caching, use the `enableCache()` function.
-
-The `enableCache()` method takes 4 arguments:
-
-* `type` - Required
-
-  This is "db" for database or "fs" for filesystem.
-
-* `dsn` - Required for `type=db`
-
-  This a PEAR::MDB2 DSN connection string, for example:
-
-  ```
-  mysql://user:password@server/database
+  ```php
+  <?php
+  // Setting the third argument to `true` confirms you want to use plain-text
+  $client->login('[USERNAME]', '[PASSWORD]', true);
   ```
 
-phpZenfolio uses the MDB2 PEAR module to interact with the database if you use database based caching.  phpZenfolio does *NOT* supply the necessary PEAR modules.  If you with to use a database for caching, you will need to download and install PEAR, the MDB2 PEAR module and the corresponding database driver yourself.  See [MDB2 Manual](http://pear.php.net/manual/en/package.database.mdb2.intro.php) for details.
+Both methods use HTTPS/SSL for the authentication step to ensure your username and password are encrypted when transmitted to Zenfolio.
 
-* `cache_dir` - Required for `type=fs`
+The `login()` method returns the authentication token.  You can store this and re-use it in future requests using phpZenfolio's `setAuthToken()` method:
 
-  This is the folder/directory that the web server has write access to. This directory must already exist.
-
-Use absolute paths for best results as relative paths may have unexpected behaviour. They'll usually work, you'll just want to test them.
-
-You may not want to allow the world to view the files that are created during caching.  If you want to hide this information, either make sure that your permissions are set correctly, or prevent the webserver from displaying `*.cache` files.
-
-In Apache, you can specify this in the configuration files or in a .htaccess file with the following directives:
-
-```
-<FilesMatch "\.cache$">
-    Deny from all
-</FilesMatch>
+```php
+<?php
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)'));
+$client->setAuthToken('[AUTH_TOKEN]');
 ```
 
-Alternatively, you can specify a directory that is outside of the web server's document root.
+Keep in mind that the authentication token is only valid for slightly more than 24 hours. If you expect your application to run for longer than 24 hours, it needs to periodically reauthenticate to obtain a fresh authentication token.
 
-* `cache_expire` - Optional  
-  Default: 3600
-
-  This is the maximum age of each cache entry in seconds.
-
-* `table` - Optional  
-  Default: `phpzenfolio_cache`
-
-  This is the database table name that will be used for storing the cached data.  This is only applicable for database (db) caching and will be ignored if included for filesystem (fs) caching.
-
-  If the table does not exist, phpZenfolio will attempt to create it.
-
-Each of the caching methods can be enabled as follows:
-
-* Filesystem based cache:
-
-  ```
-  $f->enableCache("type=fs", "cache_dir=/tmp", "cache_expire=86400");
-  ```
-
-* Database based cache:
-
-  ```
-  $f->enableCache("type=db", "dsn=mysql://USERNAME:PASSWORD_database", "cache_expire=86400");
-  ```
-
-If you have caching enabled, and you make changes, it's a good idea to call `clearCache()` to refresh the cache so your changes are reflected immediately.
-
-
-## Uploading
+# Uploading &amp; Replacing Images
 
 Uploading is very easy.  You can either upload an image from your local system using the phpZenfolio supplied `upload()` method, or from a location on the web using the API's `CreatePhotoFromUrl()` method.
 
-* Upload Local File:
 
-  To upload from your local filesystem using the phpZenfolio `upload()` method, you will need to have logged into Zenfolio via the API and have the `PhotoSetId` or it's `UploadUrl` as returned by the API.
+## Upload a Local File:
 
-  Then it's just a matter of calling the method with the various optional parameters.
+To upload from your local filesystem using the phpZenfolio `upload()` method, you will need to have logged into Zenfolio via the API using the `login()` method and have the photoset object, the `PhotoSetId`, or it's `UploadUrl` as returned by the API.
 
-  * Upload using the PhotoSetId:
+Then it's a matter of calling the method with the various optional parameters.
 
-    ```
-    $f->upload("PhotoSetId=123456", "File=/path/to/image.jpg");
-    ```
+* Upload using the photoset object:
 
-  * Upload using the UploadUrl:
-
-    ```
-    $f->upload("UploadUrl=http://up.zenfolio.com/....",
-        "File=/path/to/image.jpg");
+  ```php
+  <?php
+  $client->upload($photoset, "/path/to/image.jpg");
     ```
 
-  At this time, the only supported options you can pass at the time of uploading are a `filename` the `modified` parameter which takes a RFC2822 formatted date string...
+* Upload using the PhotoSetId:
 
-  ```
-  $f->upload("PhotoSetId=123456",
-      "File=/path/to/image.jpg",
-      "filename=newfilename.jpg",
-      "modified=Thu, 14 Jan 2010 13:08:07 +0200");
+  ```php
+  <?php
+  $client->upload(123456, "/path/to/image.jpg");
   ```
 
-  If you don't specify a filename, the original filename is used.
+* Upload using the UploadUrl:
 
-
-* Upload from the web:
-
-  Uploading to Zenfolio using a URL is done purely by the Zenfolio `CreatePhotoFromUrl()` API method:
-
-  ```
-  $f->CreatePhotoFromUrl(12344, "http://www.example.com/images/image.jpg", null);
+  ```php
+  <?php
+  $client->upload('http://up.zenfolio.com/....', '/path/to/image.jpg');
   ```
 
-  You can find full details on the options this method accepts in the [CreatePhotoFromUrl](http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl) method documentation.
+At this time, the only supported options you can pass at the time of uploading are a `filename`, the `type` and the `modified` parameter which takes a RFC2822 formatted date string...
 
-  Unfortunately, there is no way to pass things like the photo title etc at the time of upload. You will need to set these later using the `UpdatePhoto()` method.
+```php
+<?php
+$client->upload(123456, '/path/to/image.mpg',
+    ['filename' => 'newfilename.mpg',
+     'modified' => 'Thu, 14 Jan 2010 13:08:07 +0000',
+     'type' => 'video']);
+```
+
+If you don't specify a filename, the original filename is used.
 
 
-## Replacing Photos
+## Upload an Image from a URL:
+
+Uploading to Zenfolio using a URL is done purely by the Zenfolio `CreatePhotoFromUrl()` API method:
+
+```php
+<?php
+$client->CreatePhotoFromUrl(12344, 'http://www.example.com/images/image.jpg');
+```
+
+You can find full details on the options this method accepts in the [CreatePhotoFromUrl](http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl) documentation.
+
+Unfortunately, there is no way to pass things like the photo title etc at the time of upload. You will need to set these later using the `UpdatePhoto()` method.
+
+
+## Replacing Images
 
 In order to replace a photo, you will need to upload a new photo and then replace the old photo with the new using the Zenfolio [`ReplacePhoto()`](http://www.zenfolio.com/zf/help/api/ref/methods/replacephoto) API method.
 
+# Other Notes
+
+## Caching API Responses
+
+Caching has been removed from phpZenfolio as the headers in the Zenfolio API responses discourage caching and now phpZenfolio is using Guzzle, you can take advantage of much better Guzzle-friendly middleware implementations, like [guzzle-cache-middleware](https://github.com/Kevinrob/guzzle-cache-middleware), that better tie-in with the various frameworks you may already be using.
+
+In order to use one of these middleware caching mechanisms, you'll need to [create and pass a handler stack](http://docs.guzzlephp.org/en/latest/handlers-and-middleware.html) with the cache middleware you plan to use when instantiating the phpZenfolio client. For example:
+
+```php
+<?php
+$handler_stack = HandlerStack::create();
+$handler_stack->push(new YourChosenCachingMiddleware(), 'cache');
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['handler' => $handler_stack]);
+```
+
+Keeps in mind tht phpZenfolio uses POST to the same URL for all requests.  You may need to take this into account when configuring your caching implementation.
+
+Please refer to your chosen caching implementation documentation for further details on how to use and implement that side of things with Guzzle.
 
 
-## Other Notes
+## Access Zenfolio via a Proxy
 
-* By default, phpZenfolio will attempt to use Curl to communicate with the
-  Zenfolio API endpoint if it's available.  If not, it'll revert to using
-  sockets based communication using `fsockopen()`.  If you wish to force the
-  use of sockets, you can do so using the phpZenfolio supplied
-  `setAdapter()` right after instantiating your instance:
+Accessing Zenfolio with phpZenfolio through a proxy is possible by passing the `proxy` option when instantiating the client:
 
-  ```
-  $f = new phpZenfolio("AppName=<value>");
-  $f->setAdapter("socket");
-  ```
+```php
+<?php
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['proxy' => 'http://[PROXY_ADDRESS]:[PORT]']));
+```
 
-  Valid arguments are "curl" (default) and "socket".
+All your requests will pass through the specified proxy on the specified port.
 
-* phpZenfolio implements [Zenfolio objects](http://www.zenfolio.com/zf/help/api/ref/objects) as arrays.  This makes implementation and usage easier.
+If you need a username and password to access your proxy, you can include them in the URL in the form: `http://[USERNAME]:[PASSWORD]@[PROXY_ADDRESS]:[PORT]`.
 
-* Some people will need to use phpZenfolio from behind a proxy server.  You can use the `setProxy()` method to set the appropriate proxy settings.
 
-  For example:
+## Image URLs Helper
 
-  ```
-  $f = new phpZenfolio("AppName=<value>");
-  $f->setProxy("server=<proxy_server>", "port=<value>");
-  ```
+To make it easy to obtain the direct URL to an image, phpZenfolio supplies an `imageURL()` method that takes the Photo object as returned by methods like `LoadPhoto()` and `LoadPhotoSetPhotos()` and an integer for the desired photo size where the integer is one of those documented at <http://www.zenfolio.com/zf/help/api/guide/download>.
 
-  All your calls will then pass through the specified proxy on the specified port.
+For example:
 
-  If your proxy server requires a username and password, then add those options to the `setProxy()` method arguments too.
-
-  For example:
-
-  ```
-  $f = new phpZenfolio("AppName=<value>");
-  $f->setProxy("server=<proxy_server>",
-      "port=<value>",
-      "user=<proxy_username>",
-      "password=<proxy_password>");
-  ```
-
-  Note: Proxy support is currently only available when using the default "curl" adapter.
-
-* To make it easy to obtain the direct URL to an image, phpZenfolio supplies a `imageURL()` method that takes the Photo object as returned by methods like `LoadPhoto()` and `LoadPhotoSetPhotos()` and an integer for the desired photo size where the integer is one of those documented at http://www.zenfolio.com/zf/help/api/guide/download .
-
-  For example:
-
-  ```
-  $f = new phpZenfolio("AppName=<value>");
-  $photos = $f->LoadPhotoSetPhotos(<photosetID>, <startingIndex>, <numberOfPhotos>);
-  foreach ($photos as $photo) {
-      echo '<img src="',phpZenfolio::imageUrl($photo, 1),'" />';
-  }
-  ```
-
-* If phpZenfolio encounters an error, or Zenfolio returns a "failure" response, an exception will be thrown and your application will stop executing. If there is a problem with communicating with the endpoint, a HttpRequestException will be thrown.  If an error is detected elsewhere, a PhpZenfolioException will be thrown.
-
-  It is recommended that you configure your application to catch exceptions from phpZenfolio.
+```php
+<?php
+$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)');
+$photos = $client->LoadPhotoSetPhotos([PHOTOSETID], [STARTINGINDEX], [NUMBEROFPHOTOS]);
+foreach ($photos as $photo) {
+    echo '<img src="'.phpZenfolio\Client::imageUrl($photo, 1).'" />';
+}
+```
 
 
 ## Examples
 
-phpZenfolio comes with 3 examples to help get you on your way.
+phpZenfolio comes with four examples to help get you on your way.
 
-* `example-popular.php` illustrates how to obtain the 100 most popular galleries and display their title image linking to each individual gallery.
-
+* `example-popular.php` illustrates how to obtain the 96 most popular galleries and display their title image linking to each individual gallery.
 * `example-login.php` illustrates how to login and display the images in your first photoset or collection.
-
-* `example-user.php` illustrates how to display the first 100 public photos of the user's the first public photoset found.
-
-And that's all folks.
-
-Keep up to date on developments and enhancements to phpZenfolio at
-[phpzenfolio.com](http://phpzenfolio.com/).
-
-If you encounter any problems with phpZenfolio, please check the list of known
-issues with phpZenfolio in the GitHub repository at https://github.com/lildude/phpZenfolio/issues .
-If your issue is not there, please feel free to open a new issue and provide as many details as you can.
-
-This document is also available online at [phpzenfolio.com/docs](http://phpzenfolio.com/docs).
+* `example-user.php` illustrates how to display the first 96 public photos of the specified user's first public photoset found.
+* `example-create-photoset.php` illustrates how to create a new gallery photoset in the authenticated user's root photoset group, and upload an image to this gallery.
 
 
-### Change History
+## Need Help or Have Questions?
 
-* 1.3 - 14 Apr '16
-    * Changed default API version to 1.8 and made sure the rest of the library takes this API version into account.
-    * Changed the README to use Markdown instead of plaintext.
+The best way to get help with implementing phpZenfolio into your projects is to open an [issue](https://github.com/lildude/phpZenfolio/issues).  This allows you to easily search for other issues where others may have asked to the same questions or hit the same problems and if they haven't, your issue will add to the resources available to others at a later date.
 
-* 1.2 - 10 June '12
-    * Changed API endpoint to use api.zenfolio.com as requested by Zenfolio
-    * Changed default API version to 1.6
-    * Added ability to perform ALL API requests over HTTPS (Ticket #4)
+Please don't be shy. If you've got a question, problem or are just curious about something, there's a very good chance someone else is too, so go ahead and open an issue and ask.
 
-* 1.1 - 28 Mar '11
-    * Use md5 to generate a uniq ID for each request instead of using `intval()` to ensure correct and consistent behaviour on 32-bit and 64-bit platforms. (Ticket #1)
-    * Removed erroneous re-instantiation of processor when setting adapter.
-    * Corrected check for safe_dir OR open_basedir so fails over to socket connection correctly (Ticket #2)
-    * Cache only successful requests
-    * Improved connection settings
 
-* 1.0 - 01 Oct '10
-    * Initial release.
+## Contributing
+
+Found a bug or want to make phpZenfolio even better? Please feel free to open a pull request with your changes, but be sure to check out the [CONTRIBUTING.md](CONTRIBUTING.md) first for some tips and guidelines. No pull request is too small.
+
+
+## Changes
+
+All notable changes to this project are documented in [CHANGELOG.md](CHANGELOG.md).
+
+
+## License
+
+All code is licensed under the [MIT License](https://opensource.org/licenses/MIT) and all documentation is licensed under the [CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/).
