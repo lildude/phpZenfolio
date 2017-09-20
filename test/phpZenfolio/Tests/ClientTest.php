@@ -55,7 +55,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\InvalidArgumentException
+     * @expectedException \phpZenfolio\Exception\InvalidArgumentException
      * @expectedExceptionMessage An application name is required for all Zenfolio interactions.
      */
     public function shouldThrowExceptionIfNoAppName()
@@ -175,7 +175,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\UnexpectedValueException
+     * @expectedException \phpZenfolio\Exception\UnexpectedValueException
      * @expectedExceptionMessage Incorrect response ID. (request ID: 181f23563bbfb826c0321f586cfafa64680620af, response ID: I-am-a-unique-id)
      */
     public function shouldThrowExceptionIfResponseIdDoesntMatchRequestId()
@@ -227,7 +227,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\RuntimeException
+     * @expectedException \phpZenfolio\Exception\RuntimeException
      * @expectedExceptionMessage E_DUMMYERROR: This is a dummy error.
      */
     public function shouldThrowExceptionOnErrorFromZenfolio()
@@ -244,7 +244,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\RuntimeException
+     * @expectedException \phpZenfolio\Exception\RuntimeException
      * @expectedExceptionMessage An unexpected error has occurred. Please try again later. If this problem persists, contact Zenfolio Support.
      */
     public function shouldThrowExceptionOnUnexpectedErrorFromZenfolio()
@@ -262,7 +262,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\BadMethodCallException
+     * @expectedException \phpZenfolio\Exception\BadMethodCallException
      * @expectedExceptionMessage E_INVALIDPARAM: No such method
      */
     public function shouldThrowBadMethodCallExceptionForBogusMethod()
@@ -330,7 +330,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\InvalidArgumentException
+     * @expectedException \phpZenfolio\Exception\InvalidArgumentException
      * @expectedExceptionMessage File not found: /path/to/non/existant/file.jpg
      */
     public function shouldThrowExceptionIfUploadFileNotFound()
@@ -444,7 +444,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException phpZenfolio\Exception\BadMethodCallException
+     * @expectedException \phpZenfolio\Exception\BadMethodCallException
      * @expectedExceptionMessage Invalid method: badmethod
      */
     public function shouldThrowBadMethodCallException()
