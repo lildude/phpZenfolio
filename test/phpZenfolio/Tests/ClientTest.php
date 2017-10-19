@@ -348,7 +348,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
           new Response(200, []),  // Upload using photoset object
           new Response(200, [], $this->fauxPhotoSetObjectResponse), // LoadPhotoSet() called when using photoset ID for upload
           new Response(200, []), // Upload using photoset ID
-          new Response(200, []), // Upload raw for non-image type using photoset ID
+          new Response(200, []), // Upload raw for non-image type using photoset object
           new Response(200, []), // Upload using upload URL
       ]);
 
