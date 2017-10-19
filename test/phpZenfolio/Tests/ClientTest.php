@@ -348,6 +348,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
           new Response(200, []),  // Upload using photoset object
           new Response(200, [], $this->fauxPhotoSetObjectResponse), // LoadPhotoSet() called when using photoset ID for upload
           new Response(200, []), // Upload using photoset ID
+          new Response(200, []), // Upload raw for non-image type using photoset object
           new Response(200, []), // Upload using upload URL
       ]);
 
@@ -379,6 +380,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('modified', $request_options['query']);
         $this->assertEquals($mod_date, $request_options['query']['modified']);
 
+      // Upload raw for non-image type using photoset object
+      $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result, './README.md', ['type' => 'raw']);
+      // Confirm the content type
+      $request_options = $client->getRequestOptions();
+        $this->assertArrayHasKey('Content-Type', $request_options['headers']);
+        $this->assertEquals('text/plain', $request_options['headers']['Content-Type']);
+
       // Upload by photoset URL
       $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, './examples/phpZenfolio-logo.png');
         $request_options = $client->getRequestOptions();
@@ -401,8 +409,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
                   $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->RawUploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
                   $this->assertEquals('filename=newfilename.png&modified='.rawurlencode($mod_date), $query);
               break;
-
               case 3:
+                  // Raw upload URL for non-photo file
+                  $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->RawUploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
+                  $this->assertEquals('filename=README.md', $query);
+              break;
+              case 4:
                   // Upload url
                   $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
                   $this->assertEquals('filename=phpZenfolio-logo.png', $query);

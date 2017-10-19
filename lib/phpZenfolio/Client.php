@@ -14,7 +14,7 @@ class Client
     /**
      * A few default variables.
      */
-    const VERSION = '2.0.0';
+    const VERSION = '2.0.1';
     public $AppName = 'Unknown Application';
     protected $authToken;
     private $keyring;
@@ -220,7 +220,6 @@ class Client
     public function upload($photoSet, $file, $args = array())
     {
         if (is_file($file)) {
-            $fileinfo = getimagesize($file); // We need this to get the content type.
             $fp = fopen($file, 'rb');
             $data = fread($fp, filesize($file));
             fclose($fp);
@@ -244,7 +243,7 @@ class Client
         $this->client = self::getHttpClient();
 
         // Required headers
-        $this->request_options['headers']['Content-Type'] = $fileinfo['mime'];
+        $this->request_options['headers']['Content-Type'] = mime_content_type($file);
         $this->request_options['headers']['Content-Length'] = filesize($file);
 
         if (!is_null($this->authToken)) {

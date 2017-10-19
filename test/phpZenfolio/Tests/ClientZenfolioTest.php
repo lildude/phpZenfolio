@@ -80,10 +80,13 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
      * @test
      * @depends shouldCreateNewPhotoSet
      *
-     * Tests adding a photo to a photoset
+     * Tests adding a photo & non-photo file to a photoset
      */
     public function shouldUploadToPhotoSet($photoSetObject)
     {
+        $response = $this->client->upload($photoSetObject, 'README.md', ['type' => 'raw']);
+        $this->assertTrue(empty($response));
+
         $response = $this->client->upload($photoSetObject, 'examples/phpZenfolio-logo.png');
         $this->assertTrue(is_int($response));
 
