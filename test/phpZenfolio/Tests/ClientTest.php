@@ -325,7 +325,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $photo_url = \phpZenfolio\Client::imageUrl($this->photoObject, $this->photoSize);
 
-        $this->assertEquals("https://{$this->user}.zenfolio.com/img/s/v-2/p1234567890-{$this->photoSize}.jpg?sn=&tk=this-is-the-url-token", $photo_url);
+        $this->assertEquals("http://{$this->user}.zenfolio.com/img/s/v-2/p1234567890-{$this->photoSize}.jpg?sn=&tk=this-is-the-url-token", $photo_url);
     }
 
     /**
