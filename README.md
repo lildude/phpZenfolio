@@ -2,9 +2,19 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) [![Build Status](https://travis-ci.org/lildude/phpZenfolio.svg)](https://travis-ci.org/lildude/phpZenfolio)
 
-A simple object orientated wrapper for the Zenfolio API, written in PHP.
+phpZenfolio is a simple object orientated wrapper for the [Zenfolio API](http://www.zenfolio.com/zf/tools/api.aspx), written in PHP.
 
 The intention of this class is to allow PHP application developers quick and easy interaction with the Zenfolio API, without having to worry about the finer details of the API.
+
+Not already a Zenfolio user? Here, have a **$5 discount** off your first year on me by [registering](https://www.zenfolio.com/?refcode=4Y5-2ZY-2A8) using this code:
+
+**[4Y5-2ZY-2A8](https://www.zenfolio.com/?refcode=4Y5-2ZY-2A8)**
+
+The development of phpZenfolio takes place in my free time. If you find phpZenfolio useful and found it has saved you a lot of time, I'd really appreciate it if you bought me a coffee or two.
+
+[![Buy me a Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/lildude)
+
+---
 
 **Note: phpZenfolio 2.0.0 and later is not backwardly compatible with earlier releases.**
 
@@ -12,15 +22,13 @@ The intention of this class is to allow PHP application developers quick and eas
 
 * PHP >= 5.6.0,
 * [Guzzle 6](https://github.com/guzzle/guzzle) library,
-* (optional) [PHPUnit](https://phpunit.de/), [php-coveralls]() and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
+* (optional) [PHPUnit](https://phpunit.de/), [php-coveralls](https://github.com/php-coveralls/php-coveralls) and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
 
 ## Installation
 
 The recommended method of installing phpZenfolio is using [Composer](http://getcomposer.org). If you have Composer installed, you can install phpZenfolio and all its dependencies from within your project directory:
 
-```bash
-$ composer require lildude/phpzenfolio
-```
+    $ composer require lildude/phpzenfolio
 
 Alternatively, you can add the following to your project's `composer.json`:
 
@@ -36,9 +44,7 @@ Alternatively, you can add the following to your project's `composer.json`:
 
 If you don't have Composer installed, you can download it using:
 
-```bash
-$ curl -s http://getcomposer.org/installer | php
-```
+    $ curl -s http://getcomposer.org/installer | php
 
 ## Basic Usage of the phpZenfolio Client
 
@@ -57,7 +63,7 @@ From the `$client` object, you have access to all the [Zenfolio API methods](htt
 
 ## Documentation
 
-See the [`docs` directory](docs/) or http://phpzenfolio.com/docs/ for more detailed documentation.
+See the [`docs` directory](docs/) or <http://phpzenfolio.com> for more detailed documentation.
 
 ## Examples
 

@@ -126,7 +126,7 @@ class Client
     }
 
     /**
-     * Private function to process the response from SmugMug and return it in a nice
+     * Private function to process the response from Zenfolio and return it in a nice
      * user-friendly manner.
      *
      * This is in a single function so we don't repeat the same steps for each method.
@@ -152,7 +152,7 @@ class Client
                 throw new BadMethodCallException("{$body->error->code}: {$body->error->message}");
             } else {
                 // If the message contains "contact Support" it's referring to Zenfolio support, so lets make that clear.
-              $msg = ((isset($body->error->code)) ? $body->error->code.': ' : '').str_replace('contact Support', 'contact Zenfolio Support', $body->error->message);
+                $msg = ((isset($body->error->code)) ? $body->error->code.': ' : '').str_replace('contact Support', 'contact Zenfolio Support', $body->error->message);
                 throw new RuntimeException($msg);
             }
         }

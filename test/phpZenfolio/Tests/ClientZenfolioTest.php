@@ -71,7 +71,7 @@ class ClientZenfolioTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($photoSetUpdater['Caption'], $response->Caption);
         $this->assertTrue(is_array($response->Keywords));
         $this->assertEquals(3, count($response->Keywords));
-        $this->assertEquals('http://colinseymour.zenfolio.com/'.$photoSetUpdater['CustomReference'], $response->PageUrl);
+        $this->assertEquals('https://colinseymour.zenfolio.com/'.$photoSetUpdater['CustomReference'], $response->PageUrl);
 
         return $response;
     }

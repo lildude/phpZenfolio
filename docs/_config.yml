@@ -1,0 +1,25 @@
+title: phpZenfolio
+description: A PHP wrapper class for the Zenfolio API.
+remote_theme: lildude/jekyll-docs-theme
+license:
+  software: MIT License
+  software_url: http://opensource.org/licenses/MIT
+  docs: CC BY 4.0
+  docs_url: http://creativecommons.org/licenses/by/3.0/
+ui:
+  favicon: favicon.png
+  brand_color: "#C70"
+  header:
+    color1: "#C70"
+    color2: "#633d06"
+    trianglify: true
+    hide_nav: true
+links:
+  header:
+    - title: GitHub
+      url: https://github.com/lildude/phpzenfolio
+  footer:
+    - title: GitHub
+      url: https://github.com/lildude/phpzenfolio
+    - title: Issues
+      url: https://github.com/lildude/phpzenfolio/issues?state=open

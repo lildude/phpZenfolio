@@ -32,7 +32,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         // The photoObject has been cutdown to just the fields we need for the URL generation.
         $this->photoObject = json_decode('{"Sequence": "","UrlCore": "/img/s/v-2/p1234567890","UrlHost": "'.$this->user.'.zenfolio.com","UrlToken": "this-is-the-url-token"}');
         // The photoSetObject has been cutdown to just the fields we need for obtaining the upload URL.
-        $this->fauxPhotoSetObjectResponse = '{"result":{"UploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/upload2.ushx","VideoUploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/video.ushx","RawUploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/raw.ushx"},"error":null,"id":"'.sha1('LoadPhotoSet').'"}';
+        $this->fauxPhotoSetObjectResponse = '{"result":{"UploadUrl":"https://up.zenfolio.com/'.$this->user.'/p123456789/upload2.ushx","VideoUploadUrl":"https://up.zenfolio.com/'.$this->user.'/p123456789/video.ushx","RawUploadUrl":"https://up.zenfolio.com/'.$this->user.'/p123456789/raw.ushx"},"error":null,"id":"'.sha1('LoadPhotoSet').'"}';
         $this->photoSize = '11';  // Large thumbnail
         $this->fauxDeleteResponse = '';
     }
@@ -80,9 +80,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldSetProxy()
     {
-        $client = new Client($this->AppName, ['proxy' => 'http://proxy.foo:8080']);
+        $client = new Client($this->AppName, ['proxy' => 'https://proxy.foo:8080']);
         $options = $client->getDefaultOptions();
-        $this->assertEquals('http://proxy.foo:8080', $options['proxy']);
+        $this->assertEquals('https://proxy.foo:8080', $options['proxy']);
     }
 
     /**
@@ -354,17 +354,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $handler = HandlerStack::create($mock);
         $container = [];
-      // Add the history middleware to the handler stack.
-      $history = Middleware::history($container);
+        // Add the history middleware to the handler stack.
+        $history = Middleware::history($container);
         $handler->push($history);
 
         $client = new Client($this->AppName, ['handler' => $handler]);
         $client->setAuthToken($this->fauxAuthToken);
 
-      // Upload by photoSet object with type=video, even though it's not a video ;-)
-      $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result, './examples/phpZenfolio-logo.png', ['type' => 'video']);
-      // Confirm our request options
-      $request_options = $client->getRequestOptions();
+        // Upload by photoSet object with type=video, even though it's not a video ;-)
+        $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result, './examples/phpZenfolio-logo.png', ['type' => 'video']);
+        // Confirm our request options
+        $request_options = $client->getRequestOptions();
         $this->assertArrayHasKey('Content-Type', $request_options['headers']);
         $this->assertEquals('image/png', $request_options['headers']['Content-Type']);
         $this->assertArrayHasKey('Content-Length', $request_options['headers']);
@@ -372,30 +372,30 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('filename', $request_options['query']);
         $this->assertEquals('phpZenfolio-logo.png', $request_options['query']['filename']);
 
-      // Upload by photoset ID, with filename, modified and type=raw
-      $mod_date = gmdate(DATE_RFC2822, time());
+        // Upload by photoset ID, with filename, modified and type=raw
+        $mod_date = gmdate(DATE_RFC2822, time());
         $client->upload(123456789, './examples/phpZenfolio-logo.png', ['filename' => 'newfilename.png', 'modified' => $mod_date, 'type' => 'raw']);
-      // Confirm out request options
-      $request_options = $client->getRequestOptions();
+        // Confirm out request options
+        $request_options = $client->getRequestOptions();
         $this->assertArrayHasKey('modified', $request_options['query']);
         $this->assertEquals($mod_date, $request_options['query']['modified']);
 
-      // Upload raw for non-image type using photoset object
-      $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result, './README.md', ['type' => 'raw']);
-      // Confirm the content type
-      $request_options = $client->getRequestOptions();
+        // Upload raw for non-image type using photoset object
+        $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result, './README.md', ['type' => 'raw']);
+        // Confirm the content type
+        $request_options = $client->getRequestOptions();
         $this->assertArrayHasKey('Content-Type', $request_options['headers']);
         $this->assertEquals('text/plain', $request_options['headers']['Content-Type']);
 
-      // Upload by photoset URL
-      $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, './examples/phpZenfolio-logo.png');
+        // Upload by photoset URL
+        $client->upload(json_decode($this->fauxPhotoSetObjectResponse)->result->UploadUrl, './examples/phpZenfolio-logo.png');
         $request_options = $client->getRequestOptions();
 
-      // Confirm the options are actually used
-      foreach ($container as $key => $transaction) {
-          $url = $transaction['request']->getUri();
-          $query = $url->getQuery();
-          switch ($key) {
+        // Confirm the options are actually used
+        foreach ($container as $key => $transaction) {
+            $url = $transaction['request']->getUri();
+            $query = $url->getQuery();
+            switch ($key) {
               case 0:
                   // Video upload url
                   $this->assertEquals(json_decode($this->fauxPhotoSetObjectResponse)->result->VideoUploadUrl, $url->getScheme().'://'.$url->getHost().$url->getPath());
@@ -420,7 +420,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
                   $this->assertEquals('filename=phpZenfolio-logo.png', $query);
               break;
           }
-      }
+        }
     }
 
     /**
