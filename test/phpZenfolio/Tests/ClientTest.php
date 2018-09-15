@@ -32,7 +32,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         // The photoObject has been cutdown to just the fields we need for the URL generation.
         $this->photoObject = json_decode('{"Sequence": "","UrlCore": "/img/s/v-2/p1234567890","UrlHost": "'.$this->user.'.zenfolio.com","UrlToken": "this-is-the-url-token"}');
         // The photoSetObject has been cutdown to just the fields we need for obtaining the upload URL.
-        $this->fauxPhotoSetObjectResponse = '{"result":{"UploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/upload2.ushx","VideoUploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/video.ushx","RawUploadUrl":"http://up.zenfolio.com/'.$this->user.'/p123456789/raw.ushx"},"error":null,"id":"'.sha1('LoadPhotoSet').'"}';
+        $this->fauxPhotoSetObjectResponse = '{"result":{"UploadUrl":"https://up.zenfolio.com/'.$this->user.'/p123456789/upload2.ushx","VideoUploadUrl":"https://up.zenfolio.com/'.$this->user.'/p123456789/video.ushx","RawUploadUrl":"https://up.zenfolio.com/'.$this->user.'/p123456789/raw.ushx"},"error":null,"id":"'.sha1('LoadPhotoSet').'"}';
         $this->photoSize = '11';  // Large thumbnail
         $this->fauxDeleteResponse = '';
     }
@@ -80,9 +80,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldSetProxy()
     {
-        $client = new Client($this->AppName, ['proxy' => 'http://proxy.foo:8080']);
+        $client = new Client($this->AppName, ['proxy' => 'https://proxy.foo:8080']);
         $options = $client->getDefaultOptions();
-        $this->assertEquals('http://proxy.foo:8080', $options['proxy']);
+        $this->assertEquals('https://proxy.foo:8080', $options['proxy']);
     }
 
     /**
@@ -325,7 +325,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $photo_url = \phpZenfolio\Client::imageUrl($this->photoObject, $this->photoSize);
 
-        $this->assertEquals("http://{$this->user}.zenfolio.com/img/s/v-2/p1234567890-{$this->photoSize}.jpg?sn=&tk=this-is-the-url-token", $photo_url);
+        $this->assertEquals("https://{$this->user}.zenfolio.com/img/s/v-2/p1234567890-{$this->photoSize}.jpg?sn=&tk=this-is-the-url-token", $photo_url);
     }
 
     /**
