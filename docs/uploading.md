@@ -28,7 +28,7 @@ Then it's a matter of calling the method with the various optional parameters.
 
   ```php
   <?php
-  $client->upload('http://up.zenfolio.com/....', '/path/to/image.jpg');
+  $client->upload('https://up.zenfolio.com/....', '/path/to/image.jpg');
   ```
 
 At this time, the only supported options you can pass at the time of uploading are a `filename`, the `type` and the `modified` parameter which takes a RFC2822 formatted date string...
@@ -50,7 +50,7 @@ Uploading to Zenfolio using a URL is done purely by the Zenfolio `CreatePhotoFro
 
 ```php
 <?php
-$client->CreatePhotoFromUrl(12344, 'http://www.example.com/images/image.jpg');
+$client->CreatePhotoFromUrl(12344, 'https://www.example.com/images/image.jpg');
 ```
 
 You can find full details on the options this method accepts in the [CreatePhotoFromUrl](http://www.zenfolio.com/zf/help/api/ref/methods/createphotofromurl) documentation.

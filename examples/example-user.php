@@ -31,7 +31,7 @@ $username = 'A_USERNAME';
   </head>
 <body>
   <div>
-    <a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
+    <a href="https://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
     <h2>phpZenfolio First User Gallery/Collection Example</h2>
 <?php
 require_once 'vendor/autoload.php';

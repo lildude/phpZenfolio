@@ -5,13 +5,13 @@
 
 Caching has been removed from phpZenfolio as the headers in the Zenfolio API responses discourage caching and now phpZenfolio is using Guzzle, you can take advantage of much better Guzzle-friendly middleware implementations, like [guzzle-cache-middleware](https://github.com/Kevinrob/guzzle-cache-middleware), that better tie-in with the various frameworks you may already be using.
 
-In order to use one of these middleware caching mechanisms, you'll need to [create and pass a handler stack](http://docs.guzzlephp.org/en/latest/handlers-and-middleware.html) with the cache middleware you plan to use when instantiating the phpZenfolio client. For example:
+In order to use one of these middleware caching mechanisms, you'll need to [create and pass a handler stack](https://docs.guzzlephp.org/en/latest/handlers-and-middleware.html) with the cache middleware you plan to use when instantiating the phpZenfolio client. For example:
 
 ```php
 <?php
 $handler_stack = HandlerStack::create();
 $handler_stack->push(new YourChosenCachingMiddleware(), 'cache');
-$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['handler' => $handler_stack]);
+$client = new phpZenfolio\Client('My Cool App/1.0 (https://app.com)', ['handler' => $handler_stack]);
 ```
 
 Keeps in mind that phpZenfolio uses POST to the same URL for all requests.  You may need to take this into account when configuring your caching implementation.
@@ -25,23 +25,23 @@ Accessing Zenfolio with phpZenfolio through a proxy is possible by passing the `
 
 ```php
 <?php
-$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)', ['proxy' => 'http://[PROXY_ADDRESS]:[PORT]']));
+$client = new phpZenfolio\Client('My Cool App/1.0 (https://app.com)', ['proxy' => 'https://[PROXY_ADDRESS]:[PORT]']));
 ```
 
 All your requests will pass through the specified proxy on the specified port.
 
-If you need a username and password to access your proxy, you can include them in the URL in the form: `http://[USERNAME]:[PASSWORD]@[PROXY_ADDRESS]:[PORT]`.
+If you need a username and password to access your proxy, you can include them in the URL in the form: `https://[USERNAME]:[PASSWORD]@[PROXY_ADDRESS]:[PORT]`.
 
 
 ## Image URLs Helper
 
-To make it easy to obtain the direct URL to an image, phpZenfolio supplies an `imageURL()` method that takes the Photo object as returned by methods like `LoadPhoto()` and `LoadPhotoSetPhotos()` and an integer for the desired photo size where the integer is one of those documented at <http://www.zenfolio.com/zf/help/api/guide/download>.
+To make it easy to obtain the direct URL to an image, phpZenfolio supplies an `imageURL()` method that takes the Photo object as returned by methods like `LoadPhoto()` and `LoadPhotoSetPhotos()` and an integer for the desired photo size where the integer is one of those documented at <https://www.zenfolio.com/zf/help/api/guide/download>.
 
 For example:
 
 ```php
 <?php
-$client = new phpZenfolio\Client('My Cool App/1.0 (http://app.com)');
+$client = new phpZenfolio\Client('My Cool App/1.0 (https://app.com)');
 $photos = $client->LoadPhotoSetPhotos([PHOTOSETID], [STARTINGINDEX], [NUMBEROFPHOTOS]);
 foreach ($photos as $photo) {
     echo '<img src="'.phpZenfolio\Client::imageUrl($photo, 1).'" />';

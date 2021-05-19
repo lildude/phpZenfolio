@@ -32,7 +32,7 @@ $file = '/PATH/TO/A/FILE/TO/UPLOAD.EXT';
 </head>
 <body>
   <div>
-    <a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
+    <a href="https://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
     <h2>phpZenfolio Create Gallery and Upload Example</h2>
 <?php
 require_once 'vendor/autoload.php';
