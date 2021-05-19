@@ -2,11 +2,11 @@
 
 * PHP >= 5.6.0,
 * [Guzzle 6](https://github.com/guzzle/guzzle) library,
-* (optional) [PHPUnit](https://phpunit.de/), [php-coveralls](https://github.com/php-coveralls/php-coveralls) and [php-cs-fixer](http://cs.sensiolabs.org/) to run tests.
+* (optional) [PHPUnit](https://phpunit.de/), [php-coveralls](https://github.com/php-coveralls/php-coveralls) and [php-cs-fixer](https://cs.sensiolabs.org/) to run tests.
 
 # Installation
 
-The recommended method of installing phpZenfolio is using [Composer](http://getcomposer.org). If you have Composer installed, you can install phpZenfolio and all its dependencies from within your project directory:
+The recommended method of installing phpZenfolio is using [Composer](https://getcomposer.org). If you have Composer installed, you can install phpZenfolio and all its dependencies from within your project directory:
 
     $ composer require lildude/phpzenfolio
 
@@ -25,4 +25,4 @@ Alternatively, you can add the following to your project's `composer.json`:
 
 If you don't have Composer installed, you can download it using:
 
-    $ curl -s http://getcomposer.org/installer | php
+    $ curl -s https://getcomposer.org/installer | php

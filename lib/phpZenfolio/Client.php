@@ -88,7 +88,7 @@ class Client
     {
         // Ensure the per-request options are empty
         $this->request_options = [];
-        $this->client = self::getHttpClient();
+        $this->client = $this->getHttpClient();
 
         $url = '/api/'.$this->default_options['api_version'].'/zfapi.asmx';
 
@@ -240,7 +240,7 @@ class Client
 
         // Ensure the per-request options are empty
         $this->request_options = [];
-        $this->client = self::getHttpClient();
+        $this->client = $this->getHttpClient();
 
         // Required headers
         $this->request_options['headers']['Content-Type'] = mime_content_type($file);
@@ -279,7 +279,7 @@ class Client
      */
     public static function imageUrl(\stdClass $photo, $size)
     {
-        return "http://{$photo->UrlHost}{$photo->UrlCore}-{$size}.jpg?sn={$photo->Sequence}&tk={$photo->UrlToken}";
+        return "https://{$photo->UrlHost}{$photo->UrlCore}-{$size}.jpg?sn={$photo->Sequence}&tk={$photo->UrlToken}";
     }
 
     /**

@@ -24,7 +24,7 @@ $appname = 'YOUR_APP_NAME/VER (URL)';
   </head>
 <body>
   <div>
-    <a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
+    <a href="https://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
     <h2>phpZenfolio Popular Sets Example</h2>
 <?php
 require_once 'vendor/autoload.php';

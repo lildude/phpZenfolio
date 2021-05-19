@@ -33,7 +33,7 @@ $password = 'A_PASSWORD';
 </head>
 <body>
   <div>
-    <a href="http://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
+    <a href="https://phpzenfolio.com"><img src="phpZenfolio-logo.png" /></a>
     <h2>phpZenfolio First Album With Login Example</h2>
 <?php
 require_once 'vendor/autoload.php';

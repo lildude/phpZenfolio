@@ -10,8 +10,6 @@ Not already a Zenfolio user? Here, have a **$5 discount** off your first year on
 
 The development of phpZenfolio takes place in my free time. If you find phpZenfolio useful and found it has saved you a lot of time, Iâ€™d really appreciate it if you bought me a coffee or two.
 
-[![Buy me a Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/lildude)
-
 ---
 
 - [Requirements & Installation](installation.md)
