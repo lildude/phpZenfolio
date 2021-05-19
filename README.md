@@ -1,6 +1,6 @@
 # phpZenfolio
 
-[![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) [![Build Status](https://travis-ci.org/lildude/phpZenfolio.svg)](https://travis-ci.org/lildude/phpZenfolio)
+[![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) ![Test Status](https://github.com/lildude/phpSmug/workflows/Tests/badge.svg)
 
 phpZenfolio is a simple object orientated wrapper for the [Zenfolio API](http://www.zenfolio.com/zf/tools/api.aspx), written in PHP.
 
