@@ -2,6 +2,10 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) ![Test Status](https://github.com/lildude/phpSmug/workflows/Tests/badge.svg)
 
+> [!NOTE]
+> **This project is no longer maintained** 
+> If you would like to take over maintenance, please get in touch and we can arrange a transfer of the repo.
+
 phpZenfolio is a simple object orientated wrapper for the [Zenfolio API](http://www.zenfolio.com/zf/tools/api.aspx), written in PHP.
 
 The intention of this class is to allow PHP application developers quick and easy interaction with the Zenfolio API, without having to worry about the finer details of the API.
