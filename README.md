@@ -1,6 +1,6 @@
 # phpZenfolio
 
-[![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) ![Test Status](https://github.com/lildude/phpSmug/workflows/Tests/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/lildude/phpZenfolio/badge.svg?branch=master)](https://coveralls.io/github/lildude/phpZenfolio?branch=master) ![Test Status](https://github.com/lildude/phpZenfolio/workflows/Tests/badge.svg)
 
 > [!NOTE]
 > **This project is no longer maintained** 
